@@ -1,0 +1,174 @@
+<div class="flex items-center gap-3 mb-6">
+  <a routerLink="/apps/missions" mat-stroked-button>
+    <mat-icon>arrow_back</mat-icon>
+    Retour à la liste
+  </a>
+  <h2 class="text-2xl font-semibold mb-0">
+    Mission — {{ mission?.codeMission || '...' }}
+  </h2>
+</div>
+
+@if (isLoading) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+
+@if (!isLoading && mission) {
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- Infos principales -->
+    <div class="col-span-12 lg:col-span-8">
+
+      <mat-card class="cardWithShadow mb-6">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">Informations générales</h5>
+          <div class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Code mission</span>
+              <strong>{{ mission.codeMission || '-' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Location associée</span>
+              <strong>{{ mission.codeLocation || '-' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Statut</span>
+              <span class="px-2 py-1 rounded-full text-xs font-medium text-white"
+                [class]="mission.statutMission === 'TERMINÉE' ? 'bg-green-500' :
+                         mission.statutMission === 'EN COURS' ? 'bg-blue-500' :
+                         mission.statutMission === 'EN ATTENTE' ? 'bg-yellow-500' : 'bg-red-500'">
+                {{ mission.statutMission }}
+              </span>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Priorité</span>
+              <span class="px-2 py-1 rounded-full text-xs font-medium text-white"
+                [class]="mission.prioriteMission === 'URGENTE' ? 'bg-red-500' :
+                         mission.prioriteMission === 'HAUTE' ? 'bg-yellow-500' :
+                         mission.prioriteMission === 'NORMALE' ? 'bg-blue-400' : 'bg-gray-400'">
+                {{ mission.prioriteMission || '-' }}
+              </span>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Responsable</span>
+              <strong>{{ mission.responsableMission || '-' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Lieu</span>
+              <strong>{{ mission.lieuMission || '-' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Date début</span>
+              <strong>{{ mission.dateDebutMission | date:'dd/MM/yyyy' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Date fin</span>
+              <strong>{{ mission.dateFinMission | date:'dd/MM/yyyy' }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="cardWithShadow mb-6">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">Données terrain</h5>
+          <div class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 md:col-span-3">
+              <span class="text-sm text-muted block">Km départ</span>
+              <strong>{{ mission.kmDbtMission || 0 }} km</strong>
+            </div>
+            <div class="col-span-12 md:col-span-3">
+              <span class="text-sm text-muted block">Km arrivée</span>
+              <strong>{{ mission.kmFinMission || 0 }} km</strong>
+            </div>
+            <div class="col-span-12 md:col-span-3">
+              <span class="text-sm text-muted block">Carburant départ</span>
+              <strong>{{ mission.carbtDbtMission || 0 }} L</strong>
+            </div>
+            <div class="col-span-12 md:col-span-3">
+              <span class="text-sm text-muted block">Carburant arrivée</span>
+              <strong>{{ mission.carbtFinMission || 0 }} L</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Matériaux</span>
+              <strong>{{ mission.materiauxMission || '-' }}</strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Quantité matériaux</span>
+              <strong>{{ mission.qteMateriauxMission || 0 }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      @if (mission.descriptionMission || mission.observationMission) {
+        <mat-card class="cardWithShadow">
+          <mat-card-content>
+            <h5 class="text-base font-semibold mb-4">Description &amp; Observations</h5>
+            @if (mission.descriptionMission) {
+              <div class="mb-4">
+                <span class="text-sm text-muted block mb-1">Description</span>
+                <p>{{ mission.descriptionMission }}</p>
+              </div>
+            }
+            @if (mission.observationMission) {
+              <div>
+                <span class="text-sm text-muted block mb-1">Observations</span>
+                <p>{{ mission.observationMission }}</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <!-- Récapitulatif -->
+    <div class="col-span-12 lg:col-span-4">
+      <mat-card class="cardWithShadow sticky top-4">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">Récapitulatif</h5>
+          <div class="flex flex-col gap-4">
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Nb heures</span>
+              <strong>{{ mission.nbHeures || 0 }} h</strong>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Tarif horaire</span>
+              <strong>{{ mission.tarifHoraireApplique || 0 }} FCFA</strong>
+            </div>
+            <div class="flex justify-between text-primary">
+              <span class="font-semibold">Sous-total</span>
+              <strong>{{ mission.sousTotal || 0 }} FCFA</strong>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">KM parcourus</span>
+              <strong>{{ kmParcourus }} km</strong>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Carburant consommé</span>
+              <strong>{{ litresConsommes }} L</strong>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div>
+              <span class="text-sm text-muted">Facturée</span>
+              <div class="mt-1">
+                @if (mission.factureId) {
+                  <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-success text-success">Oui</span>
+                } @else {
+                  <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-warning text-warning">Non</span>
+                }
+              </div>
+            </div>
+
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+}

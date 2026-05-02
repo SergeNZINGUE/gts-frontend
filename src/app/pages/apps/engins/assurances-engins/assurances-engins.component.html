@@ -1,0 +1,232 @@
+<!-- En-tête -->
+<div class="flex items-center gap-3 mb-6">
+  <a routerLink="/apps/engins" mat-stroked-button>
+    <mat-icon>arrow_back</mat-icon>
+    Engins
+  </a>
+  <h2 class="text-2xl font-semibold mb-0">Assurances engins</h2>
+</div>
+
+<!-- Alerte expiration imminente -->
+@if (alertes.length > 0) {
+  <div class="flex items-start gap-3 p-4 mb-6 rounded-lg border border-orange-300 bg-orange-50">
+    <mat-icon class="text-orange-500 shrink-0 mt-0.5">warning</mat-icon>
+    <div class="text-sm text-orange-800">
+      <strong>{{ alertes.length }} assurance(s) expirent dans moins de 30 jours :</strong>
+      <ul class="mt-1 list-disc list-inside">
+        @for (a of alertes; track a.id) {
+          <li>
+            Engin <strong>{{ a.enginCode }}</strong> — {{ a.compagnieAssurance }}
+            (expire le {{ a.dateFin | date:'dd/MM/yyyy' }}, <strong>{{ daysLeft(a.dateFin) }} j</strong>)
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+}
+
+<!-- KPI cards -->
+<div class="grid grid-cols-12 gap-6 mb-6">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-primary flex items-center justify-center shrink-0">
+            <mat-icon class="text-primary">shield</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Total</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : total }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-success flex items-center justify-center shrink-0">
+            <mat-icon class="text-success">verified_user</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">En cours</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : enCours }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-warning flex items-center justify-center shrink-0">
+            <mat-icon class="text-warning">schedule</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Expirant bientôt</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : expirantBientot }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-error flex items-center justify-center shrink-0">
+            <mat-icon class="text-error">gpp_bad</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Expirées</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : expirees }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Filtres + ajout -->
+<mat-card class="cardWithShadow mb-4">
+  <mat-card-content>
+    <div class="flex flex-wrap items-center gap-4">
+      <mat-form-field appearance="outline" class="hide-hint flex-1 min-w-48">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Engin, compagnie, N° police…"
+               [(ngModel)]="searchText"
+               (ngModelChange)="applyFilters()" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="hide-hint w-52">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="selectedStatut" (ngModelChange)="applyFilters()">
+          @for (s of statutOptions; track s.value) {
+            <mat-option [value]="s.value">{{ s.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary"
+              (click)="openDialog()"
+              class="flex! items-center gap-1">
+        <mat-icon>add</mat-icon>
+        Nouvelle assurance
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<!-- Table -->
+<mat-card class="cardWithShadow">
+  @if (isLoading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+  <mat-card-content>
+    <div class="overflow-auto">
+      <table mat-table [dataSource]="dataSource" class="w-full no-wrap v-middle">
+
+        <ng-container matColumnDef="engin">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Engin</th>
+          <td mat-cell *matCellDef="let a">
+            <div class="font-medium">
+              <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded mr-1">
+                {{ a.enginCode || '—' }}
+              </span>
+            </div>
+            @if (a.enginModel) {
+              <div class="text-xs text-muted">{{ a.enginModel }}</div>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="compagnie">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Compagnie</th>
+          <td mat-cell *matCellDef="let a" class="text-sm font-medium">
+            {{ a.compagnieAssurance || '—' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="numeroPolice">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">N° Police</th>
+          <td mat-cell *matCellDef="let a" class="text-sm font-mono">
+            {{ a.numeroPolice || '—' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateDebut">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Début</th>
+          <td mat-cell *matCellDef="let a" class="text-sm">
+            {{ a.dateDebut | date:'dd/MM/yyyy' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateFin">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Expiration</th>
+          <td mat-cell *matCellDef="let a">
+            <div class="text-sm" [class.text-orange-600]="isExpiringSoon(a)" [class.font-semibold]="isExpiringSoon(a)">
+              {{ a.dateFin | date:'dd/MM/yyyy' }}
+            </div>
+            @if (isExpiringSoon(a)) {
+              <div class="text-xs text-orange-500">{{ daysLeft(a.dateFin) }} j restants</div>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="montant">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Montant</th>
+          <td mat-cell *matCellDef="let a" class="text-sm text-right">
+            {{ (a.montant || 0) | number:'1.0-0' }} FCFA
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="statut">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Statut</th>
+          <td mat-cell *matCellDef="let a">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                  [class]="getStatutClass(a.statut)">
+              {{ a.statut === 'VALIDE' ? 'En cours' : a.statut === 'EXPIRE' ? 'Expirée' : 'Suspendue' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let a" class="whitespace-nowrap">
+            @if (a.documentUrl) {
+              <a mat-icon-button [href]="a.documentUrl" target="_blank"
+                 matTooltip="Voir le document" (click)="$event.stopPropagation()">
+                <mat-icon class="text-gray-500">open_in_new</mat-icon>
+              </a>
+            }
+            <button mat-icon-button matTooltip="Modifier"
+                    (click)="openDialog(a); $event.stopPropagation()">
+              <mat-icon class="text-gray-500">edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Supprimer" color="warn"
+                    (click)="confirmDelete(a, $event)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            class="hover:bg-gray-50 transition-colors">
+        </tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td [attr.colspan]="displayedColumns.length" class="text-center py-12 text-muted text-sm">
+            @if (isLoading) { Chargement… } @else { Aucune assurance trouvée. }
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </mat-card-content>
+</mat-card>

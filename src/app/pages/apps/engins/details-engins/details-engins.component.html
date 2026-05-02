@@ -1,0 +1,83 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex items-center justify-between mb-4">
+      <h3>Détails de l'engin</h3>
+      <button mat-icon-button [routerLink]="['/apps/engins']" class="flex! justify-center">
+        <i-tabler name="x" class="size-5! flex!"></i-tabler>
+
+      </button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Code engin</p>
+        <h6 class="font-semibold">{{ local_data.codeEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Modèle</p>
+        <h6 class="font-semibold">{{ local_data.modelEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Immatriculation</p>
+        <h6 class="font-semibold">{{ local_data.immatriculationEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Type engin</p>
+        <h6 class="font-semibold">{{ local_data.typeEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Marque</p>
+        <h6 class="font-semibold">{{ local_data.marqueEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">État</p>
+        <h6 class="font-semibold">{{ local_data.etatEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Statut</p>
+        <h6 class="font-semibold">{{ local_data.statusEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Type carburant</p>
+        <h6 class="font-semibold">{{ local_data.typCarbtEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Date acquisition</p>
+        <h6 class="font-semibold">{{ local_data.dateAcqEngin | date:'fullDate' }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Coût horaire location</p>
+        <h6 class="font-semibold">{{ local_data.coutHorLocEngin }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Poids vide</p>
+        <h6 class="font-semibold">{{ local_data.poidsVide }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Horamètre</p>
+        <h6 class="font-semibold">{{ local_data.horametre }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Date création</p>
+        <h6 class="font-semibold">{{ local_data.dateCreation | date:'fullDate' }}</h6>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <p class="text-sm text-muted">Date modification</p>
+        <h6 class="font-semibold">{{ local_data.dateModification | date:'fullDate' }}</h6>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

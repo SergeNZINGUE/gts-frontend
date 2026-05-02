@@ -1,0 +1,102 @@
+<h2 mat-dialog-title>
+  {{ isEdit ? 'Modifier le contrôle VGP' : 'Nouveau contrôle VGP' }}
+</h2>
+
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-4 pt-2" style="min-width:500px">
+
+  <!-- Engin autocomplete -->
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Engin</mat-label>
+    <input matInput [formControl]="enginSearchCtrl"
+           [matAutocomplete]="autoEngin"
+           placeholder="Rechercher un engin…" />
+    <mat-autocomplete #autoEngin="matAutocomplete">
+      @for (e of filteredEngins; track e.id) {
+        <mat-option [value]="e.codeEngin + ' — ' + e.modelEngin" (click)="selectEngin(e)">
+          <span class="font-mono text-xs">{{ e.codeEngin }}</span>
+          <span class="text-muted ml-2">{{ e.modelEngin }}</span>
+        </mat-option>
+      }
+    </mat-autocomplete>
+    @if (form.get('enginId')?.invalid && form.get('enginId')?.touched) {
+      <mat-error>Engin requis</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="grid grid-cols-2 gap-4">
+    <!-- Date dernier contrôle -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Date du contrôle</mat-label>
+      <input matInput [matDatepicker]="pickerDernier" formControlName="dateDernierControle" />
+      <mat-datepicker-toggle matIconSuffix [for]="pickerDernier"></mat-datepicker-toggle>
+      <mat-datepicker #pickerDernier></mat-datepicker>
+      @if (form.get('dateDernierControle')?.invalid && form.get('dateDernierControle')?.touched) {
+        <mat-error>Date requise</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Date prochaine échéance -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Prochaine échéance</mat-label>
+      <input matInput [matDatepicker]="pickerEcheance" formControlName="dateProchaineEcheance" />
+      <mat-datepicker-toggle matIconSuffix [for]="pickerEcheance"></mat-datepicker-toggle>
+      <mat-datepicker #pickerEcheance></mat-datepicker>
+      @if (form.get('dateProchaineEcheance')?.invalid && form.get('dateProchaineEcheance')?.touched) {
+        <mat-error>Date requise</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Organisme -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Organisme contrôleur</mat-label>
+      <input matInput formControlName="organismeControleur" placeholder="Ex : Véritas, Apave…" />
+      @if (form.get('organismeControleur')?.invalid && form.get('organismeControleur')?.touched) {
+        <mat-error>Champ requis</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Numéro de rapport -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>N° Rapport (optionnel)</mat-label>
+      <input matInput formControlName="numeroRapport" placeholder="RPT-2024-XXX" />
+    </mat-form-field>
+
+    <!-- Résultat -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Résultat</mat-label>
+      <mat-select formControlName="resultat">
+        @for (r of resultatOptions; track r.value) {
+          <mat-option [value]="r.value">{{ r.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Alerte active -->
+    <div class="flex items-center gap-3 px-1">
+      <mat-slide-toggle formControlName="estAlerteActive" color="primary">
+        Alerte d'échéance active
+      </mat-slide-toggle>
+    </div>
+  </div>
+
+  <!-- Réserves (visible uniquement si AVEC_RESERVES) -->
+  @if (showReserve) {
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Description des réserves</mat-label>
+      <textarea matInput formControlName="reserveVGP" rows="3"
+                placeholder="Décrire les réserves constatées…"></textarea>
+      @if (form.get('reserveVGP')?.invalid && form.get('reserveVGP')?.touched) {
+        <mat-error>Réserves requises pour ce résultat</mat-error>
+      }
+    </mat-form-field>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="gap-2 pb-4 pr-4">
+  <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" type="button"
+          (click)="submit()" [disabled]="form.invalid">
+    {{ isEdit ? 'Enregistrer' : 'Ajouter' }}
+  </button>
+</mat-dialog-actions>

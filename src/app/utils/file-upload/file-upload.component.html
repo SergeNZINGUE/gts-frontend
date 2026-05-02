@@ -1,0 +1,86 @@
+<div
+  class="rounded-2xl border border-dashed border-border bg-white p-5 shadow-sm transition-all duration-300"
+  [ngClass]="{
+    'border-primary bg-primary/5': isDragging,
+    'border-red-500 bg-red-50': !!errorMessage
+  }"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+>
+  <input
+    #fileInput
+    type="file"
+    hidden
+    [accept]="accept"
+    [multiple]="multiple"
+    (change)="onFileChange($event)"
+  />
+
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <button
+        mat-flat-button
+        type="button"
+        [color]="buttonColor"
+        class="!rounded-full !px-6 !py-2.5 shadow-md transition-all duration-300 hover:shadow-lg"
+        (click)="openFilePicker()"
+      >
+        <i class="iconify mr-2 size-4.5" data-icon="solar:upload-linear"></i>
+        {{ label }}
+      </button>
+
+      <span class="text-sm text-slate-500">
+        {{ helperText }}
+      </span>
+    </div>
+
+    <div
+      class="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
+    >
+      <span *ngIf="!selectedFile && !selectedFiles.length">
+        {{ dropZoneLabel }}
+      </span>
+
+      <div *ngIf="selectedFile && preview && selectedFile.type.startsWith('image/')" class="flex flex-col items-center gap-3">
+        <img
+          [src]="previewUrl || emptyPreviewUrl"
+          alt="Preview"
+          class="h-24 w-24 rounded-full object-cover border border-border shadow-sm"
+        />
+        <div class="font-medium text-slate-700">{{ selectedFileName }}</div>
+      </div>
+
+      <div *ngIf="selectedFile && (!preview || !selectedFile.type.startsWith('image/'))" class="flex items-center gap-3">
+        <i class="iconify size-6 text-primary" data-icon="solar:file-text-linear"></i>
+        <span class="font-medium text-slate-700">{{ selectedFileName }}</span>
+      </div>
+
+      <div *ngIf="multiple && selectedFiles.length" class="w-full text-left">
+        <div class="mb-2 font-semibold text-slate-700">Fichiers sélectionnés :</div>
+
+        <div class="space-y-2">
+          <div
+            *ngFor="let name of selectedFileNames; let i = index"
+            class="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm border border-border"
+          >
+            <div class="flex items-center gap-2">
+              <i class="iconify size-5 text-primary" data-icon="solar:file-text-linear"></i>
+              <span class="text-sm">{{ name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="text-sm font-medium text-red-600">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="selectedFile || selectedFiles.length" class="flex justify-end">
+      <button mat-stroked-button type="button" color="warn" (click)="removeFile()">
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>

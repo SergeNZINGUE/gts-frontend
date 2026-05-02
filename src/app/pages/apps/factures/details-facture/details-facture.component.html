@@ -1,0 +1,230 @@
+<div class="flex items-center gap-3 mb-6">
+  <a routerLink="/apps/factures" mat-stroked-button>
+    <mat-icon>arrow_back</mat-icon>
+    Retour à la liste
+  </a>
+  <h2 class="text-2xl font-semibold mb-0">
+    Facture FAC-{{ facture?.id || '...' }}
+  </h2>
+  @if (facture?.etatPaiement) {
+    <span class="px-3 py-1 rounded-full text-xs font-medium text-white"
+      [class]="getEtatClass(facture?.etatPaiement)">
+      {{ facture?.etatPaiement }}
+    </span>
+  }
+</div>
+
+@if (isLoading) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+
+@if (!isLoading && facture) {
+
+  <!-- Actions -->
+  <div class="flex flex-wrap gap-3 mb-6">
+    @if (facture.etatPaiement === 'BROUILLON') {
+      <button mat-flat-button color="primary" (click)="validerFacture()">
+        <mat-icon>check_circle</mat-icon>
+        Valider la facture
+      </button>
+    }
+    @if (facture.etatPaiement === 'VALIDEE') {
+      <button mat-flat-button color="accent" (click)="openAddReglement()">
+        <mat-icon>payments</mat-icon>
+        Ajouter un règlement
+      </button>
+      <button mat-stroked-button color="primary" (click)="marquerPayee()" [disabled]="resteAPayer > 0">
+        <mat-icon>task_alt</mat-icon>
+        Marquer comme payée
+      </button>
+      <button mat-stroked-button (click)="imprimerProforma()">
+        <mat-icon>print</mat-icon>
+        Proforma
+      </button>
+      <button mat-stroked-button (click)="imprimerFacture()">
+        <mat-icon>receipt_long</mat-icon>
+        Facture
+      </button>
+    }
+    @if (facture.etatPaiement === 'PAYEE') {
+      <button mat-stroked-button (click)="imprimerFacture()">
+        <mat-icon>receipt_long</mat-icon>
+        Imprimer facture
+      </button>
+    }
+  </div>
+
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- Infos générales + missions -->
+    <div class="col-span-12 lg:col-span-8">
+
+      <!-- Informations -->
+      <mat-card class="cardWithShadow mb-6">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">Informations générales</h5>
+          <div class="grid grid-cols-12 gap-4">
+            <div class="col-span-6 md:col-span-3">
+              <span class="text-sm text-muted block">N° Facture</span>
+              <strong>FAC-{{ facture.id }}</strong>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <span class="text-sm text-muted block">Date émission</span>
+              <strong>{{ facture.dateEmission | date:'dd/MM/yyyy' }}</strong>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <span class="text-sm text-muted block">Location</span>
+              <strong>{{ facture.codeLocation || '-' }}</strong>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <span class="text-sm text-muted block">Client</span>
+              <strong>{{ facture.clientNom || '-' }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Missions -->
+      <mat-card class="cardWithShadow mb-6">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">
+            Missions facturées
+            <span class="ml-2 px-2 py-0.5 rounded-full text-xs bg-light-primary text-primary font-medium">
+              {{ (facture.missionsFacturees || []).length }}
+            </span>
+          </h5>
+          @if ((facture.missionsFacturees || []).length === 0) {
+            <p class="text-sm text-muted text-center py-6">Aucune mission liée.</p>
+          } @else {
+            <div class="border border-border rounded-md overflow-auto">
+              <table mat-table [dataSource]="facture.missionsFacturees || []" class="no-wrap v-middle min-w-full">
+                <ng-container matColumnDef="codeMission">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Code</th>
+                  <td mat-cell *matCellDef="let m">{{ m.codeMission || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="lieuMission">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Lieu</th>
+                  <td mat-cell *matCellDef="let m">{{ m.lieuMission || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="nbHeures">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Heures</th>
+                  <td mat-cell *matCellDef="let m">{{ m.nbHeures || 0 }} h</td>
+                </ng-container>
+                <ng-container matColumnDef="tarifHoraireApplique">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Tarif/h</th>
+                  <td mat-cell *matCellDef="let m">{{ (m.tarifHoraireApplique || 0) | number:'1.0-0' }} FCFA</td>
+                </ng-container>
+                <ng-container matColumnDef="sousTotal">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Sous-total</th>
+                  <td mat-cell *matCellDef="let m"><strong>{{ (m.sousTotal || 0) | number:'1.0-0' }} FCFA</strong></td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="missionColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: missionColumns"></tr>
+              </table>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Règlements -->
+      <mat-card class="cardWithShadow">
+        <mat-card-content>
+          <div class="flex justify-between items-center mb-4">
+            <h5 class="text-base font-semibold mb-0">
+              Règlements
+              <span class="ml-2 px-2 py-0.5 rounded-full text-xs bg-light-primary text-primary font-medium">
+                {{ reglements.length }}
+              </span>
+            </h5>
+            @if (facture.etatPaiement === 'VALIDEE') {
+              <button mat-stroked-button color="primary" (click)="openAddReglement()">
+                <mat-icon>add</mat-icon>
+                Ajouter
+              </button>
+            }
+          </div>
+          @if (reglements.length === 0) {
+            <p class="text-sm text-muted text-center py-6">Aucun règlement enregistré.</p>
+          } @else {
+            <div class="border border-border rounded-md overflow-auto">
+              <table mat-table [dataSource]="reglements" class="no-wrap v-middle min-w-full">
+                <ng-container matColumnDef="dateReglement">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Date</th>
+                  <td mat-cell *matCellDef="let r">{{ r.dateReglement | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="modePaiement">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Mode</th>
+                  <td mat-cell *matCellDef="let r">{{ r.modePaiement }}</td>
+                </ng-container>
+                <ng-container matColumnDef="montantVerse">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">Montant versé</th>
+                  <td mat-cell *matCellDef="let r"><strong>{{ (r.montantVerse || 0) | number:'1.0-0' }} FCFA</strong></td>
+                </ng-container>
+                <ng-container matColumnDef="recu">
+                  <th mat-header-cell *matHeaderCellDef></th>
+                  <td mat-cell *matCellDef="let r">
+                    <button mat-icon-button matTooltip="Imprimer le reçu" (click)="imprimerRecu(r); $event.stopPropagation()">
+                      <mat-icon>receipt</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="reglementColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: reglementColumns"></tr>
+              </table>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- Panneau financier -->
+    <div class="col-span-12 lg:col-span-4">
+      <mat-card class="cardWithShadow sticky top-4">
+        <mat-card-content>
+          <h5 class="text-base font-semibold mb-4">Récapitulatif financier</h5>
+          <div class="flex flex-col gap-4">
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Montant HT</span>
+              <strong>{{ (facture.montantHT || 0) | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">TVA ({{ facture.tauxTVA }}%)</span>
+              <strong>{{ ((facture.montantTTC || 0) - (facture.montantHT || 0)) | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <div class="flex justify-between text-primary">
+              <span class="font-semibold">Total TTC</span>
+              <strong class="text-lg">{{ (facture.montantTTC || 0) | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Total versé</span>
+              <strong class="text-green-600">{{ montantVerse | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <div class="flex justify-between">
+              <span class="text-sm text-muted">Reste à payer</span>
+              <strong [class]="resteAPayer > 0 ? 'text-red-500' : 'text-green-600'">
+                {{ resteAPayer | number:'1.0-0' }} FCFA
+              </strong>
+            </div>
+
+            @if (resteAPayer === 0 && reglements.length > 0) {
+              <div class="flex items-center gap-2 p-2 rounded bg-light-success text-success text-sm">
+                <mat-icon class="text-base">check_circle</mat-icon>
+                Facture entièrement réglée
+              </div>
+            }
+
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+}

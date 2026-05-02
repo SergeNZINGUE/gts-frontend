@@ -1,0 +1,224 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    @if(clientLocationDetails()){
+      <span>
+      <div class="flex justify-between mb-6">
+        <div class="flex items-center">
+             <img
+               [src]="images?.cheminLogoEntreprise || 'assets/images/profile/user-1.jpg'"
+               alt="logo client"
+               class="w-16 h-16 rounded-full object-cover border border-border"
+             />
+          <h4 class="text-xl font-semibold">Client : #{{ clientLocationDetails()?.id}}</h4>
+
+        </div>
+        <div class="text-right rtl:text-left">
+          <a routerLink="/apps/clients" mat-stroked-button class="mr-2.5">Liste des clients</a>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="flex items-center justify-between py-6">
+         <div>
+            <span class="font-semibold text-base"> Informations Generales: </span>
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+             Nom Client : {{ clientLocationDetails()?.nameClient }}
+            </h6>
+           <h6 class="mt-1! mb-0! font-medium text-sm">
+             Nom complet : {{ clientLocationDetails()?.raison_sociale }}
+            </h6>
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+             Telephone : {{ clientLocationDetails()?.phoneNumber }}
+            </h6>
+             <h6 class="mt-1! mb-0! font-medium text-sm">
+             Personne Ressource : {{ clientLocationDetails()?.personneRessource }}
+            </h6>
+             <h6 class="mt-1! mb-0! font-medium text-sm">
+             Telephone : {{ clientLocationDetails()?.telPersonneRessource }}
+            </h6>
+             <h6 class="mt-1! mb-0! font-medium text-sm">
+             Date entrée en relation : {{ clientLocationDetails()?.dateCreation }}
+            </h6>
+
+          </div>
+         <div>
+            <span class="font-semibold text-base"> Informations Legales: </span>
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+              <h6 class="mt-1! mb-0! font-semibold text-sm">
+             RCCM : {{ clientLocationDetails()?.rccmClient || 'Non renseignée' }}
+              </h6>
+             <h6 class="mt-1! mb-0! font-semibold text-sm">
+             IFU : {{ clientLocationDetails()?.numeroIFUEntreprise || 'Non renseignée' }}
+             </h6>
+              <h6 class="mt-1! mb-0! font-medium text-sm">
+             Regime Fiscal : {{ clientLocationDetails()?.regimeFiscalEntreprise || 'Non renseignée' }}
+             </h6>
+
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+              Numero de compte: {{ clientLocationDetails()?.numeroCompteBancaire }}
+            </h6>
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+             Adresse : {{ clientLocationDetails()?.adresseEntreprise }}
+            </h6>
+              <h6 class="mt-1! mb-0! font-medium text-sm">
+             Ville: {{ clientLocationDetails()?.ville }}
+            </h6>
+               <h6 class="mt-1! mb-0! font-medium text-sm">
+             Pays: {{ clientLocationDetails()?.pays }}
+            </h6>
+          </h6>
+         </div>
+
+        <div>
+            <span class="font-semibold text-base"> Nombre de location: </span>
+            <h6 class="mt-1! mb-0! font-medium text-sm">
+
+            </h6>
+        </div>
+      </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="grid grid-cols-12 gap-4 py-6">
+          <div class="col-span-12 md:col-span-6 lg:col-span-4">
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <div class="flex gap-3 items-center">
+                <i class="iconify size-5.5!" data-icon="solar:magnifer-line-duotone"></i>
+                <input
+                  matInput
+                  placeholder="Search mission"
+                  [value]="searchText"
+                  (keyup)="applySearch($any($event.target).value)"
+                />
+              </div>
+            </mat-form-field>
+          </div>
+
+          <div class="col-span-12 md:col-span-6 lg:col-span-4">
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <mat-select [value]="selectedStatus" (selectionChange)="applyStatusFilter($event.value)">
+                <mat-option value="All">Tous les statuts</mat-option>
+                <mat-option value="EN_COURS">En attente</mat-option>
+                <mat-option value="Validée">Validée</mat-option>
+                <mat-option value="Annulée">Annulée</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="col-span-12 md:col-span-6 lg:col-span-4 flex items-center justify-end">
+            <button mat-stroked-button color="primary" (click)="clearFilters()">
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+
+        <div class="border border-border relative overflow-auto">
+          <table
+            mat-table
+            [dataSource]="locationsDataSource"
+            matSort
+            class="no-wrap v-middle min-w-full"
+          >
+            <ng-container matColumnDef="codeLocation">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Location
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.codeLocation }}
+              </td>
+            </ng-container>
+
+  ];
+            <ng-container matColumnDef="enginCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Engins
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.enginCode }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateDbtLoc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Debut
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.dateDbtLoc | date:'dd/MM/yyyy' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateFinLoc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Fin
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.dateFinLoc | date:'dd/MM/yyyy' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="statut">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Statut
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                <span
+                  class="px-2 py-1 rounded-sm text-xs font-medium text-white"
+                  [ngStyle]="{
+                    'background-color':
+                      location.statutMission === 'Validée'
+                        ? '#13deb9'
+                        : location.statutMission === 'En attente'
+                        ? '#ffae1f'
+                        : location.statutMission === 'Annulée'
+                        ? '#ff5d5d'
+                        : '#94a3b8'
+                  }"
+                >
+                  {{ location.statut }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="conducteurNom">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Conducteur
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.conducteurNom }} {{ location.conducteurPrenom }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="nbJoursLocation">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Nb jours Loc.
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.nbJoursLocation }}
+              </td>
+            </ng-container>
+
+             <ng-container matColumnDef="siteLocation">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+                Site Loc.
+              </th>
+              <td class="font-normal whitespace-nowrap" mat-cell *matCellDef="let location">
+                {{ location.siteLocation }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+
+          <mat-paginator
+            [pageSizeOptions]="[5, 10, 20]"
+            [pageSize]="5"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+      </span>
+    }
+  </mat-card-content>
+</mat-card>
+

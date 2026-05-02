@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\" -Recurse -Force | Select-Object Name, FullName, @{Name='Type';Expression={if \\($_.PSIsContainer\\) { 'Folder' } else { 'File' }}} | Sort-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\" -Depth 2 | Select-Object Name, @{Name='Type';Expression={if \\($_.PSIsContainer\\) { 'Folder' } else { 'File' }}})",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\\\\src\" -Recurse -Directory | Where-Object { $_.FullName -notmatch \"node_modules|\\\\.angular|dist\" } | Select-Object -ExpandProperty Name | Sort-Object | Get-Unique)",
+      "PowerShell(New-Item *)"
+    ]
+  }
+}

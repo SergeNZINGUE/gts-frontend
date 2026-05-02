@@ -1,0 +1,316 @@
+@if (isLoading) {
+  <mat-progress-bar mode="indeterminate" class="mb-4"></mat-progress-bar>
+}
+
+<div class="grid grid-cols-12 gap-6">
+
+  <!-- ── KPI row ───────────────────────────────────────────── -->
+
+  <!-- Clients -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-muted mb-1">Clients</p>
+            <h3 class="text-3xl font-bold mb-0">{{ totalClients }}</h3>
+          </div>
+          <div class="w-14 h-14 rounded-full bg-light-primary flex items-center justify-center">
+            <i-tabler name="building-store" class="text-primary size-7!"></i-tabler>
+          </div>
+        </div>
+        <a routerLink="/apps/clients" class="text-xs text-primary mt-3 block">
+          Voir tous les clients →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Engins -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-muted mb-1">Engins</p>
+            <h3 class="text-3xl font-bold mb-0">{{ totalEngins }}</h3>
+            <p class="text-xs text-muted mt-1">{{ enginsDisponibles }} disponible(s)</p>
+          </div>
+          <div class="w-14 h-14 rounded-full bg-light-accent flex items-center justify-center">
+            <i-tabler name="bulldozer" class="text-accent size-7!"></i-tabler>
+          </div>
+        </div>
+        <a routerLink="/apps/engins" class="text-xs text-primary mt-3 block">
+          Voir tous les engins →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Missions -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-muted mb-1">Missions</p>
+            <h3 class="text-3xl font-bold mb-0">{{ totalMissions }}</h3>
+            <p class="text-xs text-muted mt-1">
+              {{ missionsEnCours }} en cours · {{ missionsEnAttente }} en attente
+            </p>
+          </div>
+          <div class="w-14 h-14 rounded-full bg-light-warning flex items-center justify-center">
+            <i-tabler name="map-pin" class="text-warning size-7!"></i-tabler>
+          </div>
+        </div>
+        <a routerLink="/apps/missions" class="text-xs text-primary mt-3 block">
+          Voir toutes les missions →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Factures à encaisser -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-muted mb-1">À encaisser</p>
+            <h3 class="text-2xl font-bold mb-0">{{ montantAEncaisser | number:'1.0-0' }} F</h3>
+            <p class="text-xs text-muted mt-1">
+              {{ totalFactures - facturesPayees }} facture(s) impayée(s)
+            </p>
+          </div>
+          <div class="w-14 h-14 rounded-full bg-light-error flex items-center justify-center">
+            <i-tabler name="receipt" class="text-error size-7!"></i-tabler>
+          </div>
+        </div>
+        <a routerLink="/apps/factures" class="text-xs text-primary mt-3 block">
+          Voir les factures →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ── Assurances & Contrôles VGP ──────────────────────────── -->
+
+  <!-- Assurances -->
+  <div class="col-span-12 lg:col-span-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-primary">shield</mat-icon>
+            <h5 class="text-base font-semibold mb-0">Assurances engins</h5>
+            <span class="text-xs text-muted">({{ totalAssurances }} au total)</span>
+          </div>
+          <a routerLink="/apps/engins/assurances-engins" mat-stroked-button class="text-xs">Voir</a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-green-50 border border-green-100 text-center">
+            <mat-icon class="text-green-500 mb-1">check_circle</mat-icon>
+            <div class="text-2xl font-bold text-green-700">{{ assurancesValides }}</div>
+            <div class="text-xs text-green-600 mt-0.5">En cours</div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg border text-center"
+               [class.bg-orange-50]="assurancesExpirantBientot > 0"
+               [class.border-orange-200]="assurancesExpirantBientot > 0"
+               [class.bg-gray-50]="assurancesExpirantBientot === 0"
+               [class.border-gray-100]="assurancesExpirantBientot === 0">
+            <mat-icon [class.text-orange-500]="assurancesExpirantBientot > 0"
+                      [class.text-gray-400]="assurancesExpirantBientot === 0"
+                      class="mb-1">warning</mat-icon>
+            <div class="text-2xl font-bold"
+                 [class.text-orange-600]="assurancesExpirantBientot > 0"
+                 [class.text-gray-500]="assurancesExpirantBientot === 0">
+              {{ assurancesExpirantBientot }}
+            </div>
+            <div class="text-xs mt-0.5"
+                 [class.text-orange-500]="assurancesExpirantBientot > 0"
+                 [class.text-gray-400]="assurancesExpirantBientot === 0">
+              Expirent &lt; 30 j
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg border text-center"
+               [class.bg-red-50]="assurancesExpirees > 0"
+               [class.border-red-200]="assurancesExpirees > 0"
+               [class.bg-gray-50]="assurancesExpirees === 0"
+               [class.border-gray-100]="assurancesExpirees === 0">
+            <mat-icon [class.text-red-500]="assurancesExpirees > 0"
+                      [class.text-gray-400]="assurancesExpirees === 0"
+                      class="mb-1">cancel</mat-icon>
+            <div class="text-2xl font-bold"
+                 [class.text-red-600]="assurancesExpirees > 0"
+                 [class.text-gray-500]="assurancesExpirees === 0">
+              {{ assurancesExpirees }}
+            </div>
+            <div class="text-xs mt-0.5"
+                 [class.text-red-500]="assurancesExpirees > 0"
+                 [class.text-gray-400]="assurancesExpirees === 0">
+              Expirées
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Contrôles VGP -->
+  <div class="col-span-12 lg:col-span-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-success">fact_check</mat-icon>
+            <h5 class="text-base font-semibold mb-0">Contrôles VGP</h5>
+            <span class="text-xs text-muted">({{ totalControles }} au total)</span>
+          </div>
+          <a routerLink="/apps/engins/controles-des-engins" mat-stroked-button class="text-xs">Voir</a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-green-50 border border-green-100 text-center">
+            <mat-icon class="text-green-500 mb-1">verified</mat-icon>
+            <div class="text-2xl font-bold text-green-700">{{ controlesConformes }}</div>
+            <div class="text-xs text-green-600 mt-0.5">Conformes</div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg border text-center"
+               [class.bg-orange-50]="controlesBientot > 0"
+               [class.border-orange-200]="controlesBientot > 0"
+               [class.bg-gray-50]="controlesBientot === 0"
+               [class.border-gray-100]="controlesBientot === 0">
+            <mat-icon [class.text-orange-500]="controlesBientot > 0"
+                      [class.text-gray-400]="controlesBientot === 0"
+                      class="mb-1">schedule</mat-icon>
+            <div class="text-2xl font-bold"
+                 [class.text-orange-600]="controlesBientot > 0"
+                 [class.text-gray-500]="controlesBientot === 0">
+              {{ controlesBientot }}
+            </div>
+            <div class="text-xs mt-0.5"
+                 [class.text-orange-500]="controlesBientot > 0"
+                 [class.text-gray-400]="controlesBientot === 0">
+              À renouveler &lt; 30 j
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center p-3 rounded-lg border text-center"
+               [class.bg-red-50]="controlesEnRetard > 0"
+               [class.border-red-200]="controlesEnRetard > 0"
+               [class.bg-gray-50]="controlesEnRetard === 0"
+               [class.border-gray-100]="controlesEnRetard === 0">
+            <mat-icon [class.text-red-500]="controlesEnRetard > 0"
+                      [class.text-gray-400]="controlesEnRetard === 0"
+                      class="mb-1">error</mat-icon>
+            <div class="text-2xl font-bold"
+                 [class.text-red-600]="controlesEnRetard > 0"
+                 [class.text-gray-500]="controlesEnRetard === 0">
+              {{ controlesEnRetard }}
+            </div>
+            <div class="text-xs mt-0.5"
+                 [class.text-red-500]="controlesEnRetard > 0"
+                 [class.text-gray-400]="controlesEnRetard === 0">
+              En retard
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ── Missions récentes ─────────────────────────────────── -->
+  <div class="col-span-12 lg:col-span-7">
+    <mat-card class="cardWithShadow h-full">
+      <mat-card-content>
+        <div class="flex justify-between items-center mb-4">
+          <h5 class="text-base font-semibold mb-0">Missions récentes</h5>
+          <a routerLink="/apps/missions" mat-stroked-button class="text-xs">Tout voir</a>
+        </div>
+
+        @if (recentMissions.length === 0 && !isLoading) {
+          <p class="text-sm text-muted text-center py-8">Aucune mission.</p>
+        } @else {
+          <div class="overflow-auto">
+            <table mat-table [dataSource]="recentMissions" class="w-full no-wrap v-middle">
+
+              <ng-container matColumnDef="codeMission">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm">Code</th>
+                <td mat-cell *matCellDef="let m" class="text-sm">
+                  <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                    {{ m.codeMission || '—' }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lieuMission">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm">Lieu</th>
+                <td mat-cell *matCellDef="let m" class="text-sm">{{ m.lieuMission || '—' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="dateTravail">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm">Date</th>
+                <td mat-cell *matCellDef="let m" class="text-sm">
+                  {{ m.dateTravail | date:'dd/MM/yyyy' }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="statutMission">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm">Statut</th>
+                <td mat-cell *matCellDef="let m">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                        [class]="getStatutClass(m.statutMission)">
+                    {{ m.statutMission }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="missionColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: missionColumns"></tr>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ── Factures récentes ─────────────────────────────────── -->
+  <div class="col-span-12 lg:col-span-5">
+    <mat-card class="cardWithShadow h-full">
+      <mat-card-content>
+        <div class="flex justify-between items-center mb-4">
+          <h5 class="text-base font-semibold mb-0">Dernières factures</h5>
+          <a routerLink="/apps/factures" mat-stroked-button class="text-xs">Tout voir</a>
+        </div>
+
+        @if (recentFactures.length === 0 && !isLoading) {
+          <p class="text-sm text-muted text-center py-8">Aucune facture.</p>
+        } @else {
+          <div class="flex flex-col gap-3">
+            @for (f of recentFactures; track f.id) {
+              <a [routerLink]="['/apps/factures/detail', f.id]"
+                 class="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-gray-50 transition-colors no-underline">
+                <div>
+                  <div class="font-medium text-sm">FAC-{{ f.id }}</div>
+                  <div class="text-xs text-muted">{{ f.clientNom || '—' }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-semibold text-sm">{{ (f.montantTTC || 0) | number:'1.0-0' }} F</div>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                        [class]="getEtatClass(f.etatPaiement)">
+                    {{ f.etatPaiement }}
+                  </span>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>

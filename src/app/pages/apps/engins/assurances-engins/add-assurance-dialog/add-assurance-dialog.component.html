@@ -1,0 +1,103 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier l\'assurance' : 'Nouvelle assurance' }}</h2>
+
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-4 pt-2" style="min-width:480px">
+
+  <!-- Engin autocomplete -->
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Engin</mat-label>
+    <input matInput [formControl]="enginSearchCtrl"
+           [matAutocomplete]="autoEngin"
+           placeholder="Rechercher un engin…" />
+    <mat-autocomplete #autoEngin="matAutocomplete">
+      @for (e of filteredEngins; track e.id) {
+        <mat-option [value]="e.codeEngin + ' — ' + e.modelEngin" (click)="selectEngin(e)">
+          <span class="font-mono text-xs">{{ e.codeEngin }}</span>
+          <span class="text-muted ml-2">{{ e.modelEngin }}</span>
+        </mat-option>
+      }
+    </mat-autocomplete>
+    @if (form.get('enginId')?.invalid && form.get('enginId')?.touched) {
+      <mat-error>Engin requis</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="grid grid-cols-2 gap-4">
+    <!-- Numéro de police -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>N° de police</mat-label>
+      <input matInput formControlName="numeroPolice" placeholder="POL-2024-XXX" />
+      @if (isEdit) {
+        <mat-icon matSuffix matTooltip="Non modifiable">lock</mat-icon>
+      }
+      @if (form.get('numeroPolice')?.invalid && form.get('numeroPolice')?.touched) {
+        <mat-error>Champ requis</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Compagnie -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Compagnie d'assurance</mat-label>
+      <input matInput formControlName="compagnieAssurance" placeholder="Ex : STAR Assurances" />
+      @if (form.get('compagnieAssurance')?.invalid && form.get('compagnieAssurance')?.touched) {
+        <mat-error>Champ requis</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Date début -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Date de début</mat-label>
+      <input matInput [matDatepicker]="pickerDebut" formControlName="dateDebut" />
+      <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+      <mat-datepicker #pickerDebut></mat-datepicker>
+      @if (form.get('dateDebut')?.invalid && form.get('dateDebut')?.touched) {
+        <mat-error>Date requise</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Date fin -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Date d'expiration</mat-label>
+      <input matInput [matDatepicker]="pickerFin" formControlName="dateFin" />
+      <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+      <mat-datepicker #pickerFin></mat-datepicker>
+      @if (form.get('dateFin')?.invalid && form.get('dateFin')?.touched) {
+        <mat-error>Date requise</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Montant -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Montant (FCFA)</mat-label>
+      <input matInput type="number" formControlName="montant" placeholder="0" />
+      @if (form.get('montant')?.invalid && form.get('montant')?.touched) {
+        <mat-error>Montant requis</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Statut -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Statut</mat-label>
+      <mat-select formControlName="statut">
+        @for (s of statutOptions; track s.value) {
+          <mat-option [value]="s.value">{{ s.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- URL document -->
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Lien document (optionnel)</mat-label>
+    <input matInput formControlName="documentUrl" placeholder="https://…" />
+    <mat-icon matSuffix>link</mat-icon>
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="gap-2 pb-4 pr-4">
+  <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" type="button"
+          (click)="submit()" [disabled]="form.invalid">
+    {{ isEdit ? 'Enregistrer' : 'Ajouter' }}
+  </button>
+</mat-dialog-actions>

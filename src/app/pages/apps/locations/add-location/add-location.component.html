@@ -1,0 +1,438 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h4 class="text-xl font-semibold mb-1">Nouvelle location</h4>
+        <span class="text-sm text-muted">
+          Créer une nouvelle location d'engin
+        </span>
+      </div>
+
+      <a routerLink="/apps/locations" mat-stroked-button>
+        Retour à la liste
+      </a>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-6">
+
+        <!-- Formulaire principal -->
+        <div class="col-span-12 lg:col-span-8">
+          <mat-card class="cardWithShadow">
+            <mat-card-content>
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Informations générales -->
+                <div class="col-span-12">
+                  <h5 class="text-base font-semibold mb-3">
+                    Informations générales
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Code location</mat-label>
+                    <input
+                      matInput
+                      formControlName="codeLocation"
+                      placeholder="Ex : LOC-2026-0001"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Statut</mat-label>
+                    <mat-select formControlName="statut">
+                      <mat-option value="EN ATTENTE">EN ATTENTE</mat-option>
+                      <mat-option value="VALIDEE">VALIDÉE</mat-option>
+                      <mat-option value="TERMINEE">TERMINÉE</mat-option>
+                      <mat-option value="ANNULEE">ANNULÉE</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>État de la location</mat-label>
+                    <mat-select formControlName="etatLocation">
+                      <mat-option [value]="1">Actif</mat-option>
+                      <mat-option [value]="2">Validé</mat-option>
+                      <mat-option [value]="3">Livré</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Site de location</mat-label>
+                    <input
+                      matInput
+                      formControlName="siteLocation"
+                      placeholder="Ex : OUAGA KOSSODO - Zone industrielle"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Client / Engin / Conducteur -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Client, engin et conducteur
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Client</mat-label>
+                    <input
+                      matInput
+                      [formControl]="clientSearchCtrl"
+                      [matAutocomplete]="clientAuto"
+                      placeholder="Rechercher un client..."
+                    />
+                    <mat-autocomplete #clientAuto (optionSelected)="onClientSelected($event.option.value)">
+                      <mat-option *ngFor="let client of filteredClients" [value]="client">
+                        {{ client.nameClient }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Engin</mat-label>
+                    <input
+                      matInput
+                      [formControl]="enginSearchCtrl"
+                      [matAutocomplete]="enginAuto"
+                      placeholder="Rechercher un engin..."
+                    />
+                    <mat-autocomplete #enginAuto (optionSelected)="onEnginSelected($event.option.value)">
+                      <mat-option *ngFor="let engin of filteredEngins" [value]="engin">
+                        {{ engin.codeEngin || engin.id }} — {{ engin.marqueEngin || engin.immatriculationEngin }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Conducteur</mat-label>
+                    <input
+                      matInput
+                      [formControl]="conducteurSearchCtrl"
+                      [matAutocomplete]="conducteurAuto"
+                      placeholder="Rechercher un conducteur..."
+                    />
+                    <mat-autocomplete #conducteurAuto (optionSelected)="onConducteurSelected($event.option.value)">
+                      <mat-option *ngFor="let conducteur of filteredConducteurs" [value]="conducteur">
+                        {{ conducteur.nomConducteur }} {{ conducteur.prenomsConducteur }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <!-- Période -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Période de location
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date début</mat-label>
+                    <input
+                      matInput
+                      [matDatepicker]="dateDebutPicker"
+                      formControlName="dateDbtLoc"
+                    />
+                    <mat-datepicker-toggle matIconSuffix [for]="dateDebutPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dateDebutPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date fin</mat-label>
+                    <input
+                      matInput
+                      [matDatepicker]="dateFinPicker"
+                      formControlName="dateFinLoc"
+                    />
+                    <mat-datepicker-toggle matIconSuffix [for]="dateFinPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dateFinPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Nombre de jours</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="nbJoursLocation"
+                      readonly
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Tarification -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Tarification
+                  </h5>
+                </div>
+
+                @if (tariffMode === null) {
+                  <div class="col-span-12">
+                    <p class="text-sm text-muted">
+                      Sélectionnez un engin pour afficher la tarification applicable.
+                    </p>
+                  </div>
+                }
+
+                @if (tariffMode === 'both') {
+                  <div class="col-span-12">
+                    <div class="flex items-center gap-2 p-3 rounded bg-light-error text-error text-sm">
+                      <mat-icon class="text-base">error</mat-icon>
+                      Cet engin a un coût horaire <strong>et</strong> un forfait journalier configurés simultanément — corrigez la fiche engin.
+                    </div>
+                  </div>
+                }
+
+                @if (tariffMode === 'none') {
+                  <div class="col-span-12">
+                    <div class="flex items-center gap-2 p-3 rounded bg-light-warning text-warning text-sm mb-2">
+                      <mat-icon class="text-base">warning</mat-icon>
+                      Aucun tarif configuré sur cet engin — saisissez les valeurs manuellement.
+                    </div>
+                  </div>
+                  <div class="col-span-12 md:col-span-4">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Coût horaire</mat-label>
+                      <input matInput type="number" formControlName="coutHoraireLocation" placeholder="Ex : 25000" />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-span-12 md:col-span-4">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Nombre d'heures / jour</mat-label>
+                      <input matInput type="number" formControlName="nbHeuresLocation" placeholder="Ex : 8" />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-span-12 md:col-span-4">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Nombre de jours</mat-label>
+                      <input matInput type="number" formControlName="nbJoursLocation" readonly />
+                      <mat-hint>Calculé depuis les dates</mat-hint>
+                    </mat-form-field>
+                  </div>
+                }
+
+                @if (tariffMode === 'horaire') {
+                  <div class="col-span-12 md:col-span-6">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Coût horaire</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="coutHoraireLocation"
+                      />
+                      <mat-hint>Pré-rempli depuis la fiche engin, modifiable</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-span-12 md:col-span-6">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Nombre d'heures</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="nbHeuresLocation"
+                        placeholder="Ex : 8"
+                      />
+                    </mat-form-field>
+                  </div>
+                }
+
+                @if (tariffMode === 'journalier') {
+                  <div class="col-span-12 md:col-span-6">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Forfait journalier</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="coutJournalierLocation"
+                      />
+                      <mat-hint>Pré-rempli depuis la fiche engin, modifiable</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-span-12 md:col-span-6">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Nombre de jours</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="nbJoursLocation"
+                        readonly
+                      />
+                      <mat-hint>Calculé automatiquement depuis les dates</mat-hint>
+                    </mat-form-field>
+                  </div>
+                }
+
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Résumé à droite -->
+        <div class="col-span-12 lg:col-span-4">
+          <mat-card class="cardWithShadow sticky top-4">
+            <mat-card-content>
+              <h5 class="text-base font-semibold mb-4">
+                Résumé de la location
+              </h5>
+
+              <div class="flex flex-col gap-4">
+                <div>
+                  <span class="text-sm text-muted">Code location</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.codeLocation || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Client</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ selectedClientLabel }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Engin</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ selectedEnginLabel }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Conducteur</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ selectedConducteurLabel }}
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Site</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.siteLocation || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Période</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ formattedDateDebut }} - {{ formattedDateFin }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Durée</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.nbJoursLocation || 0 }} jour(s)
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                @if (tariffMode === 'horaire') {
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Coût horaire</span>
+                    <strong>{{ form.value.coutHoraireLocation || 0 }} FCFA/h</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Heures / jour</span>
+                    <strong>{{ form.value.nbHeuresLocation || 0 }} h</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Nombre de jours</span>
+                    <strong>{{ form.value.nbJoursLocation || 0 }} j</strong>
+                  </div>
+                }
+
+                @if (tariffMode === 'journalier') {
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Forfait journalier</span>
+                    <strong>{{ form.value.coutJournalierLocation || 0 }} FCFA/j</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Nombre de jours</span>
+                    <strong>{{ form.value.nbJoursLocation || 0 }} jour(s)</strong>
+                  </div>
+                }
+
+                @if (tariffMode === 'none') {
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Coût horaire</span>
+                    <strong>{{ form.value.coutHoraireLocation || 0 }} FCFA/h</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Heures / jour</span>
+                    <strong>{{ form.value.nbHeuresLocation || 0 }} h</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Nombre de jours</span>
+                    <strong>{{ form.value.nbJoursLocation || 0 }} j</strong>
+                  </div>
+                }
+
+                @if (tariffMode === null || tariffMode === 'both') {
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Tarification</span>
+                    <span class="text-xs text-muted italic">—</span>
+                  </div>
+                }
+
+                <div class="flex justify-between text-primary">
+                  <span class="font-semibold">Total estimé</span>
+                  <strong>{{ totalEstime }} FCFA</strong>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Statut</span>
+                  <div class="mt-1">
+                    <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-warning text-warning">
+                      {{ form.value.statut || 'EN ATTENTE' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                  <a routerLink="/apps/locations" mat-stroked-button>
+                    Annuler
+                  </a>
+
+                  <button
+                    mat-flat-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="form.invalid || isSubmitting"
+                  >
+                    Créer
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

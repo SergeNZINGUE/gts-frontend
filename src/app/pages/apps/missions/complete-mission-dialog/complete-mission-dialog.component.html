@@ -1,0 +1,132 @@
+<h2 mat-dialog-title class="text-lg font-semibold">
+  Clôturer la mission — {{ mission.codeMission }}
+</h2>
+
+<mat-dialog-content>
+  <p class="text-sm text-muted mb-4">
+    Certaines informations sont manquantes. Complétez-les pour terminer la mission.
+  </p>
+
+  <form [formGroup]="form">
+    <div class="grid grid-cols-12 gap-4">
+
+      <div class="col-span-12">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Responsable mission</mat-label>
+          <input matInput formControlName="responsableMission" placeholder="Nom du responsable" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Heure début</mat-label>
+          <input matInput type="time" formControlName="heureDebutMission" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Heure fin</mat-label>
+          <input matInput type="time" formControlName="heureFinMission" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      @if (nbHeures > 0) {
+        <div class="col-span-12">
+          <span class="text-sm text-muted">Durée calculée : </span>
+          <strong>{{ nbHeures }} h</strong>
+        </div>
+      }
+      @if (form.value.heureDebutMission && form.value.heureFinMission && nbHeures <= 0) {
+        <div class="col-span-12 text-sm text-error">
+          L'heure de fin doit être postérieure à l'heure de début.
+        </div>
+      }
+
+      <div class="col-span-12">
+        <h6 class="text-sm font-semibold mb-2">Kilométrage</h6>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Km départ</mat-label>
+          <input matInput type="number" formControlName="kmDbtMission" placeholder="Ex : 12500" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Km arrivée</mat-label>
+          <input matInput type="number" formControlName="kmFinMission" placeholder="Ex : 12750" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      @if (kmParcourus > 0) {
+        <div class="col-span-12">
+          <span class="text-sm text-muted">KM parcourus : </span>
+          <strong>{{ kmParcourus }} km</strong>
+        </div>
+      }
+
+      <div class="col-span-12">
+        <h6 class="text-sm font-semibold mb-2">Carburant</h6>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Carburant départ (L)</mat-label>
+          <input matInput type="number" formControlName="carbtDbtMission" placeholder="Ex : 80" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Carburant arrivée (L)</mat-label>
+          <input matInput type="number" formControlName="carbtFinMission" placeholder="Ex : 55" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      @if (litresConsommes > 0) {
+        <div class="col-span-12">
+          <span class="text-sm text-muted">Consommation : </span>
+          <strong>{{ litresConsommes }} L</strong>
+        </div>
+      }
+
+      <div class="col-span-12">
+        <h6 class="text-sm font-semibold mb-2">Matériaux</h6>
+      </div>
+
+      <div class="col-span-8">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Matériaux utilisés</mat-label>
+          <input matInput formControlName="materiauxMission" placeholder="Ex : Béton, Acier..." />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Quantité</mat-label>
+          <input matInput type="number" formControlName="qteMateriauxMission" placeholder="Ex : 10" />
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid || nbHeures <= 0">
+    Terminer la mission
+  </button>
+</mat-dialog-actions>

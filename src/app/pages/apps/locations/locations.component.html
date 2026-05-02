@@ -1,0 +1,302 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Locations</h2>
+        <p class="text-sm text-gray-500">
+          Gestion des locations d’engins
+        </p>
+      </div>
+
+      <button mat-flat-button color="primary" (click)="openAddLocation()">
+        <mat-icon>add</mat-icon>
+        Nouvelle location
+      </button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4 mb-6">
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-primary">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Total locations</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ totalLocations }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-warning">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">En attente</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ locationsEnCours }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-success">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Validées</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ locationsValidees }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-error">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Terminées</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ locationsTerminees }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="grid grid-cols-12 gap-4 py-6">
+      <div class="col-span-12 md:col-span-3">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Recherche</mat-label>
+          <input
+            matInput
+            placeholder="Code, client, engin..."
+            [value]="searchText"
+            (keyup)="applySearch($any($event.target).value)"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Statut</mat-label>
+          <mat-select
+            [value]="selectedStatus"
+            (selectionChange)="applyStatusFilter($event.value)"
+          >
+            <mat-option value="All">Tous</mat-option>
+            <mat-option value="EN ATTENTE">En Attente</mat-option>
+            <mat-option value="VALIDEE">Validée</mat-option>
+            <mat-option value="TERMINE">Terminée</mat-option>
+            <mat-option value="ANNULEE">Annulée</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Client</mat-label>
+          <mat-select
+            [value]="selectedClient"
+            (selectionChange)="applyClientFilter($event.value)"
+          >
+            <mat-option value="All">Tous les clients</mat-option>
+            @for (client of clientsOptions; track client) {
+              <mat-option [value]="client">{{ client }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Engin</mat-label>
+          <mat-select
+            [value]="selectedEngin"
+            (selectionChange)="applyEnginFilter($event.value)"
+          >
+            <mat-option value="All">Tous les engins</mat-option>
+            @for (engin of enginsOptions; track engin) {
+              <mat-option [value]="engin">{{ engin }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-3 flex items-center justify-end gap-2">
+        <button mat-stroked-button color="primary" (click)="changeViewMode('table')">
+          Tableau
+        </button>
+
+        <button mat-stroked-button color="primary" (click)="changeViewMode('calendar')">
+          Calendrier
+        </button>
+
+        <button mat-stroked-button color="warn" (click)="clearFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+    @if (viewMode === 'table') {
+    <div class="border border-border rounded-md relative overflow-auto">
+      <table
+        mat-table
+        [dataSource]="locationsDataSource"
+        matSort
+        class="no-wrap v-middle min-w-full"
+      >
+        <ng-container matColumnDef="codeLocation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Code
+          </th>
+          <td mat-cell *matCellDef="let location">
+            <span class="font-semibold">{{ location.codeLocation }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="client">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Client
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location?.clientDescriptionEntreprise || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="engin">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Engin
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location?.enginCode || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="conducteur">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Conducteur
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location?.conducteurNom || '-' }}
+            {{ location?.conducteurPrenoms || '' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="periode">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Période
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location.dateDbtLoc | date:'dd/MM/yyyy' }}
+            -
+            {{ location.dateFinLoc | date:'dd/MM/yyyy' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nbJoursLocation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Jours
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location.nbJoursLocation || 0 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="siteLocation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Site
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location.siteLocation || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="statut">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Statut
+          </th>
+          <td mat-cell *matCellDef="let location">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-medium text-white"
+              [ngClass]="{
+                'bg-green-500': location.statut === 'VALIDEE',
+                'bg-yellow-500': location.statut === 'EN ATTENTE',
+                'bg-blue-500': location.statut === 'TERMINEE',
+                'bg-red-500': location.statut === 'ANNULEE'
+              }"
+            >
+              {{ location.statut }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold text-right">
+            Actions
+          </th>
+
+          <td mat-cell *matCellDef="let location" class="text-right">
+            <button
+              mat-icon-button
+              color="primary"
+              matTooltip="Voir détails"
+              (click)="openLocationDetails(location)"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+
+            <button
+              mat-icon-button
+              color="accent"
+              matTooltip="Valider la location"
+              [disabled]=" location.statut === 'ANNULEE' || location.statut === 'TERMINEE'|| location.statut === 'VALIDEE'"
+              (click)="validerLocation(location)"
+            >
+              <mat-icon>check_circle</mat-icon>
+            </button>
+
+            <button
+              mat-icon-button
+              color="primary"
+              matTooltip="Terminer la location"
+              [disabled]="location.statut === 'TERMINEE' || location.statut === 'ANNULEE'|| location.statut === 'EN ATTENTE'"
+              (click)="terminerLocation(location)"
+            >
+              <mat-icon>done_all</mat-icon>
+            </button>
+
+            <button mat-icon-button color="warn" matTooltip="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        [pageSize]="5"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
+}
+@if (viewMode === 'calendar') {
+  <mat-card class="cardWithShadow">
+    <mat-card-content>
+      <div class="flex justify-between items-center mb-4">
+        <button mat-stroked-button color="primary" mwlCalendarPreviousView [(viewDate)]="viewDate" [view]="calendarView">
+          Précédent
+        </button>
+
+        <h3 class="text-xl font-semibold">
+          {{ viewDate | date:'MMMM yyyy' }}
+        </h3>
+
+        <button mat-stroked-button color="primary" mwlCalendarNextView [(viewDate)]="viewDate" [view]="calendarView">
+          Suivant
+        </button>
+      </div>
+
+      <mwl-calendar-month-view
+        [viewDate]="viewDate"
+        [events]="calendarEvents"
+        (eventClicked)="onCalendarEventClick($event.event)">
+      </mwl-calendar-month-view>
+    </mat-card-content>
+  </mat-card>
+}
+  </mat-card-content>
+</mat-card>

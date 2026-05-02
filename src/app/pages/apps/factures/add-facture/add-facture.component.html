@@ -1,0 +1,207 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h4 class="text-xl font-semibold mb-1">Nouvelle facture</h4>
+        <span class="text-sm text-muted">Créer une facture pour une location</span>
+      </div>
+      <a routerLink="/apps/factures" mat-stroked-button>Retour à la liste</a>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-6">
+
+        <!-- Formulaire principal -->
+        <div class="col-span-12 lg:col-span-8">
+          <mat-card class="cardWithShadow">
+            <mat-card-content>
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- En-tête facture -->
+                <div class="col-span-12">
+                  <h5 class="text-base font-semibold mb-3">Informations générales</h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date d'émission</mat-label>
+                    <input matInput [matDatepicker]="dateEmissionPicker" formControlName="dateEmission" />
+                    <mat-datepicker-toggle matIconSuffix [for]="dateEmissionPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dateEmissionPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-3">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Taux TVA (%)</mat-label>
+                    <input matInput type="number" formControlName="tauxTVA" placeholder="18" />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-3">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>État</mat-label>
+                    <mat-select formControlName="etatPaiement">
+                      <mat-option value="BROUILLON">Brouillon</mat-option>
+                      <mat-option value="VALIDEE">Validée</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <!-- Sélection location -->
+                <div class="col-span-12 mt-2">
+                  <h5 class="text-base font-semibold mb-3">Location associée</h5>
+                </div>
+
+                <div class="col-span-12">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Location</mat-label>
+                    <input matInput [formControl]="locationSearchCtrl" [matAutocomplete]="locationAuto"
+                      placeholder="Rechercher par code ou site..." />
+                    <mat-autocomplete #locationAuto (optionSelected)="onLocationSelected($event.option.value)">
+                      <mat-option *ngFor="let loc of filteredLocations" [value]="loc">
+                        {{ loc.codeLocation || loc.id }} — {{ loc.siteLocation || '' }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <!-- Missions disponibles -->
+                @if (selectedLocation) {
+                  <div class="col-span-12 mt-2">
+                    <div class="flex justify-between items-center mb-3">
+                      <h5 class="text-base font-semibold mb-0">
+                        Missions à facturer
+                        <span class="ml-2 px-2 py-0.5 rounded-full text-xs bg-light-primary text-primary font-medium">
+                          {{ missionsDisponibles.length }} disponible(s)
+                        </span>
+                      </h5>
+                      <div class="flex gap-2">
+                        <button type="button" mat-stroked-button (click)="selectAllMissions()">Tout sélectionner</button>
+                        <button type="button" mat-stroked-button (click)="deselectAllMissions()">Tout désélectionner</button>
+                      </div>
+                    </div>
+
+                    @if (missionsDisponibles.length === 0) {
+                      <p class="text-sm text-muted text-center py-6">
+                        Aucune mission non facturée pour cette location.
+                      </p>
+                    } @else {
+                      <div class="border border-border rounded-md overflow-auto">
+                        <table mat-table [dataSource]="missionsDisponibles" class="no-wrap v-middle min-w-full">
+
+                          <ng-container matColumnDef="select">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let m">
+                              <mat-checkbox
+                                [checked]="isMissionSelected(m)"
+                                (change)="toggleMission(m)"
+                                (click)="$event.stopPropagation()">
+                              </mat-checkbox>
+                            </td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="codeMission">
+                            <th mat-header-cell *matHeaderCellDef class="font-semibold">Code</th>
+                            <td mat-cell *matCellDef="let m">{{ m.codeMission || '-' }}</td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="lieuMission">
+                            <th mat-header-cell *matHeaderCellDef class="font-semibold">Lieu</th>
+                            <td mat-cell *matCellDef="let m">{{ m.lieuMission || '-' }}</td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="nbHeures">
+                            <th mat-header-cell *matHeaderCellDef class="font-semibold">Heures</th>
+                            <td mat-cell *matCellDef="let m">{{ m.nbHeures || 0 }} h</td>
+                          </ng-container>
+
+                          <ng-container matColumnDef="sousTotal">
+                            <th mat-header-cell *matHeaderCellDef class="font-semibold">Sous-total</th>
+                            <td mat-cell *matCellDef="let m"><strong>{{ (m.sousTotal || 0) | number:'1.0-0' }} FCFA</strong></td>
+                          </ng-container>
+
+                          <tr mat-header-row *matHeaderRowDef="['select','codeMission','lieuMission','nbHeures','sousTotal']"></tr>
+                          <tr mat-row *matRowDef="let row; columns: ['select','codeMission','lieuMission','nbHeures','sousTotal']"
+                              class="cursor-pointer hover:bg-gray-50"
+                              (click)="toggleMission(row)">
+                          </tr>
+                        </table>
+                      </div>
+                    }
+                  </div>
+                }
+
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Résumé -->
+        <div class="col-span-12 lg:col-span-4">
+          <mat-card class="cardWithShadow sticky top-4">
+            <mat-card-content>
+              <h5 class="text-base font-semibold mb-4">Récapitulatif</h5>
+              <div class="flex flex-col gap-4">
+
+                <div>
+                  <span class="text-sm text-muted">Location</span>
+                  <h6 class="font-semibold mb-0">{{ selectedLocation?.codeLocation || 'Non sélectionnée' }}</h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Site</span>
+                  <h6 class="font-semibold mb-0">{{ selectedLocation?.siteLocation || '—' }}</h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Missions sélectionnées</span>
+                  <h6 class="font-semibold mb-0">{{ selectedMissionIds.size }}</h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">Montant HT</span>
+                  <strong>{{ montantHT | number:'1.0-0' }} FCFA</strong>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">TVA ({{ form.value.tauxTVA }}%)</span>
+                  <strong>{{ (montantTTC - montantHT) | number:'1.0-0' }} FCFA</strong>
+                </div>
+
+                <div class="flex justify-between text-primary">
+                  <span class="font-semibold">Total TTC</span>
+                  <strong class="text-lg">{{ montantTTC | number:'1.0-0' }} FCFA</strong>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">État</span>
+                  <div class="mt-1">
+                    <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-warning text-warning">
+                      {{ form.value.etatPaiement || 'BROUILLON' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                  <a routerLink="/apps/factures" mat-stroked-button>Annuler</a>
+                  <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isSubmitting || selectedMissionIds.size === 0">
+                    Créer la facture
+                  </button>
+                </div>
+
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

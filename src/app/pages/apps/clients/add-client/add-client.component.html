@@ -1,0 +1,161 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <h4 class="text-xl font-semibold mb-6">Ajouter un client</h4>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Code client</mat-label>
+            <input matInput formControlName="codeClient" placeholder="Code client" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Téléphone</mat-label>
+            <input matInput formControlName="phoneNumber" placeholder="Téléphone" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Raison sociale</mat-label>
+            <input matInput formControlName="designationEntreprise" placeholder="Designation de l'entreprise" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Description </mat-label>
+            <input matInput formControlName="descriptionEntreprise" placeholder="Description de l'entreprise" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email </mat-label>
+            <input matInput formControlName="email" placeholder="Email de l'entreprise" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date de la relation :</mat-label>
+            <input matInput [matDatepicker]="pickerdateRelation" formControlName="dateCreation" />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerdateRelation"></mat-datepicker-toggle>
+            <mat-datepicker #pickerdateRelation></mat-datepicker>
+
+          </mat-form-field>
+        </div>
+
+
+        <div class="col-span-12 md:col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Pays</mat-label>
+          <mat-select formControlName="paysEntreprise">
+            <mat-option value="">Sélectionner un pays</mat-option>
+            <mat-option *ngFor="let pays of paysList" [value]="pays.code">
+              {{ pays.nom }}
+            </mat-option>
+          </mat-select>
+
+          <mat-error *ngIf="form.get('paysEntreprise')?.hasError('required')">
+            Le pays est obligatoire
+          </mat-error>
+        </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>personneRessource :</mat-label>
+            <input matInput formControlName="personneRessource" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Telephone personne Ressource :</mat-label>
+            <input matInput formControlName="telPersonneRessource" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Adresse Entreprise :</mat-label>
+            <input matInput formControlName="adresseEntreprise" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>RCCM :</mat-label>
+            <input matInput formControlName="rccmClient" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Numero IFU :</mat-label>
+            <input matInput formControlName="numeroIFUEntreprise" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Regime Fiscal :</mat-label>
+            <input matInput formControlName="regimeFiscalEntreprise" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Compte Bancaire :</mat-label>
+            <input matInput formControlName="numeroCompteBancaire" />
+          </mat-form-field>
+        </div>
+
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Activité client :</mat-label>
+            <mat-select formControlName="activiteClient">
+              <mat-option
+                *ngFor="let activite of activiteClient"
+                [value]="activite.codeActClt"
+              >
+                {{  activite.description }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('activiteClient')?.hasError('required')">
+              L'activité client est obligatoire
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12">
+          <div class="flex items-center gap-4">
+            <div class="flex flex-col gap-2">
+              <app-file-upload
+                label="Ajouter un logo"
+                helperText="JPG, PNG, WEBP - 10 MB max"
+                accept=".jpg,.jpeg,.png,.webp"
+                [multiple]="false"
+                buttonColor="primary"
+                [preview]="true"
+                (fileSelected)="onPhotoSelected($event)"
+              ></app-file-upload>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-span-12 flex justify-end gap-3">
+          <button mat-stroked-button type="button" routerLink="/apps/clients">
+            Annuler
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

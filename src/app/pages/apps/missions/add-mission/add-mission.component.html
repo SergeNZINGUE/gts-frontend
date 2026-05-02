@@ -1,0 +1,461 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h4 class="text-xl font-semibold mb-1">Nouvelle mission</h4>
+        <span class="text-sm text-muted">
+          Créer une nouvelle mission terrain
+        </span>
+      </div>
+
+      <a routerLink="/apps/missions" mat-stroked-button>
+        Retour à la liste
+      </a>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-6">
+
+        <!-- Formulaire principal -->
+        <div class="col-span-12 lg:col-span-8">
+          <mat-card class="cardWithShadow">
+            <mat-card-content>
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Informations générales -->
+                <div class="col-span-12">
+                  <h5 class="text-base font-semibold mb-3">
+                    Informations générales
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Code mission</mat-label>
+                    <input
+                      matInput
+                      formControlName="codeMission"
+                      placeholder="Ex : 1001"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Statut</mat-label>
+                    <mat-select formControlName="statutMission">
+                      <mat-option value="EN ATTENTE">EN ATTENTE</mat-option>
+                      <mat-option value="EN COURS">EN COURS</mat-option>
+                      <mat-option value="TERMINÉE">TERMINÉE</mat-option>
+                      <mat-option value="ANNULÉE">ANNULÉE</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Priorité</mat-label>
+                    <mat-select formControlName="prioriteMission">
+                      <mat-option value="BASSE">BASSE</mat-option>
+                      <mat-option value="NORMALE">NORMALE</mat-option>
+                      <mat-option value="HAUTE">HAUTE</mat-option>
+                      <mat-option value="URGENTE">URGENTE</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Responsable</mat-label>
+                    <input
+                      matInput
+                      formControlName="responsableMission"
+                      placeholder="Ex : Jean Dupont"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Localisation & Période -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Localisation &amp; Période
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Location associée</mat-label>
+                    <input
+                      matInput
+                      [formControl]="locationSearchCtrl"
+                      [matAutocomplete]="locationAuto"
+                      placeholder="Rechercher par code ou site..."
+                    />
+                    <mat-autocomplete #locationAuto (optionSelected)="onLocationSelected($event.option.value)">
+                      <mat-option *ngFor="let loc of filteredLocations" [value]="loc">
+                        {{ loc.codeLocation || loc.id }} - {{ loc.siteLocation || '' }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Lieu de la mission</mat-label>
+                    <input
+                      matInput
+                      formControlName="lieuMission"
+                      placeholder="Ex : Abidjan - Zone industrielle"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date début mission</mat-label>
+                    <input
+                      matInput
+                      [matDatepicker]="dateDebutPicker"
+                      formControlName="dateDebutMission"
+                    />
+                    <mat-datepicker-toggle matIconSuffix [for]="dateDebutPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dateDebutPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date fin mission</mat-label>
+                    <input
+                      matInput
+                      [matDatepicker]="dateFinPicker"
+                      formControlName="dateFinMission"
+                    />
+                    <mat-datepicker-toggle matIconSuffix [for]="dateFinPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dateFinPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <!-- Données terrain -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Données terrain
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Heure début</mat-label>
+                    <input
+                      matInput
+                      type="time"
+                      formControlName="heureDebutMission"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Heure fin</mat-label>
+                    <input
+                      matInput
+                      type="time"
+                      formControlName="heureFinMission"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Km début mission</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="kmDbtMission"
+                      placeholder="Ex : 12500"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Km fin mission</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="kmFinMission"
+                      placeholder="Ex : 12750"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Carburant début (L)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="carbtDbtMission"
+                      placeholder="Ex : 80"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Carburant fin (L)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="carbtFinMission"
+                      placeholder="Ex : 55"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Matériaux -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Matériaux
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-8">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Matériaux utilisés</mat-label>
+                    <input
+                      matInput
+                      formControlName="materiauxMission"
+                      placeholder="Ex : Béton, Acier..."
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Quantité matériaux</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="qteMateriauxMission"
+                      placeholder="Ex : 10"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Tarification -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Tarification
+                  </h5>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Nombre d'heures</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="nbHeures"
+                      readonly
+                    />
+                    <mat-hint>Calculé depuis heure début / fin</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Tarif horaire appliqué (FCFA)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="tarifHoraireApplique"
+                      placeholder="Ex : 25000"
+                    />
+                    <mat-hint>Hérité de la location</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Sous-total (calculé)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [value]="sousTotal"
+                      readonly
+                    />
+                    <mat-hint>Nb heures × Tarif horaire</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <!-- Description & Observations -->
+                <div class="col-span-12 mt-4">
+                  <h5 class="text-base font-semibold mb-3">
+                    Description &amp; Observations
+                  </h5>
+                </div>
+
+                <div class="col-span-12">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Description de la mission</mat-label>
+                    <textarea
+                      matInput
+                      formControlName="descriptionMission"
+                      rows="3"
+                      placeholder="Décrivez la mission..."
+                    ></textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Observations</mat-label>
+                    <textarea
+                      matInput
+                      formControlName="observationMission"
+                      rows="3"
+                      placeholder="Observations éventuelles..."
+                    ></textarea>
+                  </mat-form-field>
+                </div>
+
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Résumé à droite -->
+        <div class="col-span-12 lg:col-span-4">
+          <mat-card class="cardWithShadow sticky top-4">
+            <mat-card-content>
+              <h5 class="text-base font-semibold mb-4">
+                Résumé de la mission
+              </h5>
+
+              <div class="flex flex-col gap-4">
+                <div>
+                  <span class="text-sm text-muted">Code mission</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.codeMission || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Lieu</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.lieuMission || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Responsable</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ form.value.responsableMission || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Location associée</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ selectedLocationLabel }}
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Date début</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ formattedDateDebut }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Date fin</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ formattedDateFin }}
+                  </h6>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">KM parcourus</span>
+                  <strong>{{ kmParcourus }} km</strong>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">Carburant consommé</span>
+                  <strong>{{ litresConsommes }} L</strong>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">Horaire</span>
+                  <strong>
+                    {{ form.value.heureDebutMission || '--:--' }} → {{ form.value.heureFinMission || '--:--' }}
+                  </strong>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">Nb heures</span>
+                  <strong>{{ form.value.nbHeures || 0 }} h</strong>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-sm text-muted">Tarif horaire</span>
+                  <strong>{{ form.value.tarifHoraireApplique || 0 }} FCFA</strong>
+                </div>
+
+                <div class="flex justify-between text-primary">
+                  <span class="font-semibold">Sous-total</span>
+                  <strong>{{ sousTotal }} FCFA</strong>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div>
+                  <span class="text-sm text-muted">Statut</span>
+                  <div class="mt-1">
+                    <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-warning text-warning">
+                      {{ form.value.statutMission || 'EN ATTENTE' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Priorité</span>
+                  <div class="mt-1">
+                    <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-primary text-primary">
+                      {{ form.value.prioriteMission || 'NORMALE' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                  <a routerLink="/apps/missions" mat-stroked-button>
+                    Annuler
+                  </a>
+
+                  <button
+                    mat-flat-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="form.invalid || isSubmitting"
+                  >
+                    Créer
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

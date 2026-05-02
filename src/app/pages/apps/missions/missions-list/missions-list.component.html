@@ -1,0 +1,282 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Missions</h2>
+        <p class="text-sm text-gray-500">
+          Gestion des missions terrain
+        </p>
+      </div>
+
+      <button mat-flat-button color="primary" (click)="openAddMission()">
+        <mat-icon>add</mat-icon>
+        Nouvelle mission
+      </button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4 mb-6">
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-primary">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Total missions</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ totalMissions }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-warning">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">En attente</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ missionsEnAttente }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-primary">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">En cours</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ missionsEnCours }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-success">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Terminées</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ missionsTerminees }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="grid grid-cols-12 gap-4 py-6">
+      <div class="col-span-12 md:col-span-4">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Recherche</mat-label>
+          <input
+            matInput
+            placeholder="Code, lieu, responsable..."
+            [value]="searchText"
+            (keyup)="applySearch($any($event.target).value)"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Statut</mat-label>
+          <mat-select
+            [value]="selectedStatut"
+            (selectionChange)="applyStatutFilter($event.value)"
+          >
+            <mat-option value="All">Tous</mat-option>
+            <mat-option value="EN ATTENTE">En Attente</mat-option>
+            <mat-option value="EN COURS">En Cours</mat-option>
+            <mat-option value="TERMINÉE">Terminée</mat-option>
+            <mat-option value="ANNULÉE">Annulée</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-3">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Priorité</mat-label>
+          <mat-select
+            [value]="selectedPriorite"
+            (selectionChange)="applyPrioriteFilter($event.value)"
+          >
+            <mat-option value="All">Toutes</mat-option>
+            <mat-option value="BASSE">Basse</mat-option>
+            <mat-option value="NORMALE">Normale</mat-option>
+            <mat-option value="HAUTE">Haute</mat-option>
+            <mat-option value="URGENTE">Urgente</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-2 flex items-center justify-end">
+        <button mat-stroked-button color="warn" (click)="clearFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+
+    <div class="border border-border rounded-md relative overflow-auto">
+      <table
+        mat-table
+        [dataSource]="missionsDataSource"
+        matSort
+        class="no-wrap v-middle min-w-full"
+      >
+        <ng-container matColumnDef="codeMission">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Code Mission
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            <span class="font-semibold">{{ mission.codeMission || '-' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="codeLocation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Location
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.codeLocation || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateTravail">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Date Travail
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.dateTravail | date:'dd/MM/yyyy' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lieuMission">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Lieu
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.lieuMission || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="responsableMission">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Responsable
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.responsableMission || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="statutMission">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Statut
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-medium text-white"
+              [ngClass]="getStatutClass(mission.statutMission)"
+            >
+              {{ mission.statutMission }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="prioriteMission">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Priorité
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-medium text-white"
+              [ngClass]="getPrioriteClass(mission.prioriteMission)"
+            >
+              {{ mission.prioriteMission }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nbHeures">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Heures
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.nbHeures || 0 }} h
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sousTotal">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Sous-total
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ mission.sousTotal || 0 }} FCFA
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="kmParcourus">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            KM
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ (mission.kmFinMission && mission.kmDbtMission) ? (mission.kmFinMission - mission.kmDbtMission) : 0 }} km
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="consommation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Carburant
+          </th>
+          <td mat-cell *matCellDef="let mission">
+            {{ (mission.carbtDbtMission && mission.carbtFinMission) ? (mission.carbtDbtMission - mission.carbtFinMission) : 0 }} L
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold text-right">
+            Actions
+          </th>
+          <td mat-cell *matCellDef="let mission" class="text-right">
+            @if (mission.statutMission === 'EN COURS') {
+              <button
+                mat-icon-button
+                color="primary"
+                matTooltip="Terminer la mission"
+                (click)="termineMission(mission)"
+              >
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            }
+
+            <button
+              mat-icon-button
+              color="primary"
+              matTooltip="Voir détails"
+              (click)="openMissionDetail(mission)"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+
+            <button
+              mat-icon-button
+              color="accent"
+              matTooltip="Modifier"
+              (click)="openEditMission(mission)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button
+              mat-icon-button
+              color="warn"
+              matTooltip="Supprimer"
+              (click)="deleteMission(mission)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        [pageSize]="10"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

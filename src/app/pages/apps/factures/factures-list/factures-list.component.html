@@ -1,0 +1,142 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Factures</h2>
+        <p class="text-sm text-gray-500">Gestion de la facturation</p>
+      </div>
+      <button mat-flat-button color="primary" (click)="openAddFacture()">
+        <mat-icon>add</mat-icon>
+        Nouvelle facture
+      </button>
+    </div>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-12 gap-4 mb-6">
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-primary">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Total factures</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ totalFactures }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-accent">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Montant TTC total</span>
+            <h3 class="text-xl font-semibold mt-2">{{ totalTTC | number:'1.0-0' }} FCFA</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-warning">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Impayées</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ facturesImpayees }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-span-12 md:col-span-3">
+        <mat-card class="bg-light-success">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Payées</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ facturesPayees }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Filtres -->
+    <div class="grid grid-cols-12 gap-4 py-6">
+      <div class="col-span-12 md:col-span-5">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Recherche</mat-label>
+          <input matInput placeholder="N° facture, location, client..." [value]="searchText" (keyup)="applySearch($any($event.target).value)" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>État</mat-label>
+          <mat-select [value]="selectedEtat" (selectionChange)="applyEtatFilter($event.value)">
+            <mat-option value="All">Tous</mat-option>
+            <mat-option value="BROUILLON">Brouillon</mat-option>
+            <mat-option value="VALIDEE">Validée</mat-option>
+            <mat-option value="PAYEE">Payée</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-span-12 md:col-span-3 flex items-center justify-end">
+        <button mat-stroked-button color="warn" (click)="clearFilters()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="border border-border rounded-md relative overflow-auto">
+      <table mat-table [dataSource]="facturesDataSource" matSort class="no-wrap v-middle min-w-full">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">N° Facture</th>
+          <td mat-cell *matCellDef="let f"><span class="font-semibold">FAC-{{ f.id }}</span></td>
+        </ng-container>
+
+        <ng-container matColumnDef="codeLocation">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Location</th>
+          <td mat-cell *matCellDef="let f">{{ f.codeLocation || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="clientNom">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Client</th>
+          <td mat-cell *matCellDef="let f">{{ f.clientNom || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateEmission">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Date émission</th>
+          <td mat-cell *matCellDef="let f">{{ f.dateEmission | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="montantHT">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Montant HT</th>
+          <td mat-cell *matCellDef="let f">{{ (f.montantHT || 0) | number:'1.0-0' }} FCFA</td>
+        </ng-container>
+
+        <ng-container matColumnDef="montantTTC">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Montant TTC</th>
+          <td mat-cell *matCellDef="let f"><strong>{{ (f.montantTTC || 0) | number:'1.0-0' }} FCFA</strong></td>
+        </ng-container>
+
+        <ng-container matColumnDef="etatPaiement">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">État</th>
+          <td mat-cell *matCellDef="let f">
+            <span class="px-3 py-1 rounded-full text-xs font-medium text-white" [ngClass]="getEtatClass(f.etatPaiement)">
+              {{ f.etatPaiement || '-' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-base font-semibold text-right">Actions</th>
+          <td mat-cell *matCellDef="let f" class="text-right">
+            <button mat-icon-button color="primary" matTooltip="Voir détails" (click)="openDetail(f)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteFacture(f)"
+              [disabled]="f.etatPaiement !== 'BROUILLON'">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            class="cursor-pointer hover:bg-gray-50"
+            (click)="openDetail(row)">
+        </tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" [pageSize]="10" showFirstLastButtons></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,231 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="flex items-center justify-between mb-4">
+      <h3>{{ action === 'Add' ? 'Ajouter un engin' : 'Modifier un engin' }}</h3>
+
+      <button mat-icon-button [routerLink]="['/apps/engins']" class="flex! justify-center">
+        <i-tabler name="x" class="size-5! flex!"></i-tabler>
+      </button>
+    </div>
+
+    <form #enginForm="ngForm">
+      <div class="grid grid-cols-12 gap-x-6">
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Code engin</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="codeEngin"
+              [(ngModel)]="local_data.codeEngin"
+              placeholder="Code engin"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Modèle</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="modelEngin"
+              [(ngModel)]="local_data.modelEngin"
+              placeholder="Modèle"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Année</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="date"
+              matInput
+              name="anneeEngin"
+              [(ngModel)]="local_data.anneeEngin"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Immatriculation</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="immatriculationEngin"
+              [(ngModel)]="local_data.immatriculationEngin"
+              placeholder="Immatriculation"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Type engin</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="typeEngin"
+              [(ngModel)]="local_data.typeEngin"
+              placeholder="Type engin"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Marque</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="marqueEngin"
+              [(ngModel)]="local_data.marqueEngin"
+              placeholder="Marque"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">État</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="number"
+              matInput
+              required
+              name="etatEngin"
+              [(ngModel)]="local_data.etatEngin"
+              placeholder="État"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Statut</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select  placeholder="Statut"  name="statusEngin"
+                         required
+                         [(ngModel)]="local_data.statusEngin">
+              <mat-option value="DISPONIBLE">DISPONIBLE</mat-option>
+              <mat-option value="EN_SERVICE">EN SERVICE</mat-option>
+              <mat-option value="EN_COURS_DE_REPARATION">EN COURS DE REPARATION</mat-option>
+              <mat-option value="HORS_SERVICE">HORS SERVICE</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Type carburant</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select placeholder="Carburant"  name="typCarbtEngin"
+                         required
+                         [(ngModel)]="local_data.typCarbtEngin">
+              <mat-option value="ESSENCE">ESSENCE</mat-option>
+              <mat-option value="GAZOIL">GAZOIL</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Date acquisition</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              [matDatepicker]="pickerAcq"
+              [formControl]="dateAcqEngin"
+              placeholder="Choisir une date"
+            />
+            <mat-datepicker-toggle matSuffix [for]="pickerAcq"></mat-datepicker-toggle>
+            <mat-datepicker #pickerAcq></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Coût horaire location</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="number"
+              matInput
+              required
+              name="coutHorLocEngin"
+              [(ngModel)]="local_data.coutHorLocEngin"
+              placeholder="Coût horaire"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Poids vide</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="number"
+              matInput
+              required
+              name="poidsVide"
+              [(ngModel)]="local_data.poidsVide"
+              placeholder="Poids vide"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Horamètre</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="number"
+              matInput
+              required
+              name="horametre"
+              [(ngModel)]="local_data.horametre"
+              placeholder="Horamètre"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Date création</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              [matDatepicker]="pickerCreation"
+              [formControl]="dateCreation"
+              placeholder="Choisir une date"
+            />
+            <mat-datepicker-toggle matSuffix [for]="pickerCreation"></mat-datepicker-toggle>
+            <mat-datepicker #pickerCreation></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Date modification</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              [matDatepicker]="pickerModification"
+              [formControl]="dateModification"
+              placeholder="Choisir une date"
+            />
+            <mat-datepicker-toggle matSuffix [for]="pickerModification"></mat-datepicker-toggle>
+            <mat-datepicker #pickerModification></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button mat-flat-button color="primary" (click)="doAction()" [disabled]="!enginForm.valid">
+          {{ action === 'Add' ? 'Ajouter' : 'Modifier' }}
+        </button>
+
+        <button mat-stroked-button type="button" color="warn" (click)="cancel()">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

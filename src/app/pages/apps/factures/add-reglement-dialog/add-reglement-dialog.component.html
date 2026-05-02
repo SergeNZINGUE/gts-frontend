@@ -1,0 +1,59 @@
+<h2 mat-dialog-title class="text-lg font-semibold">
+  Ajouter un règlement — FAC-{{ facture.id }}
+</h2>
+
+<mat-dialog-content>
+  <div class="flex justify-between mb-4 p-3 rounded bg-light-primary">
+    <div>
+      <span class="text-sm text-muted block">Montant TTC</span>
+      <strong>{{ (facture.montantTTC || 0) | number:'1.0-0' }} FCFA</strong>
+    </div>
+    <div>
+      <span class="text-sm text-muted block">Reste à payer</span>
+      <strong class="text-primary">{{ resteAPayer | number:'1.0-0' }} FCFA</strong>
+    </div>
+  </div>
+
+  <form [formGroup]="form">
+    <div class="grid grid-cols-12 gap-4">
+
+      <div class="col-span-12">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Date du règlement</mat-label>
+          <input matInput [matDatepicker]="datePicker" formControlName="dateReglement" />
+          <mat-datepicker-toggle matIconSuffix [for]="datePicker"></mat-datepicker-toggle>
+          <mat-datepicker #datePicker></mat-datepicker>
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Montant versé (FCFA)</mat-label>
+          <input matInput type="number" formControlName="montantVerse" placeholder="Ex : 150000" />
+          <mat-error>Montant obligatoire (> 0)</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Mode de paiement</mat-label>
+          <mat-select formControlName="modePaiement">
+            <mat-option value="VIREMENT">Virement</mat-option>
+            <mat-option value="CHEQUE">Chèque</mat-option>
+            <mat-option value="ESPECES">Espèces</mat-option>
+          </mat-select>
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+      </div>
+
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid">
+    Enregistrer le règlement
+  </button>
+</mat-dialog-actions>
