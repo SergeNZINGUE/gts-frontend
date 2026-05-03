@@ -3,7 +3,7 @@ import {Injectable, signal} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Employee} from "../../../pages/apps/employee/employee";
 import {ActiviteClient} from "../../../pages/apps/clients/activite-client/activite-client";
-import {environment} from "../../../../environments/environment";
+import {environment} from "../../../environments/environment";
 
 @Injectable({
   providedIn: 'root',
