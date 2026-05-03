@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { LogoClientResponse } from '../../../pages/apps/clients/details-client/l
 
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
-  private apiUrl = 'http://localhost:8081/api/gts/clients';
+  private apiUrl = environment.apiUrl + '/api/gts/clients';
 
   constructor(private http: HttpClient) {}
 

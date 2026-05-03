@@ -1,10 +1,11 @@
+import { environment } from '../../../../environments/environment';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { EmployeeService } from './employee.service';
 import { Employee } from 'src/app/pages/apps/employee/employee';
 
-const API_URL = 'http://localhost:8081/api/gts/conducteurs';
+const API_URL = environment.apiUrl + '/api/gts/conducteurs';
 const FAKE_TOKEN = 'fake-jwt-token';
 
 const mockEmployee: Employee = {

@@ -1,14 +1,16 @@
+
 import {Injectable, signal} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Employee} from "../../../pages/apps/employee/employee";
 import {ActiviteClient} from "../../../pages/apps/clients/activite-client/activite-client";
+import {environment} from "../../../../environments/environment";
 
 @Injectable({
   providedIn: 'root',
 })
 export class ActiviteClientService {
   private activiteClient = signal<ActiviteClient[]>([]);
-  private apiUrl = 'http://localhost:8081/api/gts/activite-client';
+  private apiUrl = environment.apiUrl + '/api/gts/activite-client';
 
   constructor(private http: HttpClient) {}
 getActiviteClient() {

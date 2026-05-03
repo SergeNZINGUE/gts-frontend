@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import {Injectable, signal} from '@angular/core';
 import {Engin} from "../../../pages/apps/engins/engin";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
@@ -16,7 +17,7 @@ import {LocationEnginResponse} from "../../../pages/apps/locations/locationEngin
 
 export class LocationService {
   private locations = signal<LocationEngin[]>([]);
-  private apiUrl = 'http://localhost:8081/api/gts/locations';
+  private apiUrl = environment.apiUrl + '/api/gts/locations';
 
   constructor(
     private http: HttpClient,

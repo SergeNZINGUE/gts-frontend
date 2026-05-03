@@ -1,10 +1,11 @@
+import { environment } from '../../../../environments/environment';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { ControlesVGPService } from './controles-vgp.service';
 import { ControleVGP, ControleVGPPayload } from 'src/app/pages/apps/engins/controles-vgp/controle-vgp';
 
-const API_URL = 'http://localhost:8081/api/gts/controles-vgp';
+const API_URL = environment.apiUrl + '/api/gts/controles-vgp';
 const FAKE_TOKEN = 'fake-jwt-token';
 
 const mockControle: ControleVGP = {

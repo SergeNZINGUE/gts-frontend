@@ -1,10 +1,11 @@
+import { environment } from '../../../../environments/environment';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { ReglementsService } from './reglements.service';
 import { Reglement } from 'src/app/pages/apps/factures/reglement';
 
-const API_URL = 'http://localhost:8081/api/gts/reglements';
+const API_URL = environment.apiUrl + '/api/gts/reglements';
 const FAKE_TOKEN = 'fake-jwt-token';
 
 const mockReglement: Reglement = {

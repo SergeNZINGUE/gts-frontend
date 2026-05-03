@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { AssuranceEngin, AssurancePayload } from '../../../pages/apps/engins/ass
 
 @Injectable({ providedIn: 'root' })
 export class AssurancesService {
-  private apiUrl = 'http://localhost:8081/api/gts/assurances';
+  private apiUrl = environment.apiUrl + '/api/gts/assurances';
 
   constructor(private http: HttpClient, private coreService: CoreService) {}
 

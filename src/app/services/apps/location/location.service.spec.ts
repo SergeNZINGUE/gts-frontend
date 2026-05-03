@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
@@ -5,7 +6,7 @@ import { LocationService } from './location.service';
 import { LocationEngin } from 'src/app/pages/apps/locations/location-engin';
 import { CreateLocationRequest } from 'src/app/pages/apps/locations/add-location/createLocationRequest';
 
-const API_URL = 'http://localhost:8081/api/gts/locations';
+const API_URL = environment.apiUrl + '/api/gts/locations';
 const FAKE_TOKEN = 'fake-jwt-token';
 
 const mockLocation: LocationEngin = {

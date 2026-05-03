@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { Reglement } from '../../../pages/apps/factures/reglement';
 
 @Injectable({ providedIn: 'root' })
 export class ReglementsService {
-  private apiUrl = 'http://localhost:8081/api/gts/reglements';
+  private apiUrl = environment.apiUrl + '/api/gts/reglements';
 
   constructor(private http: HttpClient, private coreService: CoreService) {}
 

@@ -1,10 +1,11 @@
+import { environment } from '../../../../environments/environment';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { AssurancesService } from './assurances.service';
 import { AssuranceEngin, AssurancePayload, StatutAssurance } from 'src/app/pages/apps/engins/assurances-engins/assurance-engin';
 
-const API_URL = 'http://localhost:8081/api/gts/assurances';
+const API_URL = environment.apiUrl + '/api/gts/assurances';
 const FAKE_TOKEN = 'fake-jwt-token';
 
 const mockAssurance: AssuranceEngin = {

@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { FactureImpayeeDto, LocationRapportDto, MissionRapportDto } from '../../
 
 @Injectable({ providedIn: 'root' })
 export class ReportingService {
-  private apiUrl = 'http://localhost:8081/api/gts/reporting';
+  private apiUrl = environment.apiUrl + '/api/gts/reporting';
 
   constructor(private http: HttpClient, private coreService: CoreService) {}
 

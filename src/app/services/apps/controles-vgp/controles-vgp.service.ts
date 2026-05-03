@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { ControleVGP, ControleVGPPayload } from '../../../pages/apps/engins/cont
 
 @Injectable({ providedIn: 'root' })
 export class ControlesVGPService {
-  private apiUrl = 'http://localhost:8081/api/gts/controles-vgp';
+  private apiUrl = environment.apiUrl + '/api/gts/controles-vgp';
 
   constructor(private http: HttpClient, private coreService: CoreService) {}
 

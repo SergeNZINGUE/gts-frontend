@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {tap} from "rxjs";
@@ -14,7 +15,7 @@ export class AuthService {
   public isAdmin:boolean=false;
   public role:string[]=[''];
   public username:string|null|undefined='';
-  private apiUrl = 'http://localhost:8081/api/gts/auth/login';
+  private apiUrl = environment.apiUrl + '/api/gts/auth/login';
 
   constructor (private http:HttpClient)
   {

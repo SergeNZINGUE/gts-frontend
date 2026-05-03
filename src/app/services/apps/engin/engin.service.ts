@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -5,7 +6,7 @@ import { Engin } from 'src/app/pages/apps/engins/engin';
 
 @Injectable({ providedIn: 'root' })
 export class EnginService {
-  private apiUrl = 'http://localhost:8081/api/gts/engins';
+  private apiUrl = environment.apiUrl + '/api/gts/engins';
 
   constructor(private http: HttpClient) {}
 
