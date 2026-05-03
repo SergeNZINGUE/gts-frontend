@@ -1,0 +1,30 @@
+name: Deploy GTS Frontend
+
+on:
+  push:
+    branches:
+      - main
+      - homologation
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            railway up --service gts-frontend --environment production
+          elif [ "${{ github.ref_name }}" == "homologation" ]; then
+            railway up --service gts-frontend --environment homologation
+          elif [ "${{ github.ref_name }}" == "dev" ]; then
+            railway up --service gts-frontend --environment dev
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
