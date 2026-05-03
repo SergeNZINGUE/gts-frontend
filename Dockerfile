@@ -1,0 +1,15 @@
+# Étape 1 : Construction de l'application Angular
+FROM node:22-alpine AS build
+WORKDIR /app
+RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm run build --configuration=production
+
+# Étape 2 : Servir avec Nginx
+FROM nginx:alpine
+COPY --from=build /app/dist/Modernize/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
