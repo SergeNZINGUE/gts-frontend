@@ -14,24 +14,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set environment
-        id: env
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" == "homologation" ]; then
-            echo "environment=homologation" >> $GITHUB_OUTPUT
-          else
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          fi
-
       - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
+        run: curl -fsSL https://railway.app/install.sh | sh
 
-      - name: Deploy to Railway
-        run: |
-          railway up --service gts-frontend --environment ${{ steps.env.outputs.environment }}
+      - name: Deploy to Production
+        if: github.ref_name == 'main'
+        run: railway up --service gts-frontend
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+
+      - name: Deploy to Homologation
+        if: github.ref_name == 'homologation'
+        run: railway up --service gts-frontend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_HOMOL }}
+
+      - name: Deploy to Dev
+        if: github.ref_name == 'dev'
+        run: railway up --service gts-frontend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_DEV }}
