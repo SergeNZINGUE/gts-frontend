@@ -20,12 +20,11 @@ jobs:
       - name: Deploy to Railway
         run: |
           if [ "${{ github.ref_name }}" == "main" ]; then
-            railway up --service gts-frontend --environment production
+            railway up --service gts-frontend --environment production --project ${{ secrets.RAILWAY_PROJECT_ID }}
           elif [ "${{ github.ref_name }}" == "homologation" ]; then
-            railway up --service gts-frontend --environment homologation
+            railway up --service gts-frontend --environment homologation --project ${{ secrets.RAILWAY_PROJECT_ID }}
           elif [ "${{ github.ref_name }}" == "dev" ]; then
-            railway up --service gts-frontend --environment dev
+            railway up --service gts-frontend --environment dev --project ${{ secrets.RAILWAY_PROJECT_ID }}
           fi
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
