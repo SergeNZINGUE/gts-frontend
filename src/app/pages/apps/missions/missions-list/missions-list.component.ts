@@ -267,7 +267,7 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
       next: (response) => {
         this.allMissions = response;
         this.missionsDataSource.data = response;
-
+        console.log('[DEBUG]',response);
         this.totalMissions = response.length;
         this.missionsEnAttente = response.filter((m) => m.statutMission === 'EN ATTENTE').length;
         this.missionsEnCours = response.filter((m) => m.statutMission === 'EN_COURS').length;

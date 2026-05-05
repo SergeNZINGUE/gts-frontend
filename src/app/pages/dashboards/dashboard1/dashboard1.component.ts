@@ -12,7 +12,8 @@ import { ControlesVGPService } from 'src/app/services/apps/controles-vgp/control
 import { Mission } from 'src/app/pages/apps/missions/mission';
 import { Facture } from 'src/app/pages/apps/factures/facture';
 import { StatutAssurance } from 'src/app/pages/apps/engins/assurances-engins/assurance-engin';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard1',
@@ -65,12 +66,12 @@ export class AppDashboard1Component implements OnInit {
 
   ngOnInit(): void {
     forkJoin({
-      clients:    this.clientsService.getClients(),
-      engins:     this.enginService.getEngins(),
-      missions:   this.missionsService.getMissions(),
-      factures:   this.facturesService.getFactures(),
-      assurances: this.assurancesService.getAll(),
-      controles:  this.controlesVGPService.getAll(),
+      clients:    this.clientsService.getClients().pipe(catchError(() => of([]))),
+      engins:     this.enginService.getEngins().pipe(catchError(() => of([]))),
+      missions:   this.missionsService.getMissions().pipe(catchError(() => of([]))),
+      factures:   this.facturesService.getFactures().pipe(catchError(() => of([]))),
+      assurances: this.assurancesService.getAll().pipe(catchError(() => of([]))),
+      controles:  this.controlesVGPService.getAll().pipe(catchError(() => of([]))),
     }).subscribe({
       next: ({ clients, engins, missions, factures, assurances, controles }) => {
         this.totalClients = clients.length;

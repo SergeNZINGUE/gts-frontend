@@ -2,7 +2,7 @@ import { MissionStatut } from '../missionStatut';
 import { MissionPriorite } from '../missionPriorite';
 
 export interface CreateMissionRequest {
-  codeMission: number;
+  codeMission: string;
   statutMission: string;
   prioriteMission: string;
   responsableMission?: string;

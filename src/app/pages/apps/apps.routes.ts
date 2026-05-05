@@ -22,6 +22,9 @@ import { DetailsFactureComponent } from './factures/details-facture/details-fact
 import { AssurancesEnginsComponent } from './engins/assurances-engins/assurances-engins.component';
 import { ControlesVGPComponent } from './engins/controles-vgp/controles-vgp.component';
 import { RapportsComponent } from './rapports/rapports.component';
+import { UsersComponent } from './users/users.component';
+import { AddUserComponent } from './users/add-user/add-user.component';
+import { DetailsUserComponent } from './users/details-user/details-user.component';
 
 export const AppsRoutes: Routes = [
   {
@@ -236,6 +239,43 @@ export const AppsRoutes: Routes = [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
             { title: 'Missions', url: '/apps/missions' },
             { title: 'Détails mission' },
+          ],
+        },
+      },
+
+      // ── Utilisateurs ───────────────────────────────────────────────
+      {
+        path: 'users',
+        component: UsersComponent,
+        data: {
+          title: 'Utilisateurs',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Utilisateurs' },
+          ],
+        },
+      },
+      {
+        path: 'users/add-user',
+        component: AddUserComponent,
+        data: {
+          title: 'Nouvel utilisateur',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Utilisateurs', url: '/apps/users' },
+            { title: 'Nouvel utilisateur' },
+          ],
+        },
+      },
+      {
+        path: 'users/details-user/:id',
+        component: DetailsUserComponent,
+        data: {
+          title: 'Détails utilisateur',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Utilisateurs', url: '/apps/users' },
+            { title: 'Détails utilisateur' },
           ],
         },
       },

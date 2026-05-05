@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,7 +17,7 @@ import { FactureImpayeeDto, LocationRapportDto, MissionRapportDto } from './rapp
 @Component({
   standalone: true,
   selector: 'app-rapports',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, TablerIconsModule, RouterLink, DatePipe, DecimalPipe],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, TablerIconsModule, DatePipe, DecimalPipe],
   providers: [DatePipe, DecimalPipe],
   templateUrl: './rapports.component.html',
 })

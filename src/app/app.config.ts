@@ -1,5 +1,6 @@
 import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
-import { provideHttpClient, HttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, HttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { Observable } from 'rxjs';
 import { routes } from './app.routes';
 import {
@@ -68,6 +69,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding()
     ),
     provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideClientHydration(),
     provideAnimationsAsync(),
     provideNativeDateAdapter(),

@@ -221,5 +221,22 @@ export const navItems: NavItem[] = [
   },
   {
     navCap: 'Administration',
-  }
+  },
+  {
+    displayName: 'Utilisateurs',
+    iconName: 'solar:chart-line-duotone',
+    route: 'apps/users',
+    children: [
+      {
+        displayName: 'Liste des utilisateurs',
+        iconName: 'tabler:point',
+        route: 'apps/users',
+      },
+      {
+        displayName: 'Nouvel utilisateur',
+        iconName: 'tabler:point',
+        route: 'apps/users/add-user',
+      }
+    ],
+  },
 ];

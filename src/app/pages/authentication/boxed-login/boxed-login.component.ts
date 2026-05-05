@@ -37,22 +37,31 @@ export class AppBoxedLoginComponent {
     return this.form.controls;
   }
 
+  authError: string | null = null;
+  isLoading = false;
+
   submit() {
-    // console.log(this.form.value);
-    const username:string |null|undefined =this.form.value.uname;
-    const password:string |null|undefined = this.form.value.password;
-    this.authService.login( username,password)
-      .subscribe(data=>{
-        console.log(data);
+    this.authError = null;
+    this.isLoading = true;
+
+    const username: string | null | undefined = this.form.value.uname;
+    const password: string | null | undefined = this.form.value.password;
+
+    this.authService.login(username, password).subscribe({
+      next: () => {
+        this.isLoading = false;
         this.router.navigate(['/dashboards/dashboard1']);
-      }
-
-      ,error=>{
-        console.log('Erreur connexion',error);
-      });
-
-
-    }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        if (error.status === 401 || error.status === 403) {
+          this.authError = 'Identifiant ou mot de passe incorrect.';
+        } else {
+          this.authError = 'Une erreur est survenue. Veuillez réessayer.';
+        }
+      },
+    });
+  }
 
   }
 

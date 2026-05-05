@@ -3,63 +3,113 @@
     <div class="xl:col-span-8 lg:col-span-7 col-span-12 bg-light-primary relative">
       <div class="p-6 h-full">
         <app-branding></app-branding>
-
         <div class="items-center justify-center h-full hidden lg:flex">
           <img src="/assets/images/backgrounds/login-bg.svg" alt="login" style="max-width: 500px" />
         </div>
       </div>
     </div>
+
     <div class="xl:col-span-4 lg:col-span-5 col-span-12 sm:px-12 p-5">
       <div class="flex lg:h-screen items-center lg:px-3 lg:justify-start justify-center">
         <div class="max-w-[420px] w-full mx-auto">
-          <h4 class="font-bold text-xl m-0">Two Step Verification</h4>
-          <span class="block text-sm mt-6">We sent a verification code to your mobile. Enter the code from the
-            mobile in the field below.</span>
-          <span class="font-semibold block mt-4">******1234</span>
 
-          <form class="mt-8 pt-7">
-            <mat-label class="text-sm font-semibold mb-3 block">Type your 6 digits security code</mat-label>
-            <div class="grid grid-cols-12 gap-4">
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
+          <h4 class="font-bold text-2xl m-0">Vérification du code</h4>
+          <span class="block text-sm mt-2 text-gray-500">
+            Un code à 6 chiffres a été envoyé à
+          </span>
+          <span class="font-semibold text-sm block mt-1">{{ email }}</span>
+
+          <!-- Message d'erreur -->
+          @if (authError) {
+            <div class="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 mt-4 text-sm text-red-700">
+              <mat-icon class="!text-base !leading-none shrink-0">error_outline</mat-icon>
+              {{ authError }}
+            </div>
+          }
+
+          <form class="mt-8" (ngSubmit)="submit()">
+
+            <!-- ── Code à 6 chiffres ─────────────────────────── -->
+            <mat-label class="text-sm font-semibold mb-3 block">Code de vérification</mat-label>
+            <div class="grid grid-cols-6 gap-2 mb-6" [formGroup]="digits">
+              @for (i of [0,1,2,3,4,5]; track i) {
+                <mat-form-field appearance="outline" class="w-full text-center" color="primary">
+                  <input
+                    #digitInput
+                    matInput
+                    [formControlName]="'d' + i"
+                    maxlength="1"
+                    inputmode="numeric"
+                    class="text-center text-lg font-bold"
+                    (input)="onDigitInput($event, i)"
+                    (keydown)="onDigitKeydown($event, i)"
+                  />
                 </mat-form-field>
-              </div>
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
-                </mat-form-field>
-              </div>
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
-                </mat-form-field>
-              </div>
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
-                </mat-form-field>
-              </div>
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
-                </mat-form-field>
-              </div>
-              <div class="col-span-2">
-                <mat-form-field appearance="outline" class="w-full" color="primary">
-                  <input matInput />
-                </mat-form-field>
-              </div>
+              }
             </div>
 
-            <a [routerLink]="['/dashboards/dashboard1']" mat-flat-button color="primary" class="w-full">
-              Verify My Account
+            <!-- ── Nouveau mot de passe ─────────────────────── -->
+            <div [formGroup]="passwords">
+              <mat-label class="text-sm font-semibold mb-3 block">Nouveau mot de passe</mat-label>
+              <mat-form-field appearance="outline" class="w-full" color="primary">
+                <input matInput
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="newPassword"
+                  placeholder="8 caractères minimum" />
+                <button mat-icon-button matSuffix type="button"
+                  (click)="hidePassword = !hidePassword">
+                  <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+                @if (p['newPassword'].touched && p['newPassword'].errors?.['required']) {
+                  <mat-error>Mot de passe obligatoire</mat-error>
+                }
+                @if (p['newPassword'].touched && p['newPassword'].errors?.['minlength']) {
+                  <mat-error>8 caractères minimum</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-label class="text-sm font-semibold mb-3 block">Confirmer le mot de passe</mat-label>
+              <mat-form-field appearance="outline" class="w-full" color="primary">
+                <input matInput
+                  [type]="hideConfirm ? 'password' : 'text'"
+                  formControlName="confirmPassword"
+                  placeholder="Répéter le mot de passe" />
+                <button mat-icon-button matSuffix type="button"
+                  (click)="hideConfirm = !hideConfirm">
+                  <mat-icon>{{ hideConfirm ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+                @if (p['confirmPassword'].touched && p['confirmPassword'].errors?.['required']) {
+                  <mat-error>Confirmation obligatoire</mat-error>
+                }
+                @if (passwordMismatch) {
+                  <mat-error>Les mots de passe ne correspondent pas</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <!-- ── Boutons ──────────────────────────────────── -->
+            <button mat-flat-button color="primary" class="w-full" type="submit"
+              [disabled]="digits.invalid || passwords.invalid || isLoading">
+              @if (isLoading) {
+                <mat-icon class="animate-spin !text-base !leading-none me-1">refresh</mat-icon>
+              }
+              Réinitialiser le mot de passe
+            </button>
+
+            <a [routerLink]="['/authentication/login']" mat-stroked-button color="primary" class="w-full mt-3">
+              Retour à la connexion
             </a>
-            <!-- input -->
           </form>
-          <span class="font-medium block text-sm mt-6">Didn't get the code?
-            <a [routerLink]="['/dashboards/dashboard1']" class="no-underline text-primary font-medium">Resend</a>
+
+          <span class="font-medium block text-sm mt-6 text-center">
+            Code non reçu ?
+            <button type="button" class="text-primary font-medium bg-transparent border-none cursor-pointer p-0"
+              [disabled]="isSending"
+              (click)="resendCode()">
+              {{ isSending ? 'Envoi...' : 'Renvoyer' }}
+            </button>
           </span>
+
         </div>
       </div>
     </div>

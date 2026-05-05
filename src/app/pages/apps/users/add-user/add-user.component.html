@@ -1,0 +1,182 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+
+    <!-- En-tête -->
+    <div class="flex items-center gap-4 mb-6">
+      <button mat-icon-button (click)="goBack()" matTooltip="Retour">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Nouvel utilisateur</h2>
+        <p class="text-sm text-gray-500">Créer un compte utilisateur</p>
+      </div>
+    </div>
+
+    <mat-divider class="mb-6"></mat-divider>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-4">
+
+        <!-- ── Identité ─────────────────────────────────────────── -->
+        <div class="col-span-12">
+          <p class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Identité</p>
+        </div>
+
+        <!-- Nom -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Nom <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput formControlName="nomUsers" placeholder="KONÉ" />
+            @if (f['nomUsers'].touched && f['nomUsers'].errors?.['required']) {
+              <mat-error>Champ obligatoire</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Prénoms -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Prénoms <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput formControlName="prenomsUsers" placeholder="Amadou" />
+            @if (f['prenomsUsers'].touched && f['prenomsUsers'].errors?.['required']) {
+              <mat-error>Champ obligatoire</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Email -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Email <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput type="email" formControlName="emailUsers" placeholder="exemple@gts.ci" />
+            <mat-icon matSuffix>mail</mat-icon>
+            @if (f['emailUsers'].touched && f['emailUsers'].errors?.['required']) {
+              <mat-error>Email obligatoire</mat-error>
+            }
+            @if (f['emailUsers'].touched && f['emailUsers'].errors?.['email']) {
+              <mat-error>Adresse email invalide</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Téléphone -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Téléphone</mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput formControlName="tel1Users" placeholder="+225 07 00 00 00 00" />
+            <mat-icon matSuffix>phone</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- ── Compte ───────────────────────────────────────────── -->
+        <div class="col-span-12 mt-2">
+          <p class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Compte</p>
+        </div>
+
+        <!-- Username -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Identifiant (username) <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput formControlName="username" placeholder="a.kone" />
+            @if (f['username'].touched && f['username'].errors?.['required']) {
+              <mat-error>Champ obligatoire</mat-error>
+            }
+            @if (f['username'].touched && f['username'].errors?.['minlength']) {
+              <mat-error>5 caractères minimum</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Rôle -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Rôle <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <mat-select formControlName="roleCode">
+              @for (role of roleOptions; track role) {
+                <mat-option [value]="role">{{ role }}</mat-option>
+              }
+            </mat-select>
+            @if (f['roleCode'].touched && f['roleCode'].errors?.['required']) {
+              <mat-error>Sélectionnez un rôle</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Mot de passe <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="8 caractères minimum" />
+            <button mat-icon-button matSuffix type="button"
+              (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (f['password'].touched && f['password'].errors?.['required']) {
+              <mat-error>Mot de passe obligatoire</mat-error>
+            }
+            @if (f['password'].touched && f['password'].errors?.['minlength']) {
+              <mat-error>8 caractères minimum</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Confirmation mot de passe -->
+        <div class="col-span-12 md:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Confirmer le mot de passe <span class="text-red-500">*</span></mat-label>
+          <mat-form-field appearance="outline" class="w-full hide-hint">
+            <input matInput
+              [type]="hideConfirm ? 'password' : 'text'"
+              formControlName="confirmPassword"
+              placeholder="Répéter le mot de passe" />
+            <button mat-icon-button matSuffix type="button"
+              (click)="hideConfirm = !hideConfirm">
+              <mat-icon>{{ hideConfirm ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (f['confirmPassword'].touched && f['confirmPassword'].errors?.['required']) {
+              <mat-error>Confirmation obligatoire</mat-error>
+            }
+            @if (passwordMismatch) {
+              <mat-error>Les mots de passe ne correspondent pas</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- ── Options ─────────────────────────────────────────── -->
+        <div class="col-span-12 mt-2">
+          <p class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Options</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-6 flex items-center gap-4 py-2">
+          <mat-label class="text-sm font-semibold">Compte actif dès la création</mat-label>
+          <mat-slide-toggle formControlName="active" color="primary"></mat-slide-toggle>
+        </div>
+
+        <div class="col-span-12 md:col-span-6 flex items-center gap-4 py-2">
+          <mat-checkbox formControlName="cguUsers" color="primary">
+            CGU acceptées
+          </mat-checkbox>
+        </div>
+
+      </div>
+
+      <mat-divider class="my-6"></mat-divider>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3">
+        <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+        <button mat-flat-button color="primary"
+          type="submit"
+          [disabled]="form.invalid || isSaving">
+          @if (isSaving) {
+            <mat-icon class="animate-spin !text-base !leading-none me-1">refresh</mat-icon>
+          }
+          Créer l'utilisateur
+        </button>
+      </div>
+    </form>
+
+  </mat-card-content>
+</mat-card>

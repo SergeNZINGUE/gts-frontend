@@ -8,7 +8,7 @@ export interface Mission {
   dateModification?: string;
   locationId?: number;
   factureId?: number | null;
-  codeMission?: number;
+  codeMission?: string;
   dateDebutMission?: string;
   dateFinMission?: string;
   heureDebutMission?: string;

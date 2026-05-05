@@ -1,0 +1,148 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+
+    <!-- En-tête -->
+    <div class="flex items-center gap-4 mb-6">
+      <button mat-icon-button (click)="goBack()" matTooltip="Retour">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Détails utilisateur</h2>
+        @if (user) {
+          <p class="text-sm text-gray-500">{{ user.nomUsers }} {{ user.prenomsUsers }}</p>
+        }
+      </div>
+      @if (user) {
+        <div class="ms-auto flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full text-xs font-medium text-white"
+            [ngClass]="user.active ? 'bg-green-500' : 'bg-red-400'">
+            {{ user.active ? 'Actif' : 'Inactif' }}
+          </span>
+          <button mat-stroked-button color="primary"
+            [disabled]="isSendingCode"
+            (click)="sendVerificationCode()">
+            <mat-icon>mail</mat-icon>
+            {{ isSendingCode ? 'Envoi...' : 'Envoyer le code de vérification' }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <mat-divider class="mb-6"></mat-divider>
+
+    <!-- Loader -->
+    @if (isLoading) {
+      <div class="flex justify-center py-10">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <!-- Formulaire -->
+    @if (!isLoading && user) {
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid grid-cols-12 gap-4">
+
+          <!-- Identifiant -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Identifiant (username)</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <input matInput formControlName="username" />
+              @if (f['username'].touched && f['username'].errors?.['required']) {
+                <mat-error>Champ obligatoire</mat-error>
+              }
+              @if (f['username'].touched && f['username'].errors?.['minlength']) {
+                <mat-error>5 caractères minimum</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Rôle -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Rôle</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <mat-select formControlName="roleCode">
+                @for (role of roleOptions; track role) {
+                  <mat-option [value]="role">{{ role }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Nom -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Nom</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <input matInput formControlName="nomUsers" />
+              @if (f['nomUsers'].touched && f['nomUsers'].errors?.['required']) {
+                <mat-error>Champ obligatoire</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Prénoms -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Prénoms</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <input matInput formControlName="prenomsUsers" />
+              @if (f['prenomsUsers'].touched && f['prenomsUsers'].errors?.['required']) {
+                <mat-error>Champ obligatoire</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Email -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Email</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <input matInput type="email" formControlName="emailUsers" />
+              @if (f['emailUsers'].touched && f['emailUsers'].errors?.['required']) {
+                <mat-error>Champ obligatoire</mat-error>
+              }
+              @if (f['emailUsers'].touched && f['emailUsers'].errors?.['email']) {
+                <mat-error>Email invalide</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="col-span-12 md:col-span-6">
+            <mat-label class="text-sm font-semibold mb-2 block">Téléphone</mat-label>
+            <mat-form-field appearance="outline" class="w-full hide-hint">
+              <input matInput formControlName="tel1Users" placeholder="+225 07 00 00 00 00" />
+            </mat-form-field>
+          </div>
+
+          <!-- Compte actif -->
+          <div class="col-span-12 md:col-span-6 flex items-center gap-4 py-2">
+            <mat-label class="text-sm font-semibold">Compte actif</mat-label>
+            <mat-slide-toggle formControlName="active" color="primary"></mat-slide-toggle>
+          </div>
+
+          <!-- CGU acceptées -->
+          <div class="col-span-12 md:col-span-6 flex items-center gap-4 py-2">
+            <mat-checkbox formControlName="cguUsers" color="primary">
+              CGU acceptées
+            </mat-checkbox>
+          </div>
+
+        </div>
+
+        <mat-divider class="my-6"></mat-divider>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3">
+          <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+          <button mat-flat-button color="primary"
+            type="submit"
+            [disabled]="form.invalid || isSaving">
+            @if (isSaving) {
+              <mat-icon class="animate-spin !text-base !leading-none me-1">refresh</mat-icon>
+            }
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    }
+
+  </mat-card-content>
+</mat-card>

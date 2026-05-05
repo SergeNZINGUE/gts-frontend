@@ -232,7 +232,7 @@ export class AddMissionComponent implements OnInit {
 
   private buildPayload() {
     return {
-      codeMission: Number(this.form.value.codeMission),
+      codeMission: this.form.value.codeMission,
       statutMission: this.form.value.statutMission,
       prioriteMission: this.form.value.prioriteMission,
       responsableMission: this.form.value.responsableMission || undefined,

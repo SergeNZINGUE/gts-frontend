@@ -1,0 +1,182 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold mb-1">Utilisateurs</h2>
+        <p class="text-sm text-gray-500">Gestion des comptes utilisateurs</p>
+      </div>
+      <button mat-flat-button color="primary" routerLink="/apps/users/add-user">
+        <mat-icon>person_add</mat-icon>
+        Nouvel utilisateur
+      </button>
+    </div>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-12 gap-4 mb-6">
+      <div class="col-span-12 md:col-span-4">
+        <mat-card class="bg-light-primary">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Total utilisateurs</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ total }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <mat-card class="bg-light-success">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Actifs</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ totalActifs }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <mat-card class="bg-light-error">
+          <mat-card-content>
+            <span class="text-sm text-gray-500">Inactifs</span>
+            <h3 class="text-2xl font-semibold mt-2">{{ totalInactifs }}</h3>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Barre de recherche -->
+    <div class="py-6">
+      <mat-form-field appearance="outline" class="w-full md:w-80 hide-hint">
+        <mat-label>Recherche</mat-label>
+        <input
+          matInput
+          placeholder="Nom, username, email..."
+          (keyup)="applyFilter($any($event.target).value)"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Loader -->
+    @if (isLoading) {
+      <div class="flex justify-center py-10">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <!-- Table -->
+    @if (!isLoading) {
+      <div class="border border-border rounded-md relative overflow-auto">
+        <table mat-table [dataSource]="dataSource" class="no-wrap v-middle min-w-full">
+
+          <!-- Nom complet -->
+          <ng-container matColumnDef="fullname">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Nom & Prénom</th>
+            <td mat-cell *matCellDef="let user">
+              <span class="font-semibold">{{ user.nomUsers }} {{ user.prenomsUsers }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Username -->
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Identifiant</th>
+            <td mat-cell *matCellDef="let user">{{ user.username }}</td>
+          </ng-container>
+
+          <!-- Email -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Email</th>
+            <td mat-cell *matCellDef="let user">{{ user.emailUsers }}</td>
+          </ng-container>
+
+          <!-- Téléphone -->
+          <ng-container matColumnDef="telephone">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Téléphone</th>
+            <td mat-cell *matCellDef="let user">{{ user.tel1Users || '-' }}</td>
+          </ng-container>
+
+          <!-- Rôles -->
+          <ng-container matColumnDef="roles">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Rôles</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="flex flex-wrap gap-1">
+                @for (role of user.roles; track role) {
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'">
+                    {{ role }}
+                  </span>
+                }
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Statut -->
+          <ng-container matColumnDef="statut">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Statut</th>
+            <td mat-cell *matCellDef="let user">
+              <span class="px-3 py-1 rounded-full text-xs font-medium text-white"
+                [ngClass]="user.active ? 'bg-green-500' : 'bg-red-400'">
+                {{ user.active ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Date création -->
+          <ng-container matColumnDef="dateCreation">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold">Créé le</th>
+            <td mat-cell *matCellDef="let user">{{ user.dateCreation | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="text-base font-semibold text-right">Actions</th>
+            <td mat-cell *matCellDef="let user" class="text-right">
+
+              <button mat-icon-button color="primary"
+                matTooltip="Envoyer le code de vérification par mail"
+                (click)="sendVerificationCode(user, $event)">
+                <mat-icon>mail</mat-icon>
+              </button>
+
+              <button mat-icon-button color="accent"
+                matTooltip="Modifier"
+                (click)="goToDetails(user.id)">
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <button mat-icon-button
+                [matTooltip]="user.active ? 'Désactiver le compte' : 'Activer le compte'"
+                [color]="user.active ? 'warn' : 'primary'"
+                (click)="toggleActive(user, $event)">
+                <mat-icon>{{ user.active ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+              </button>
+
+              <button mat-icon-button color="warn"
+                matTooltip="Supprimer"
+                (click)="confirmDelete(user, $event)">
+                <mat-icon>delete</mat-icon>
+              </button>
+
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            class="cursor-pointer hover:bg-gray-50"
+            (click)="goToDetails(row.id)">
+          </tr>
+
+          <!-- Ligne vide -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell text-center py-8 text-gray-400" [attr.colspan]="displayedColumns.length">
+              Aucun utilisateur trouvé
+            </td>
+          </tr>
+
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" [pageSize]="10" showFirstLastButtons />
+      </div>
+    }
+
+  </mat-card-content>
+</mat-card>

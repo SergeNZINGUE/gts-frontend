@@ -66,8 +66,8 @@ import {
 })
 
 export class LocationsComponent implements OnInit, AfterViewInit  {
-  @ViewChild(MatTable, { static: true }) table: MatTable<any> = Object.create(null);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator = Object.create(null);
+  @ViewChild(MatTable, { static: false }) table: MatTable<any> = Object.create(null);
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator = Object.create(null);
 
   displayedColumns: string[] = [
     'codeLocation',
