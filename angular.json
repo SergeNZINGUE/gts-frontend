@@ -61,6 +61,27 @@
               ],
               "outputHashing": "all"
             },
+            "homol": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.homol.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "12mb",
+                  "maximumError": "12mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12mb",
+                  "maximumError": "12mb"
+                }
+              ],
+              "outputHashing": "all"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -76,10 +97,14 @@
             "production": {
               "buildTarget": "Modernize:build:production"
             },
+            "homol": {
+              "buildTarget": "Modernize:build:homol"
+            },
             "development": {
               "buildTarget": "Modernize:build:development"
             }
           },
+
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
