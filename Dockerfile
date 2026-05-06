@@ -5,7 +5,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm run build --configuration=production
+RUN pnpm run build --configuration=homol
 
 # Étape 2 : Servir avec Nginx
 FROM nginx:alpine
