@@ -36,6 +36,7 @@ export class AuthService {
         if (res?.roles) {
           this.role = res.roles;
           this.isAdmin = this.role.includes('ADMIN');
+          localStorage.setItem('roles', JSON.stringify(res.roles));
         }
       })
     );
@@ -64,6 +65,7 @@ export class AuthService {
     this.isAdmin = false;
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('roles');
 
     this.toastr.warning(
       'Votre session a expiré. Veuillez vous reconnecter.',
@@ -81,5 +83,6 @@ export class AuthService {
     this.isAdmin = false;
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('roles');
   }
 }

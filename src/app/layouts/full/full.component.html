@@ -30,7 +30,7 @@
             <img src="/assets/images/profile/user-1.jpg" class="rounded-full" width="40" />
             <div class="ms-4 leading-5">
               <h4 class="font-semibold leading-5">{{authService.username}}</h4>
-              <span class="text-xs leading-5">Designer</span>
+              <span class="text-xs leading-5">{{authService.role.join(', ')}}</span>
             </div>
             <div class="ms-auto">
               <a mat-icon-button [routerLink]="['/authentication/login']" class="flex justify-center">
@@ -62,8 +62,8 @@
         <div class="bg-light-secondary flex items-center rounded-sm p-4">
           <img src="/assets/images/profile/user-1.jpg" class="rounded-full" width="40" />
           <div class="ms-4 leading-5">
-            <h4 class="font-semibold leading-5">Mathew test 2</h4>
-            <span class="text-xs leading-5">Designer</span>
+            <h4 class="font-semibold leading-5">{{authService.username}}</h4>
+            <span class="text-xs leading-5">{{authService.role.join(', ')}}</span>
           </div>
           <div class="ms-auto">
             <a mat-icon-button [routerLink]="['/authentication/login']" class="flex justify-center">

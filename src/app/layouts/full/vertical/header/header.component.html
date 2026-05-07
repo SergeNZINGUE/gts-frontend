@@ -57,9 +57,9 @@
           </div>
           <div class="border-t border-border p-5 hidden lg:flex items-center justify-between">
             <span class="flex items-center text-base font-medium">
-              <i-tabler name="help" class="size-5! me-2"></i-tabler>Frequently Asked Questions
+              <i-tabler name="chart-bar" class="size-5! me-2"></i-tabler>Tableau de bord
             </span>
-            <a [routerLink]="['/theme-pages/faq']" mat-flat-button color="primary">Check</a>
+            <a [routerLink]="['/dashboards/dashboard1']" mat-flat-button color="primary">Accéder</a>
           </div>
         </div>
         <div class="sm:col-span-4 col-span-12">
@@ -75,9 +75,9 @@
         </div>
       </div>
     </mat-menu>
-    <a mat-button [routerLink]="['/apps/chat']">Chat</a>
-    <a mat-button [routerLink]="['/apps/calendar']">Calendar</a>
-    <a mat-button [routerLink]="['/apps/email/inbox']">Email</a>
+    <a mat-button [routerLink]="['/dashboards/dashboard1']">Tableau de bord</a>
+    <a mat-button [routerLink]="['/apps/locations']">Locations</a>
+    <a mat-button [routerLink]="['/apps/missions']">Missions</a>
   </div>
   <span class="flex-1"></span>
   <!-- Mobile Menu -->
@@ -116,35 +116,48 @@
   <!-- --------------------------------------------------------------- -->
   <!-- Notification Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-icon-button matBadge="5" [matMenuTriggerFor]="notificationmenu" aria-label="Notifications"
+  <button mat-icon-button
+    [matBadge]="notificationService.count()"
+    [matBadgeHidden]="notificationService.count() === 0"
+    matBadgeColor="warn"
+    [matMenuTriggerFor]="notificationmenu"
+    aria-label="Notifications"
     class="notification-badge">
     <i class="iconify" data-icon="solar:bell-line-duotone"></i>
   </button>
   <mat-menu #notificationmenu="matMenu" class="topbar-dd cardWithShadow">
     <div class="flex items-center px-6 py-4">
-      <h6 class="text-base font-semibold m-0 ">Notifications</h6>
+      <h6 class="text-base font-semibold m-0">Notifications</h6>
       <span class="ms-auto">
-        <span class="bg-primary text-white px-2 py-1 font-medium rounded-sm text-xs">5 new</span>
+        <span class="bg-primary text-white px-2 py-1 font-medium rounded-sm text-xs">
+          {{ notificationService.count() }} nouvelle{{ notificationService.count() > 1 ? 's' : '' }}
+        </span>
       </span>
     </div>
-    @for(notification of notifications; track notification.title) {
-    <button mat-menu-item class="px-5! py-2!">
-      <div class="flex items-center">
-        <img [src]="notification.img" class="rounded-full" width="48" />
-        <div class="ms-4">
-          <h5 class="text-sm font-semibold m-0 ">
-            {{ notification.title }}
-          </h5>
-          <span>{{ notification.subtitle }}</span>
-        </div>
+
+    @if (notificationService.count() === 0) {
+      <div class="px-6 py-8 text-center text-sm text-gray-400">
+        <mat-icon class="!text-4xl mb-2 block mx-auto text-gray-300">notifications_none</mat-icon>
+        Aucune notification
       </div>
-    </button>
     }
-    <div class="py-3 px-6">
-      <button mat-stroked-button color="primary" class="w-full">
-        See all notifications
-      </button>
-    </div>
+
+    @for (notif of notificationService.notifications(); track notif.id) {
+      <a mat-menu-item class="px-5! py-3!" [routerLink]="[notif.link]">
+        <div class="flex items-center gap-3">
+          <span class="size-10 rounded-full flex items-center justify-center shrink-0"
+            [class]="severityConfig[notif.severity].bg">
+            <mat-icon class="!text-xl" [class]="severityConfig[notif.severity].text">
+              {{ notif.icon }}
+            </mat-icon>
+          </span>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold m-0 truncate">{{ notif.title }}</p>
+            <span class="text-xs text-gray-500 truncate block">{{ notif.subtitle }}</span>
+          </div>
+        </div>
+      </a>
+    }
   </mat-menu>
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->

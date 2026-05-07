@@ -1,5 +1,6 @@
 import {
   Component,
+  OnInit,
   Output,
   EventEmitter,
   Input,
@@ -16,8 +17,9 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { AppSettings } from 'src/app/config';
-import {AuthService} from "../../../../services/auth.service";
-import {NgIf} from "@angular/common";
+import { AuthService } from '../../../../services/auth.service';
+import { NotificationService } from '../../../../services/notification.service';
+import { NgIf } from '@angular/common';
 
 interface notifications {
   id: number;
@@ -59,7 +61,7 @@ interface quicklinks {
   templateUrl: './header.component.html',
   encapsulation: ViewEncapsulation.None
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   @Input() showToggle = true;
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
@@ -106,15 +108,14 @@ export class HeaderComponent {
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
-    public authService: AuthService
+    public authService: AuthService,
+    public notificationService: NotificationService,
   ) {
     translate.setDefaultLang('en');
   }
-  ngOnInit() {
-    if (this.authService.isLoggedIn){
-      let username:string |null|undefined=this.authService.username ;
-      let role:string[]=this.authService.role ;
-    }
+
+  ngOnInit(): void {
+    this.notificationService.load();
   }
 
   options = this.settings.getOptions();
@@ -141,38 +142,11 @@ export class HeaderComponent {
     this.selectedLanguage = lang;
   }
 
-  notifications: notifications[] = [
-    {
-      id: 1,
-      img: '/assets/images/profile/user-1.jpg',
-      title: 'Roman Joined thes Team!',
-      subtitle: 'Congratulate him',
-    },
-    {
-      id: 2,
-      img: '/assets/images/profile/user-2.jpg',
-      title: 'New message received',
-      subtitle: 'Salma sent you new message',
-    },
-    {
-      id: 3,
-      img: '/assets/images/profile/user-3.jpg',
-      title: 'New Payment received',
-      subtitle: 'Check your earnings',
-    },
-    {
-      id: 4,
-      img: '/assets/images/profile/user-4.jpg',
-      title: 'Jolly completed tasks',
-      subtitle: 'Assign her new tasks',
-    },
-    {
-      id: 5,
-      img: '/assets/images/profile/user-5.jpg',
-      title: 'Roman Joined the Team!',
-      subtitle: 'Congratulatse him',
-    },
-  ];
+  severityConfig: Record<string, { bg: string; text: string }> = {
+    warning: { bg: 'bg-yellow-100', text: 'text-yellow-600' },
+    danger:  { bg: 'bg-red-100',    text: 'text-red-600'    },
+    info:    { bg: 'bg-blue-100',   text: 'text-blue-600'   },
+  };
 
   profiledd: profiledd[] = [
     {
@@ -201,102 +175,102 @@ export class HeaderComponent {
   apps: apps[] = [
     {
       id: 1,
-      img: '/assets/images/svgs/icon-dd-chat.svg',
-      title: 'Chat Application',
-      subtitle: 'Messages & Emails',
-      link: '/apps/chat',
+      img: '/assets/images/svgs/icon-user-male.svg',
+      title: 'Conducteurs',
+      subtitle: 'Gestion des conducteurs',
+      link: '/apps/employee',
     },
     {
       id: 2,
-      img: '/assets/images/svgs/icon-dd-cart.svg',
-      title: 'Todo App',
-      subtitle: 'Completed task',
-      link: '/apps/todo',
+      img: '/assets/images/svgs/icon-office-bag.svg',
+      title: 'Engins',
+      subtitle: 'Parc matériel',
+      link: '/apps/engins',
     },
     {
       id: 3,
-      img: '/assets/images/svgs/icon-dd-invoice.svg',
-      title: 'Invoice App',
-      subtitle: 'Get latest invoice',
-      link: '/apps/invoice',
+      img: '/assets/images/svgs/icon-account.svg',
+      title: 'Clients',
+      subtitle: 'Gestion des clients',
+      link: '/apps/clients',
     },
     {
       id: 4,
       img: '/assets/images/svgs/icon-dd-date.svg',
-      title: 'Calendar App',
-      subtitle: 'Get Dates',
-      link: '/apps/calendar',
+      title: 'Locations',
+      subtitle: "Locations d'engins",
+      link: '/apps/locations',
     },
     {
       id: 5,
-      img: '/assets/images/svgs/icon-dd-mobile.svg',
-      title: 'Contact Application',
-      subtitle: '2 Unsaved Contacts',
-      link: '/apps/contacts',
+      img: '/assets/images/svgs/icon-tasks.svg',
+      title: 'Missions',
+      subtitle: 'Suivi des missions',
+      link: '/apps/missions',
     },
     {
       id: 6,
-      img: '/assets/images/svgs/icon-dd-lifebuoy.svg',
-      title: 'Tickets App',
-      subtitle: 'Create new ticket',
-      link: '/apps/tickets',
+      img: '/assets/images/svgs/icon-dd-invoice.svg',
+      title: 'Factures',
+      subtitle: 'Facturation & paiements',
+      link: '/apps/factures',
     },
     {
       id: 7,
-      img: '/assets/images/svgs/icon-dd-message-box.svg',
-      title: 'Email App',
-      subtitle: 'Get new emails',
-      link: '/apps/email/inbox',
+      img: '/assets/images/svgs/icon-pie.svg',
+      title: 'Rapports',
+      subtitle: 'Analyses & statistiques',
+      link: '/apps/rapports',
     },
     {
       id: 8,
-      img: '/assets/images/svgs/icon-dd-application.svg',
-      title: 'Conatct List',
-      subtitle: 'Create new contact',
-      link: '/apps/contact-list',
+      img: '/assets/images/svgs/icon-connect.svg',
+      title: 'Utilisateurs',
+      subtitle: 'Gestion des comptes',
+      link: '/apps/users',
     },
   ];
 
   quicklinks: quicklinks[] = [
     {
       id: 1,
-      title: 'Pricing Page',
-      link: '/theme-pages/pricing',
+      title: 'Tableau de bord',
+      link: '/dashboards/dashboard1',
     },
     {
       id: 2,
-      title: 'Authentication Design',
-      link: '/authentication/login',
-    },
-    {
-      id: 3,
-      title: 'Register Now',
-      link: '/authentication/side-register',
-    },
-    {
-      id: 4,
-      title: '404 Error Page',
-      link: '/authentication/error',
-    },
-    {
-      id: 5,
-      title: 'Notes App',
-      link: '/apps/notes',
-    },
-    {
-      id: 6,
-      title: 'Employee App',
+      title: 'Conducteurs',
       link: '/apps/employee',
     },
     {
+      id: 3,
+      title: 'Engins',
+      link: '/apps/engins',
+    },
+    {
+      id: 4,
+      title: 'Clients',
+      link: '/apps/clients',
+    },
+    {
+      id: 5,
+      title: 'Locations',
+      link: '/apps/locations',
+    },
+    {
+      id: 6,
+      title: 'Missions',
+      link: '/apps/missions',
+    },
+    {
       id: 7,
-      title: 'Todo Application',
-      link: '/apps/todo',
+      title: 'Factures',
+      link: '/apps/factures',
     },
     {
       id: 8,
-      title: 'Treeview',
-      link: '/theme-pages/treeview',
+      title: 'Utilisateurs',
+      link: '/apps/users',
     },
   ];
 

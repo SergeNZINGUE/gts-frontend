@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="150" height="50">
+  <defs>
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B00"/>
+      <stop offset="100%" style="stop-color:#E85D00"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="120" rx="12" fill="#FAFAFA"/>
+  <rect x="0" y="0" width="400" height="3" rx="2" fill="url(#gold2)"/>
+  <rect x="0" y="117" width="400" height="3" rx="2" fill="#1a1a2e" opacity="0.1"/>
+  <polygon points="20,90 55,35 90,90" fill="none" stroke="#1a1a2e" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="45,90 72,50 99,90" fill="url(#gold2)" opacity="0.8"/>
+  <line x1="75" y1="55" x2="100" y2="35" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="35" x2="115" y2="50" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+  <path d="M110,48 L120,42 L125,55 L113,58 Z" fill="url(#gold2)" stroke="#1a1a2e" stroke-width="1"/>
+  <circle cx="55" cy="85" r="8" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <circle cx="55" cy="85" r="3" fill="#1a1a2e"/>
+  <circle cx="90" cy="85" r="8" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <circle cx="90" cy="85" r="3" fill="#1a1a2e"/>
+  <rect x="44" y="91" width="58" height="6" rx="3" fill="#1a1a2e" opacity="0.8"/>
+  <line x1="135" y1="25" x2="135" y2="95" stroke="#FF6B00" stroke-width="1.5" opacity="0.4"/>
+  <text x="150" y="68" font-family="Georgia,serif" font-size="42" font-weight="150" letter-spacing="3" fill="#1a1a2e">TERRA</text>
+  <text x="150" y="92" font-family="Georgia,serif" font-size="22" font-weight="400" letter-spacing="12" fill="url(#gold2)">OPS</text>
+  <text x="152" y="108" font-family="Arial,sans-serif" font-size="8" letter-spacing="4" fill="#999">MINING · BTP · FLEET</text>
+</svg>
