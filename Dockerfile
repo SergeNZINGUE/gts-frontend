@@ -1,7 +1,7 @@
 # Stage 1: Build the Angular application
 FROM node:22-alpine AS build
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 ENV PNPM_HOME="/app/.pnpm"
 COPY .npmrc ./
 COPY package.json pnpm-lock.yaml ./
