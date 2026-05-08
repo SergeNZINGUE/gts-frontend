@@ -3,7 +3,7 @@ FROM node:22-alpine AS build
 WORKDIR /app
 RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --allow-scripts
+RUN pnpm install --frozen-lockfile --config.onlyBuiltDependencies=*
 COPY . .
 RUN pnpm run build --configuration=production
 
