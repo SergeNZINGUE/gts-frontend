@@ -102,7 +102,7 @@ export class AssurancesEnginsComponent implements OnInit, AfterViewInit {
     // mise à jour locale immédiate pour un affichage correct sans attendre le serveur
     toExpire.forEach(a => { a.statut = StatutAssurance.EXPIRE; });
 
-    forkJoin(toExpire.map(a => this.assurancesService.update(a.id!, { statut: StatutAssurance.EXPIRE }))).subscribe({
+    forkJoin(toExpire.map(a => this.assurancesService.updateExpireAssurance(a.id!))).subscribe({
       next: () => this.load(),
       error: () => this.load(),
     });

@@ -35,6 +35,13 @@ export class AssurancesService {
     });
   }
 
+  updateExpireAssurance(id: number): Observable<AssuranceEngin> {
+    return this.http.put<AssuranceEngin>(`${this.apiUrl}/${id}/expire`, {}, {
+      headers: this.coreService.getHeaders(),
+    });
+  }
+
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {
       headers: this.coreService.getHeaders(),
