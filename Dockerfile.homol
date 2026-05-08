@@ -6,7 +6,7 @@ ENV PNPM_HOME="/app/.pnpm"
 COPY .npmrc ./
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile || true
-RUN pnpm rebuild
+RUN pnpm rebuild || true
 COPY . .
 RUN pnpm run build --configuration=homol
 
