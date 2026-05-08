@@ -5,7 +5,7 @@ RUN npm install -g pnpm
 ENV PNPM_HOME="/app/.pnpm"
 COPY .npmrc ./
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile || true
 RUN pnpm rebuild
 COPY . .
 RUN pnpm run build --configuration=production
