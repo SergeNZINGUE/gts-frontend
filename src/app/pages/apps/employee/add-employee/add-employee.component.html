@@ -7,13 +7,17 @@
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Code conducteur</mat-label>
-            <input matInput formControlName="codeConducteur" />
+            <input matInput formControlName="codeConducteur"
+                   placeholder="Ex: Emp-2026-001"
+            />
           </mat-form-field>
         </div>
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Téléphone</mat-label>
-            <input matInput formControlName="telephone" />
+            <input matInput formControlName="telephone"
+                   placeholder="Ex: +22676112233"
+            />
           </mat-form-field>
         </div>
 
@@ -41,16 +45,18 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Permis :</mat-label>
-            <input matInput formControlName="permisCond" />
+          <mat-form-field appearance="outline" class="w-full" >
+            <mat-label>Permis : </mat-label>
+            <input matInput formControlName="permisCond" placeholder="Ex : C ; D ou E" />
           </mat-form-field>
         </div>
 
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Qualifications :</mat-label>
-            <input matInput formControlName="qualifications" />
+            <input matInput formControlName="qualifications"
+                   placeholder="Ex: Expert DUMPER; PELLEUSE"
+            />
           </mat-form-field>
         </div>
 
@@ -76,15 +82,28 @@
             </mat-select>
           </mat-form-field>
         </div>
-
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Date début emploi</mat-label>
-            <input matInput [matDatepicker]="pickerdateEmpl" formControlName="dateDebutEmp" />
-            <mat-datepicker-toggle matIconSuffix [for]="pickerdateEmpl"></mat-datepicker-toggle>
-            <mat-datepicker #pickerdateEmpl></mat-datepicker>
+            <input matInput [matDatepicker]="pickerdateDebutEmpl" formControlName="dateDebutEmp" />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerdateDebutEmpl"></mat-datepicker-toggle>
+            <mat-datepicker #pickerdateDebutEmpl></mat-datepicker>
           </mat-form-field>
         </div>
+
+        @if (form.get('typEmpl')?.value === 'CDD' || form.get('typEmpl')?.value === 'Interim') {
+          <div class="col-span-12 md:col-span-6">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Date Fin emploi *</mat-label>
+              <input matInput [matDatepicker]="pickerdateFinEmpl" formControlName="dateFinEmp" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerdateFinEmpl"></mat-datepicker-toggle>
+              <mat-datepicker #pickerdateFinEmpl></mat-datepicker>
+              @if (form.get('dateFinEmp')?.hasError('required') && form.get('dateFinEmp')?.touched) {
+                <mat-error>La date de fin est obligatoire</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        }
 
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">

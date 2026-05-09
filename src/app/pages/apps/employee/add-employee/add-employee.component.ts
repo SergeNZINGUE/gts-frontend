@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {MatFormField, MatInputModule, MatLabel} from "@angular/material/input";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatCard, MatCardContent} from "@angular/material/card";
@@ -34,7 +34,7 @@ import {FileUploadComponent} from "../../../../utils/file-upload/file-upload.com
   templateUrl: './add-employee.component.html',
   styleUrl: './add-employee.component.scss',
 })
-export class AddEmployeeComponent {
+export class AddEmployeeComponent implements OnInit {
 
   form: FormGroup;
   photoFile: File | null = null;
@@ -65,6 +65,20 @@ export class AddEmployeeComponent {
       typEmpl: ['', Validators.required],
       statutConducteur: ['1', Validators.required],
       dateDebutEmp: ['', Validators.required],
+      dateFinEmp: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    this.form.get('typEmpl')!.valueChanges.subscribe((type: string) => {
+      const ctrl = this.form.get('dateFinEmp')!;
+      if (type === 'CDD' || type === 'Interim') {
+        ctrl.setValidators(Validators.required);
+      } else {
+        ctrl.clearValidators();
+        ctrl.reset();
+      }
+      ctrl.updateValueAndValidity();
     });
   }
 
@@ -97,6 +111,10 @@ export class AddEmployeeComponent {
     formData.append('qualifications', this.form.value.qualifications);
     formData.append('dateDebutEmp', this.coreService.formatLocalDate(this.form.value.dateDebutEmp));
     formData.append('typEmpl', this.form.value.typEmpl);
+    const typEmpl = this.form.value.typEmpl;
+    if (typEmpl === 'CDD' || typEmpl === 'Interim') {
+      formData.append('dateFinEmp', this.coreService.formatLocalDate(this.form.value.dateFinEmp));
+    }
 
     if (this.photoFile) {
       formData.append('imgConducteur', this.photoFile);

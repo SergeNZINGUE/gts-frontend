@@ -69,8 +69,9 @@ export class AddClientComponent {
     this.form = this.fb.group({
       codeClient: ['', Validators.required],
       nameClient: [''],
-      descriptionEntreprise: [''],
-      designationEntreprise: ['', Validators.required],
+      raison_sociale: ['', Validators.required],
+      //descriptionEntreprise: [''],
+      //designationEntreprise: ['', Validators.required],
       paysEntreprise: ['', Validators.required],
       email: [''],
       phoneNumber: ['', Validators.required],
