@@ -13,6 +13,8 @@ import { ClientsService } from 'src/app/services/apps/clients/clients.service';
 import { EmployeeService } from 'src/app/services/apps/employee/employee.service';
 import { ReportingService } from 'src/app/services/apps/reporting/reporting.service';
 import { FactureImpayeeDto, LocationRapportDto, MissionRapportDto } from './rapport.models';
+import { ExportService } from 'src/app/services/export/export.service';
+
 
 @Component({
   standalone: true,
@@ -34,6 +36,7 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   periodeForm: FormGroup;
   locationsPerDs = new MatTableDataSource<LocationRapportDto>([]);
   loadingPer = false;
+  hasResultsPer = false;
   readonly colsPer = ['engin', 'client', 'conducteur', 'dateDebut', 'dateFin', 'heures', 'montant', 'statut'];
 
   // Tab 2 — Locations par client
@@ -42,6 +45,7 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   selectedClientId: number | null = null;
   locationsCliDs = new MatTableDataSource<LocationRapportDto>([]);
   loadingCli = false;
+  hasResultsCli = false;
   readonly colsCli = ['engin', 'conducteur', 'dateDebut', 'dateFin', 'heures', 'montant', 'statut'];
 
   // Tab 3 — Missions par conducteur
@@ -50,6 +54,7 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   selectedConducteurId: number | null = null;
   missionsDs = new MatTableDataSource<MissionRapportDto>([]);
   loadingMis = false;
+  hasResultsMis = false;
   readonly colsMis = ['mission', 'engin', 'client', 'dateDebut', 'dateFin', 'statut'];
 
   // Tab 4 — Suivi des impayés
@@ -58,6 +63,7 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   selectedClientImpId: number | null = null;
   impayesDs = new MatTableDataSource<FactureImpayeeDto>([]);
   loadingImp = false;
+  hasResultsImp = false;
   readonly colsImp = ['facture', 'client', 'dateFacture', 'dateEcheance', 'montantTTC', 'montantPaye', 'resteAPayer', 'statut'];
 
   constructor(
@@ -65,7 +71,9 @@ export class RapportsComponent implements OnInit, AfterViewInit {
     private clientsService: ClientsService,
     private employeeService: EmployeeService,
     private reportingService: ReportingService,
+    private exportService: ExportService,
     private snackBar: MatSnackBar,
+    private datePipe: DatePipe,
   ) {
     this.periodeForm = this.fb.group({
       dateDebut: [null, Validators.required],
@@ -84,6 +92,11 @@ export class RapportsComponent implements OnInit, AfterViewInit {
         this.filteredClients = clients;
         this.filteredClientsImp = clients;
         this.filteredConducteurs = conducteurs;
+        console.log("clients",clients);
+        console.log("conducteurs",conducteurs);
+        console.log("this.filteredClients",this.filteredClients);
+        console.log("conducteurs",conducteurs);
+        console.log("this.filteredConducteurs",this.filteredClients);
       },
       error: () => this.snack('Erreur de chargement des données'),
     });
@@ -121,17 +134,20 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   searchLocationsPeriode(): void {
     if (this.periodeForm.invalid) { this.periodeForm.markAllAsTouched(); return; }
     const v = this.periodeForm.value;
+    console.log("v",v);
     const dateDebut = (v.dateDebut as Date).toISOString().split('T')[0];
     const dateFin   = (v.dateFin   as Date).toISOString().split('T')[0];
+    console.log("dateDebut",dateDebut);
+    console.log("dateFin",dateFin);
     this.loadingPer = true;
     this.reportingService.getLocationsPeriode(dateDebut, dateFin).subscribe({
-      next: (data) => { this.locationsPerDs.data = data; this.loadingPer = false; },
+      next: (data) => { this.locationsPerDs.data = data; this.hasResultsPer = data.length > 0; this.loadingPer = false; },
       error: () => { this.snack('Erreur de chargement'); this.loadingPer = false; },
     });
   }
 
   get totalMontantPer(): number {
-    return this.locationsPerDs.data.reduce((s, d) => s + (d.montantTotal ?? 0), 0);
+    return this.locationsPerDs.data.reduce((s, d) => s + (d.montantMissionsHT ?? 0), 0);
   }
 
   // ── Tab 2 ─────────────────────────────────────────────────────────────
@@ -144,13 +160,13 @@ export class RapportsComponent implements OnInit, AfterViewInit {
     if (!this.selectedClientId) { this.snack('Veuillez sélectionner un client'); return; }
     this.loadingCli = true;
     this.reportingService.getLocationsClient(this.selectedClientId).subscribe({
-      next: (data) => { this.locationsCliDs.data = data; this.loadingCli = false; },
+      next: (data) => { this.locationsCliDs.data = data; this.hasResultsCli = data.length > 0; this.loadingCli = false; },
       error: () => { this.snack('Erreur de chargement'); this.loadingCli = false; },
     });
   }
 
   get totalMontantCli(): number {
-    return this.locationsCliDs.data.reduce((s, d) => s + (d.montantTotal ?? 0), 0);
+    return this.locationsCliDs.data.reduce((s, d) => s + (d.montantMissionsHT ?? 0), 0);
   }
 
   // ── Tab 3 ─────────────────────────────────────────────────────────────
@@ -163,7 +179,7 @@ export class RapportsComponent implements OnInit, AfterViewInit {
     if (!this.selectedConducteurId) { this.snack('Veuillez sélectionner un conducteur'); return; }
     this.loadingMis = true;
     this.reportingService.getMissionsConducteur(this.selectedConducteurId).subscribe({
-      next: (data) => { this.missionsDs.data = data; this.loadingMis = false; },
+      next: (data) => { this.missionsDs.data = data; this.hasResultsMis = data.length > 0; this.loadingMis = false; },
       error: () => { this.snack('Erreur de chargement'); this.loadingMis = false; },
     });
   }
@@ -183,17 +199,87 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   searchImpayes(): void {
     this.loadingImp = true;
     this.reportingService.getImpayes(this.selectedClientImpId ?? undefined).subscribe({
-      next: (data) => { this.impayesDs.data = data; this.loadingImp = false; },
+      next: (data) => { this.impayesDs.data = data; this.hasResultsImp = data.length > 0; this.loadingImp = false; },
       error: () => { this.snack('Erreur de chargement'); this.loadingImp = false; },
     });
   }
 
   get totalResteAPayer(): number {
-    return this.impayesDs.data.reduce((s, d) => s + (d.resteAPayer ?? 0), 0);
+    return this.impayesDs.data.reduce((s, d) => s + (d.resteARegler ?? 0), 0);
   }
 
   get totalMontantTTC(): number {
     return this.impayesDs.data.reduce((s, d) => s + (d.montantTTC ?? 0), 0);
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────
+  private fmtDate(d?: string): string {
+    return d ? this.datePipe.transform(d, 'dd/MM/yyyy') ?? '' : '';
+  }
+
+  exportPdf(tab: 'per' | 'cli' | 'mis' | 'imp'): void {
+    const { headers, rows, title, filename, foot } = this.buildExportData(tab);
+    this.exportService.exportPdf(title, filename, headers, rows, foot);
+  }
+
+  exportExcel(tab: 'per' | 'cli' | 'mis' | 'imp'): void {
+    const { headers, rows, filename } = this.buildExportData(tab);
+    this.exportService.exportExcel(filename, headers, rows);
+  }
+
+  private buildExportData(tab: 'per' | 'cli' | 'mis' | 'imp') {
+    switch (tab) {
+      case 'per': {
+        const headers = ['Location', 'Engin', 'Marque', 'Client', 'Conducteur', 'Début', 'Fin', 'Nb Jours', 'Montant (FCFA)', 'Statut'];
+        const rows = this.locationsPerDs.data.map((r: LocationRapportDto) => [
+          r.codeLocation ?? '', r.enginModel ?? '', r.enginMarque ?? '', r.clientNom ?? '',
+          r.conducteurNomComplet ?? '', this.fmtDate(r.dateDbtLoc), this.fmtDate(r.dateFinLoc),
+          r.nbJoursLocation ?? 0, r.montantMissionsHT ?? 0, r.statut ?? '',
+        ]);
+        const totalJoursPer = this.locationsPerDs.data.reduce((s, r) => s + (r.nbJoursLocation ?? 0), 0);
+        const totalMontantPer = this.locationsPerDs.data.reduce((s, r) => s + (r.montantMissionsHT ?? 0), 0);
+        const foot: (string | number)[][] = [['TOTAL', '', '', '', '', '', '', totalJoursPer, totalMontantPer, '']];
+        const debut = this.fmtDate((this.periodeForm.value.dateDebut as Date)?.toISOString());
+        const fin   = this.fmtDate((this.periodeForm.value.dateFin   as Date)?.toISOString());
+        return { headers, rows, foot, title: `Locations sur période : ${debut} - ${fin}`, filename: 'locations_periode' };
+      }
+      case 'cli': {
+        const headers = ['Location', 'Engin', 'Marque', 'Conducteur', 'Début', 'Fin', 'Nb Jours', 'Montant (FCFA)', 'Statut'];
+        const rows = this.locationsCliDs.data.map((r: LocationRapportDto) => [
+          r.codeLocation ?? '', r.enginModel ?? '', r.enginMarque ?? '',
+          r.conducteurNomComplet ?? '', this.fmtDate(r.dateDbtLoc), this.fmtDate(r.dateFinLoc),
+          r.nbJoursLocation ?? 0, r.montantMissionsHT ?? 0, r.statut ?? '',
+        ]);
+        const totalJoursCli = this.locationsCliDs.data.reduce((s, r) => s + (r.nbJoursLocation ?? 0), 0);
+        const totalMontantCli = this.locationsCliDs.data.reduce((s, r) => s + (r.montantMissionsHT ?? 0), 0);
+        const foot: (string | number)[][] = [['TOTAL', '', '', '', '', '', totalJoursCli, totalMontantCli, '']];
+        const client = this.clientSearchCtrl.value ?? '';
+        return { headers, rows, foot, title: `Locations par client : ${client}`, filename: 'locations_client' };
+      }
+      case 'mis': {
+        const headers = ['Mission', 'Lieu', 'Location', 'Client', 'Début', 'Fin', 'Nb Heures', 'Montant (FCFA)', 'Statut'];
+        const rows = this.missionsDs.data.map((r: MissionRapportDto) => [
+          r.codeMission ?? r.codeLocation ?? '', r.lieuMission ?? '', r.codeLocation ?? '',
+          r.clientNom ?? '', this.fmtDate(r.dateDebutMission), this.fmtDate(r.dateFinMission),
+          r.nbHeures ?? 0, r.sousTotal ?? 0, r.statutMission ?? '',
+        ]);
+        const totalHeures = this.missionsDs.data.reduce((s, r) => s + (r.nbHeures ?? 0), 0);
+        const totalMontantMis = this.missionsDs.data.reduce((s, r) => s + (r.sousTotal ?? 0), 0);
+        const foot: (string | number)[][] = [['TOTAL', '', '', '', '', '', totalHeures, totalMontantMis, '']];
+        const conducteur = this.conducteurSearchCtrl.value ?? '';
+        return { headers, rows, foot, title: `Missions par conducteur : ${conducteur}`, filename: 'missions_conducteur' };
+      }
+      case 'imp': {
+        const headers = ['Facture', 'Location', 'Client', 'Site', 'Date émission', 'Jours', 'Montant TTC', 'Versé', 'Reste (FCFA)', 'Statut'];
+        const rows = this.impayesDs.data.map((r: FactureImpayeeDto) => [
+          `FAC-${r.factureId ?? ''}`, r.codeLocation ?? '', r.clientNom ?? '', r.siteLocation ?? '',
+          this.fmtDate(r.dateEmission), r.joursDepuisEmission ?? '',
+          r.montantTTC ?? 0, r.montantDejaVerse ?? 0, r.resteARegler ?? 0, r.etatPaiement ?? '',
+        ]);
+        const clientImp = this.clientImpSearchCtrl.value ? `${this.clientImpSearchCtrl.value}` : 'Tous les clients';
+        return { headers, rows, foot: undefined, title: `Suivi des impayés : ${clientImp}`, filename: 'impayes' };
+      }
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────

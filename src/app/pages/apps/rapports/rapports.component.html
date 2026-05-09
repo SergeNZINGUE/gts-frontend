@@ -42,6 +42,18 @@
                   <mat-icon>search</mat-icon>
                   Rechercher
                 </button>
+                <button mat-stroked-button type="button"
+                        [disabled]="!hasResultsPer"
+                        (click)="exportPdf('per')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>picture_as_pdf</mat-icon> PDF
+                </button>
+                <button mat-stroked-button color="primary" type="button"
+                        [disabled]="!hasResultsPer"
+                        (click)="exportExcel('per')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>table_view</mat-icon> Excel
+                </button>
               </form>
             </mat-card-content>
           </mat-card>
@@ -58,9 +70,9 @@
                   <ng-container matColumnDef="engin">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Engin</th>
                     <td mat-cell *matCellDef="let r">
-                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.enginCode || '—' }}</span>
-                      @if (r.modelEngin) {
-                        <div class="text-xs text-muted">{{ r.modelEngin }}</div>
+                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.enginModel || '—' }}</span>
+                      @if (r.enginMarque) {
+                        <div class="text-xs text-muted">{{ r.enginMarque }}</div>
                       }
                     </td>
                   </ng-container>
@@ -72,34 +84,34 @@
 
                   <ng-container matColumnDef="conducteur">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Conducteur</th>
-                    <td mat-cell *matCellDef="let r" class="text-sm">{{ r.conducteurNom || '—' }}</td>
+                    <td mat-cell *matCellDef="let r" class="text-sm">{{ r.conducteurNomComplet || '—' }}</td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateDebut">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Début</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateDebutLocation | date:'dd/MM/yyyy' }}
+                      {{ r.dateDbtLoc | date:'dd/MM/yyyy' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateFin">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Fin</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateFinLocation | date:'dd/MM/yyyy' }}
+                      {{ r.dateFinLoc | date:'dd/MM/yyyy' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="heures">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Heures</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Nb Jours</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right">
-                      {{ r.nbrHeureLocation ?? '—' }} h
+                      {{ r.nbJoursLocation ?? '—' }} j
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="montant">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Montant</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right font-medium">
-                      {{ r.montantTotal | number:'1.0-0' }} FCFA
+                      {{ r.montantMissionsHT | number:'1.0-0' }} FCFA
                     </td>
                   </ng-container>
 
@@ -107,8 +119,8 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Statut</th>
                     <td mat-cell *matCellDef="let r">
                       <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                            [class]="getStatutLocationClass(r.statutLocation)">
-                        {{ r.statutLocation || '—' }}
+                            [class]="getStatutLocationClass(r.statut)">
+                        {{ r.statut || '—' }}
                       </span>
                     </td>
                   </ng-container>
@@ -124,9 +136,9 @@
                 </table>
               </div>
 
-              @if (locationsPerDs.data.length > 0) {
-                <div class="flex justify-end pt-3 pr-2 text-sm font-semibold border-t mt-2">
-                  Total : {{ totalMontantPer | number:'1.0-0' }} FCFA
+              @if (hasResultsPer) {
+                <div class="flex justify-end pt-3 pr-2 border-t mt-2">
+                  <span class="text-sm font-semibold">Total : {{ totalMontantPer | number:'1.0-0' }} FCFA</span>
                 </div>
               }
               <mat-paginator #paginatorPer [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
@@ -167,6 +179,18 @@
                   <mat-icon>search</mat-icon>
                   Rechercher
                 </button>
+                <button mat-stroked-button type="button"
+                        [disabled]="!hasResultsCli"
+                        (click)="exportPdf('cli')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>picture_as_pdf</mat-icon> PDF
+                </button>
+                <button mat-stroked-button color="primary" type="button"
+                        [disabled]="!hasResultsCli"
+                        (click)="exportExcel('cli')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>table_view</mat-icon> Excel
+                </button>
               </div>
             </mat-card-content>
           </mat-card>
@@ -183,43 +207,43 @@
                   <ng-container matColumnDef="engin">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Engin</th>
                     <td mat-cell *matCellDef="let r">
-                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.enginCode || '—' }}</span>
-                      @if (r.modelEngin) {
-                        <div class="text-xs text-muted">{{ r.modelEngin }}</div>
+                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.enginModel || '—' }}</span>
+                      @if (r.enginMarque) {
+                        <div class="text-xs text-muted">{{ r.enginMarque }}</div>
                       }
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="conducteur">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Conducteur</th>
-                    <td mat-cell *matCellDef="let r" class="text-sm">{{ r.conducteurNom || '—' }}</td>
+                    <td mat-cell *matCellDef="let r" class="text-sm">{{ r.conducteurNomComplet || '—' }}</td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateDebut">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Début</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateDebutLocation | date:'dd/MM/yyyy' }}
+                      {{ r.dateDbtLoc | date:'dd/MM/yyyy' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateFin">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Fin</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateFinLocation | date:'dd/MM/yyyy' }}
+                      {{ r.dateFinLoc | date:'dd/MM/yyyy' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="heures">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Heures</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Nb Jours</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right">
-                      {{ r.nbrHeureLocation ?? '—' }} h
+                      {{ r.nbJoursLocation ?? '—' }} j
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="montant">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Montant</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right font-medium">
-                      {{ r.montantTotal | number:'1.0-0' }} FCFA
+                      {{ r.montantMissionsHT | number:'1.0-0' }} FCFA
                     </td>
                   </ng-container>
 
@@ -227,8 +251,8 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Statut</th>
                     <td mat-cell *matCellDef="let r">
                       <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                            [class]="getStatutLocationClass(r.statutLocation)">
-                        {{ r.statutLocation || '—' }}
+                            [class]="getStatutLocationClass(r.statut)">
+                        {{ r.statut || '—' }}
                       </span>
                     </td>
                   </ng-container>
@@ -244,9 +268,9 @@
                 </table>
               </div>
 
-              @if (locationsCliDs.data.length > 0) {
-                <div class="flex justify-end pt-3 pr-2 text-sm font-semibold border-t mt-2">
-                  Total : {{ totalMontantCli | number:'1.0-0' }} FCFA
+              @if (hasResultsCli) {
+                <div class="flex justify-end pt-3 pr-2 border-t mt-2">
+                  <span class="text-sm font-semibold">Total : {{ totalMontantCli | number:'1.0-0' }} FCFA</span>
                 </div>
               }
               <mat-paginator #paginatorCli [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
@@ -288,6 +312,18 @@
                   <mat-icon>search</mat-icon>
                   Rechercher
                 </button>
+                <button mat-stroked-button type="button"
+                        [disabled]="!hasResultsMis"
+                        (click)="exportPdf('mis')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>picture_as_pdf</mat-icon> PDF
+                </button>
+                <button mat-stroked-button color="primary" type="button"
+                        [disabled]="!hasResultsMis"
+                        (click)="exportExcel('mis')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>table_view</mat-icon> Excel
+                </button>
               </div>
             </mat-card-content>
           </mat-card>
@@ -305,23 +341,20 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Mission</th>
                     <td mat-cell *matCellDef="let r">
                       <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
-                        {{ r.codeMission || '—' }}
+                        {{ r.codeMission || r.codeLocation || '—' }}
                       </span>
-                      @if (r.description) {
-                        <div class="text-xs text-muted max-w-40 truncate" [title]="r.description">
-                          {{ r.description }}
+                      @if (r.lieuMission) {
+                        <div class="text-xs text-muted max-w-40 truncate" [title]="r.lieuMission">
+                          {{ r.lieuMission }}
                         </div>
                       }
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="engin">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Engin</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Location</th>
                     <td mat-cell *matCellDef="let r">
-                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.enginCode || '—' }}</span>
-                      @if (r.modelEngin) {
-                        <div class="text-xs text-muted">{{ r.modelEngin }}</div>
-                      }
+                      <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.codeLocation || '—' }}</span>
                     </td>
                   </ng-container>
 
@@ -334,6 +367,9 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Début</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
                       {{ r.dateDebutMission | date:'dd/MM/yyyy' }}
+                      @if (r.heureDebutMission) {
+                        <div class="text-xs text-muted">{{ r.heureDebutMission }}</div>
+                      }
                     </td>
                   </ng-container>
 
@@ -341,6 +377,9 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Fin</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
                       {{ r.dateFinMission | date:'dd/MM/yyyy' }}
+                      @if (r.heureFinMission) {
+                        <div class="text-xs text-muted">{{ r.heureFinMission }}</div>
+                      }
                     </td>
                   </ng-container>
 
@@ -409,6 +448,18 @@
                   <mat-icon>search</mat-icon>
                   Rechercher
                 </button>
+                <button mat-stroked-button type="button"
+                        [disabled]="!hasResultsImp"
+                        (click)="exportPdf('imp')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>picture_as_pdf</mat-icon> PDF
+                </button>
+                <button mat-stroked-button color="primary" type="button"
+                        [disabled]="!hasResultsImp"
+                        (click)="exportExcel('imp')"
+                        class="flex! items-center gap-1 mb-5">
+                  <mat-icon>table_view</mat-icon> Excel
+                </button>
               </div>
             </mat-card-content>
           </mat-card>
@@ -423,30 +474,38 @@
                 <table mat-table [dataSource]="impayesDs" class="w-full no-wrap v-middle">
 
                   <ng-container matColumnDef="facture">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold">N° Facture</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Facture</th>
                     <td mat-cell *matCellDef="let r">
                       <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
-                        {{ r.numeroFacture || '—' }}
+                        FAC-{{ r.factureId || '—' }}
                       </span>
+                      @if (r.codeLocation) {
+                        <div class="text-xs text-muted">{{ r.codeLocation }}</div>
+                      }
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="client">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Client</th>
-                    <td mat-cell *matCellDef="let r" class="text-sm">{{ r.clientNom || '—' }}</td>
+                    <td mat-cell *matCellDef="let r" class="text-sm">
+                      {{ r.clientNom || '—' }}
+                      @if (r.siteLocation) {
+                        <div class="text-xs text-muted">{{ r.siteLocation }}</div>
+                      }
+                    </td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateFacture">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Date facture</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Date émission</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateFacture | date:'dd/MM/yyyy' }}
+                      {{ r.dateEmission | date:'dd/MM/yyyy' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateEcheance">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold">Échéance</th>
-                    <td mat-cell *matCellDef="let r" class="text-sm">
-                      {{ r.dateEcheance | date:'dd/MM/yyyy' }}
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Jours</th>
+                    <td mat-cell *matCellDef="let r" class="text-sm text-right">
+                      {{ r.joursDepuisEmission ?? '—' }} j
                     </td>
                   </ng-container>
 
@@ -458,16 +517,16 @@
                   </ng-container>
 
                   <ng-container matColumnDef="montantPaye">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Payé</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Versé</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right text-green-600">
-                      {{ r.montantPaye | number:'1.0-0' }} FCFA
+                      {{ r.montantDejaVerse | number:'1.0-0' }} FCFA
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="resteAPayer">
-                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Reste à payer</th>
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Reste à régler</th>
                     <td mat-cell *matCellDef="let r" class="text-sm text-right font-semibold text-red-600">
-                      {{ r.resteAPayer | number:'1.0-0' }} FCFA
+                      {{ r.resteARegler | number:'1.0-0' }} FCFA
                     </td>
                   </ng-container>
 
@@ -475,8 +534,8 @@
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Statut</th>
                     <td mat-cell *matCellDef="let r">
                       <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                            [class]="getStatutFactureClass(r.statutFacture)">
-                        {{ r.statutFacture || '—' }}
+                            [class]="getStatutFactureClass(r.etatPaiement)">
+                        {{ r.etatPaiement || '—' }}
                       </span>
                     </td>
                   </ng-container>
@@ -492,14 +551,10 @@
                 </table>
               </div>
 
-              @if (impayesDs.data.length > 0) {
-                <div class="flex items-center justify-end gap-6 pt-3 pr-2 text-sm border-t mt-2">
-                  <span>
-                    Total TTC : <strong>{{ totalMontantTTC | number:'1.0-0' }} FCFA</strong>
-                  </span>
-                  <span class="text-red-600">
-                    Total impayés : <strong>{{ totalResteAPayer | number:'1.0-0' }} FCFA</strong>
-                  </span>
+              @if (hasResultsImp) {
+                <div class="flex justify-end gap-6 pt-3 pr-2 border-t mt-2 text-sm">
+                  <span>Total TTC : <strong>{{ totalMontantTTC | number:'1.0-0' }} FCFA</strong></span>
+                  <span class="text-red-600">Total impayés : <strong>{{ totalResteAPayer | number:'1.0-0' }} FCFA</strong></span>
                 </div>
               }
               <mat-paginator #paginatorImp [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>

@@ -2,8 +2,9 @@ import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CoreService } from '../../core.service';
-import { FactureImpayeeDto, LocationRapportDto, MissionRapportDto } from '../../../pages/apps/rapports/rapport.models';
+import { FactureImpayeeDto, ImpayesResponse, LocationRapportDto, LocationsClientResponse, LocationsPeriodeResponse, MissionRapportDto, MissionsConducteurResponse } from '../../../pages/apps/rapports/rapport.models';
 
 @Injectable({ providedIn: 'root' })
 export class ReportingService {
@@ -13,22 +14,22 @@ export class ReportingService {
 
   getLocationsPeriode(dateDebut: string, dateFin: string): Observable<LocationRapportDto[]> {
     const params = new HttpParams().set('dateDebut', dateDebut).set('dateFin', dateFin);
-    return this.http.get<LocationRapportDto[]>(`${this.apiUrl}/locations/periode`, {
+    return this.http.get<LocationsPeriodeResponse>(`${this.apiUrl}/locations/periode`, {
       headers: this.coreService.getHeaders(),
       params,
-    });
+    }).pipe(map(r => r.locations ?? []));
   }
 
   getLocationsClient(clientId: number): Observable<LocationRapportDto[]> {
-    return this.http.get<LocationRapportDto[]>(`${this.apiUrl}/locations/client/${clientId}`, {
+    return this.http.get<LocationsClientResponse>(`${this.apiUrl}/locations/client/${clientId}`, {
       headers: this.coreService.getHeaders(),
-    });
+    }).pipe(map(r => r.locations ?? []));
   }
 
   getMissionsConducteur(conducteurId: number): Observable<MissionRapportDto[]> {
-    return this.http.get<MissionRapportDto[]>(`${this.apiUrl}/missions/conducteur/${conducteurId}`, {
+    return this.http.get<MissionsConducteurResponse>(`${this.apiUrl}/missions/conducteur/${conducteurId}`, {
       headers: this.coreService.getHeaders(),
-    });
+    }).pipe(map(r => r.missions ?? []));
   }
 
   getImpayes(clientId?: number): Observable<FactureImpayeeDto[]> {
@@ -36,9 +37,9 @@ export class ReportingService {
     if (clientId != null) {
       params = params.set('clientId', clientId.toString());
     }
-    return this.http.get<FactureImpayeeDto[]>(`${this.apiUrl}/factures/impayes`, {
+    return this.http.get<ImpayesResponse>(`${this.apiUrl}/factures/impayes`, {
       headers: this.coreService.getHeaders(),
       params,
-    });
+    }).pipe(map(r => r.factures ?? []));
   }
 }

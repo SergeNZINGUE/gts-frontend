@@ -1,17 +1,45 @@
+export interface LocationsPeriodeResponse {
+  nbLocationsTotal?: number;
+  nbLocationsEnCours?: number;
+  nbLocationsTerminees?: number;
+  locations: LocationRapportDto[];
+}
+
 export interface LocationRapportDto {
   id?: number;
   codeLocation?: string;
-  dateDebutLocation?: string;
-  dateFinLocation?: string;
-  nbrHeureLocation?: number;
+  dateDbtLoc?: string;
+  dateFinLoc?: string;
+  nbJoursLocation?: number;
+  nbHeureLocation?: number;
   coutHoraireLocation?: number;
-  montantTotal?: number;
-  statutLocation?: string;
+  coutJournalierLocation?: number;
+  montantMissionsHT?: number;
+  statut?: string;
+  siteLocation?: string;
   clientNom?: string;
-  codeClient?: string;
-  enginCode?: string;
-  modelEngin?: string;
-  conducteurNom?: string;
+  enginModel?: string;
+  enginMarque?: string;
+  conducteurNomComplet?: string;
+}
+
+export interface LocationsClientResponse {
+  clientId?: number;
+  clientNom?: string;
+  nbLocationsTotal?: number;
+  nbLocationsEnCours?: number;
+  nbLocationsTerminees?: number;
+  totalMontantMissionsHT?: number;
+  locations: LocationRapportDto[];
+}
+
+export interface MissionsConducteurResponse {
+  conducteurId?: number;
+  conducteurNomComplet?: string;
+  nbMissionsTotal?: number;
+  totalHeures?: number;
+  totalKm?: number;
+  missions: MissionRapportDto[];
 }
 
 export interface MissionRapportDto {
@@ -19,24 +47,32 @@ export interface MissionRapportDto {
   codeMission?: string;
   dateDebutMission?: string;
   dateFinMission?: string;
+  heureDebutMission?: string;
+  heureFinMission?: string;
+  lieuMission?: string;
+  nbHeures?: number;
+  tarifHoraireApplique?: number;
+  sousTotal?: number;
   statutMission?: string;
-  description?: string;
-  enginCode?: string;
-  modelEngin?: string;
+  codeLocation?: string;
   clientNom?: string;
 }
 
+export interface ImpayesResponse {
+  factures: FactureImpayeeDto[];
+}
+
 export interface FactureImpayeeDto {
-  id?: number;
-  numeroFacture?: string;
+  factureId?: number;
+  dateEmission?: string;
+  etatPaiement?: string;
+  clientId?: number;
   clientNom?: string;
-  codeClient?: string;
-  dateFacture?: string;
-  dateEcheance?: string;
+  codeLocation?: string;
+  siteLocation?: string;
   montantHT?: number;
-  tva?: number;
   montantTTC?: number;
-  montantPaye?: number;
-  resteAPayer?: number;
-  statutFacture?: string;
+  montantDejaVerse?: number;
+  resteARegler?: number;
+  joursDepuisEmission?: number;
 }
