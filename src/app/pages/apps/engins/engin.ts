@@ -4,7 +4,8 @@ export interface Engin {
   modelEngin: string;
   anneeEngin: string | Date;
   immatriculationEngin: string;
-  typeEngin: string;
+  typeEnginId?: number;
+  typeEngin?: string;
   marqueEngin: string;
   etatEngin: number;
   statusEngin: string;

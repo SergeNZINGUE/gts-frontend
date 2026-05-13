@@ -7,7 +7,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from 'src/app/material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { Engin } from '../engin';
+import { FamilleEngin, TypeEnginResponse } from '../type-engin';
 import { EnginService } from 'src/app/services/apps/engin/engin.service';
+import { TypesEnginsService } from 'src/app/services/apps/types-engins/types-engins.service';
 
 @Component({
   standalone: true,
@@ -27,17 +29,43 @@ export class AddEnginComponent implements OnInit {
   action: 'Add' | 'Update' = 'Add';
   local_data: Engin = {} as Engin;
   dateAcqEngin = new FormControl();
-  dateCreation = new FormControl();
-  dateModification = new FormControl();
+  //dateCreation = new FormControl();
+  //dateModification = new FormControl();
+  typesEngins: TypeEnginResponse[] = [];
+  filteredTypesEngins: TypeEnginResponse[] = [];
+  selectedFamille: FamilleEngin | null = null;
+  familles: { value: FamilleEngin; label: string }[] = [
+    { value: 'ENGIN_CHANTIER', label: 'Engin de chantier' },
+    { value: 'CAMION',         label: 'Camion' },
+    { value: 'VEHICULE_LEGER',  label: 'Véhicule léger' },
+    { value: 'AUTRE',          label: 'Autre' },
+  ];
 
   constructor(
     private enginService: EnginService,
+    private typesEnginsService: TypesEnginsService,
     private snackBar: MatSnackBar,
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    this.typesEnginsService.getActifs().subscribe({
+      next: (types) => {
+        this.typesEngins = types;
+        if (this.local_data.typeEnginId) {
+          const matched = types.find(t => t.id === this.local_data.typeEnginId);
+          if (matched) {
+            this.selectedFamille = matched.famille;
+            this.filteredTypesEngins = types.filter(t => t.famille === matched.famille);
+          }
+        } else {
+          this.filteredTypesEngins = types;
+        }
+      },
+      error: (err) => console.error('Erreur chargement types engins:', err),
+    });
+
     const id = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (id) {
@@ -48,12 +76,12 @@ export class AddEnginComponent implements OnInit {
           this.dateAcqEngin.setValue(
             engin.dateAcqEngin || new Date().toISOString().split('T')[0]
           );
-          this.dateCreation.setValue(
-            engin.dateCreation || new Date().toISOString().split('T')[0]
-          );
-          this.dateModification.setValue(
-            engin.dateModification || new Date().toISOString().split('T')[0]
-          );
+         // this.dateCreation.setValue(
+           // engin.dateCreation || new Date().toISOString().split('T')[0]
+         // );
+         // this.dateModification.setValue(
+          //  engin.dateModification || new Date().toISOString().split('T')[0]
+         // );
         },
         error: (error) => {
           console.error('Erreur chargement engin:', error);
@@ -63,16 +91,42 @@ export class AddEnginComponent implements OnInit {
       this.action = 'Add';
       this.local_data = {} as Engin;
       this.dateAcqEngin.setValue(new Date().toISOString().split('T')[0]);
-      this.dateCreation.setValue(new Date().toISOString().split('T')[0]);
-      this.dateModification.setValue(new Date().toISOString().split('T')[0]);
-      console.log("this.local_data_ngOnitit"+this.local_data);
+      //this.dateCreation.setValue(new Date().toISOString().split('T')[0]);
+      //this.dateModification.setValue(new Date().toISOString().split('T')[0]);
+      this.generateCodeEngin();
     }
+  }
+
+  private generateCodeEngin(): void {
+    const year = new Date().getFullYear();
+    const prefix = `ENG-${year}-`;
+    this.enginService.getEngins().subscribe({
+      next: (engins) => {
+        const nums = engins
+          .map(e => e.codeEngin)
+          .filter(code => code?.startsWith(prefix))
+          .map(code => parseInt(code.replace(prefix, ''), 10))
+          .filter(n => !isNaN(n));
+        const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+        this.local_data.codeEngin = `${prefix}${String(next).padStart(3, '0')}`;
+      },
+      error: () => {
+        this.local_data.codeEngin = `${prefix}001`;
+      },
+    });
+  }
+
+  onFamilleChange(famille: FamilleEngin | null): void {
+    this.filteredTypesEngins = famille
+      ? this.typesEngins.filter(t => t.famille === famille)
+      : this.typesEngins;
+    this.local_data.typeEnginId = undefined;
   }
 
   doAction(): void {
     this.local_data.dateAcqEngin = this.dateAcqEngin.value;
-    this.local_data.dateCreation = this.dateCreation.value;
-    this.local_data.dateModification = this.dateModification.value;
+    //this.local_data.dateCreation = this.dateCreation.value;
+    //this.local_data.dateModification = this.dateModification.value;
     this.local_data.etatEngin = 1;
 
     if (this.action === 'Add') {

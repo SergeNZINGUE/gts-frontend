@@ -17,13 +17,61 @@
               type="text"
               matInput
               required
+              readonly
               name="codeEngin"
               [(ngModel)]="local_data.codeEngin"
-              placeholder="Code engin"
+              placeholder="Génération automatique…"
+              class="cursor-default"
             />
+            <mat-icon matSuffix class="text-gray-400">auto_awesome</mat-icon>
           </mat-form-field>
         </div>
 
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Famille</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select
+              placeholder="Sélectionner une famille"
+              name="selectedFamille"
+              [(ngModel)]="selectedFamille"
+              (ngModelChange)="onFamilleChange($event)"
+            >
+              <mat-option [value]="null">— Toutes —</mat-option>
+              @for (f of familles; track f.value) {
+                <mat-option [value]="f.value">{{ f.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Type engin</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select
+              placeholder="Sélectionner un type"
+              name="typeEnginId"
+              required
+              [(ngModel)]="local_data.typeEnginId"
+            >
+              @for (type of filteredTypesEngins; track type.id) {
+                <mat-option [value]="type.id">{{ type.libelle }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="text-sm font-semibold mb-2 block">Marque</mat-label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              type="text"
+              matInput
+              required
+              name="marqueEngin"
+              [(ngModel)]="local_data.marqueEngin"
+              placeholder="Marque"
+            />
+          </mat-form-field>
+        </div>
         <div class="col-span-12 lg:col-span-6">
           <mat-label class="text-sm font-semibold mb-2 block">Modèle</mat-label>
           <mat-form-field appearance="outline" class="w-full">
@@ -63,49 +111,6 @@
             />
           </mat-form-field>
         </div>
-
-        <div class="col-span-12 lg:col-span-6">
-          <mat-label class="text-sm font-semibold mb-2 block">Type engin</mat-label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              type="text"
-              matInput
-              required
-              name="typeEngin"
-              [(ngModel)]="local_data.typeEngin"
-              placeholder="Type engin"
-            />
-          </mat-form-field>
-        </div>
-
-        <div class="col-span-12 lg:col-span-6">
-          <mat-label class="text-sm font-semibold mb-2 block">Marque</mat-label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              type="text"
-              matInput
-              required
-              name="marqueEngin"
-              [(ngModel)]="local_data.marqueEngin"
-              placeholder="Marque"
-            />
-          </mat-form-field>
-        </div>
-
-        <div class="col-span-12 lg:col-span-6">
-          <mat-label class="text-sm font-semibold mb-2 block">État</mat-label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              type="number"
-              matInput
-              required
-              name="etatEngin"
-              [(ngModel)]="local_data.etatEngin"
-              placeholder="État"
-            />
-          </mat-form-field>
-        </div>
-
         <div class="col-span-12 lg:col-span-6">
           <mat-label class="text-sm font-semibold mb-2 block">Statut</mat-label>
           <mat-form-field appearance="outline" class="w-full">
@@ -188,33 +193,7 @@
           </mat-form-field>
         </div>
 
-        <div class="col-span-12 lg:col-span-6">
-          <mat-label class="text-sm font-semibold mb-2 block">Date création</mat-label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              matInput
-              [matDatepicker]="pickerCreation"
-              [formControl]="dateCreation"
-              placeholder="Choisir une date"
-            />
-            <mat-datepicker-toggle matSuffix [for]="pickerCreation"></mat-datepicker-toggle>
-            <mat-datepicker #pickerCreation></mat-datepicker>
-          </mat-form-field>
-        </div>
 
-        <div class="col-span-12 lg:col-span-6">
-          <mat-label class="text-sm font-semibold mb-2 block">Date modification</mat-label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              matInput
-              [matDatepicker]="pickerModification"
-              [formControl]="dateModification"
-              placeholder="Choisir une date"
-            />
-            <mat-datepicker-toggle matSuffix [for]="pickerModification"></mat-datepicker-toggle>
-            <mat-datepicker #pickerModification></mat-datepicker>
-          </mat-form-field>
-        </div>
       </div>
 
       <div class="mt-6 flex gap-3">
