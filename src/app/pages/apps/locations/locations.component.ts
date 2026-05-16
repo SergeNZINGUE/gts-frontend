@@ -1,4 +1,7 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import {MatIcon} from "@angular/material/icon";
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatDivider} from "@angular/material/list";
@@ -61,6 +64,7 @@ import {
     FormsModule,
     CalendarModule
   ],
+  providers: [DatePipe],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.scss',
 })
@@ -107,7 +111,8 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
   constructor(
     private locationService: LocationService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private datePipe: DatePipe,
   ) {
   }
   ngOnInit() {
@@ -237,10 +242,11 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
     if (!location.id) {
       return;
     }
+    const enginId = location.enginId ?? location.engins?.id;
+    this.locationService.terminerLocation(location.id, {
 
-
-    this.locationService.terminerLocation(location.id,{
-      statusLocation : 'TERMINEE'
+      statusLocation: 'TERMINEE',
+      ...(enginId != null ? { enginId } : {}),
     }).subscribe({
       next: () => {
         this.loadLocations();
@@ -342,6 +348,55 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
 
 
 
+
+  exportPdf(): void {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(14);
+    doc.text('Liste des locations', 14, 15);
+    doc.setFontSize(9);
+    doc.text(`Exporté le ${this.datePipe.transform(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 21);
+
+    autoTable(doc, {
+      startY: 26,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [33, 150, 243] },
+      head: [['Code', 'Client', 'Engin', 'Conducteur', 'Début', 'Fin', 'Jours', 'Site', 'Statut']],
+      body: this.locationsDataSource.data.map(l => [
+        l.codeLocation || '-',
+        l.client?.nameClient || '-',
+        l.enginCode || l.engins?.codeEngin || '-',
+        l.conducteurNom ? `${l.conducteurPrenoms || ''} ${l.conducteurNom}`.trim() : (l.conducteur?.nomConducteur || '-'),
+        this.datePipe.transform(l.dateDbtLoc, 'dd/MM/yyyy') || '-',
+        this.datePipe.transform(l.dateFinLoc, 'dd/MM/yyyy') || '-',
+        l.nbJoursLocation ?? '-',
+        l.siteLocation || '-',
+        l.statut || '-',
+      ]),
+    });
+
+    doc.save(`locations_${this.datePipe.transform(new Date(), 'yyyyMMdd_HHmm')}.pdf`);
+  }
+
+  exportExcel(): void {
+    const rows = this.locationsDataSource.data.map(l => ({
+      'Code Location': l.codeLocation || '',
+      'Client': l.client?.nameClient || '',
+      'Engin': l.enginCode || l.engins?.codeEngin || '',
+      'Conducteur': l.conducteurNom ? `${l.conducteurPrenoms || ''} ${l.conducteurNom}`.trim() : (l.conducteur?.nomConducteur || ''),
+      'Date début': this.datePipe.transform(l.dateDbtLoc, 'dd/MM/yyyy') || '',
+      'Date fin': this.datePipe.transform(l.dateFinLoc, 'dd/MM/yyyy') || '',
+      'Nb jours': l.nbJoursLocation ?? 0,
+      'Site': l.siteLocation || '',
+      'Statut': l.statut || '',
+      'Coût horaire': l.coutHoraireLocation ?? 0,
+      'Coût journalier': l.coutJournalierLocation ?? 0,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Locations');
+    XLSX.writeFile(wb, `locations_${this.datePipe.transform(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+  }
 
   private loadLocations() {
     this.locationService.getLocations().subscribe({

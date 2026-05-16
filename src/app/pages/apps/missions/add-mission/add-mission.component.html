@@ -43,18 +43,6 @@
 
                 <div class="col-span-12 md:col-span-6">
                   <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Statut</mat-label>
-                    <mat-select formControlName="statutMission">
-                      <mat-option value="EN ATTENTE">EN ATTENTE</mat-option>
-                      <mat-option value="EN COURS">EN COURS</mat-option>
-                      <mat-option value="TERMINÉE">TERMINÉE</mat-option>
-                      <mat-option value="ANNULÉE">ANNULÉE</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div class="col-span-12 md:col-span-6">
-                  <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Priorité</mat-label>
                     <mat-select formControlName="prioriteMission">
                       <mat-option value="BASSE">BASSE</mat-option>
@@ -231,6 +219,32 @@
                       formControlName="carbtFinMission"
                       placeholder="Ex : 55"
                     />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Compteur début mission</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="compteurDbtMission"
+                      placeholder="Ex : 1200"
+                    />
+                    <mat-hint>Prioritaire pour le calcul des heures</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Compteur fin mission</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="compteurFinMission"
+                      placeholder="Ex : 1450"
+                    />
+                    <mat-hint>Prioritaire pour le calcul des heures</mat-hint>
                   </mat-form-field>
                 </div>
 
@@ -445,15 +459,6 @@
                 </div>
 
                 <mat-divider></mat-divider>
-
-                <div>
-                  <span class="text-sm text-muted">Statut</span>
-                  <div class="mt-1">
-                    <span class="px-2 py-1 rounded-sm text-xs font-medium bg-light-warning text-warning">
-                      {{ form.value.statutMission || 'EN ATTENTE' }}
-                    </span>
-                  </div>
-                </div>
 
                 <div>
                   <span class="text-sm text-muted">Priorité</span>

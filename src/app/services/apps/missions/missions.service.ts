@@ -1,10 +1,11 @@
 import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CoreService } from '../../core.service';
 import { Mission } from '../../../pages/apps/missions/mission';
 import { CreateMissionRequest } from '../../../pages/apps/missions/add-mission/createMissionRequest';
+import { BYPASS_403 } from '../../../interceptors/auth.interceptor';
 
 @Injectable({
   providedIn: 'root',
@@ -32,11 +33,18 @@ export class MissionsService {
   createMission(payload: CreateMissionRequest): Observable<Mission> {
     return this.http.post<Mission>(this.apiUrl, payload, {
       headers: this.coreService.getHeaders(),
+      context: new HttpContext().set(BYPASS_403, true),
     });
   }
 
-  updateMission(id: number, payload: Partial<CreateMissionRequest>): Observable<Mission> {
+  terminerMission(id: number, payload: Partial<CreateMissionRequest>): Observable<Mission> {
     return this.http.put<Mission>(`${this.apiUrl}/${id}/terminer`, payload, {
+      headers: this.coreService.getHeaders(),
+    });
+  }
+
+  cloturerMission(id: number): Observable<Mission> {
+    return this.http.patch<Mission>(`${this.apiUrl}/${id}/cloturer`, null, {
       headers: this.coreService.getHeaders(),
     });
   }

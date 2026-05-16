@@ -17,6 +17,8 @@ export interface Mission {
   kmFinMission?: number;
   carbtDbtMission?: number;
   carbtFinMission?: number;
+  compteurDbtMission?: number;
+  compteurFinMission?: number;
   materiauxMission?: string;
   qteMateriauxMission?: number;
   statutMission?: string;

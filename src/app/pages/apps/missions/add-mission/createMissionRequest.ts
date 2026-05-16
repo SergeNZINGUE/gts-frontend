@@ -1,9 +1,7 @@
-import { MissionStatut } from '../missionStatut';
 import { MissionPriorite } from '../missionPriorite';
 
 export interface CreateMissionRequest {
   codeMission: string;
-  statutMission: string;
   prioriteMission: string;
   responsableMission?: string;
 
@@ -20,6 +18,8 @@ export interface CreateMissionRequest {
   kmFinMission?: number;
   carbtDbtMission?: number;
   carbtFinMission?: number;
+  compteurDbtMission?: number;
+  compteurFinMission?: number;
 
   materiauxMission?: string;
   qteMateriauxMission?: number;

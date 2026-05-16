@@ -12,7 +12,7 @@ export interface Employee {
   permisCond: string;
   prenomsConducteur: string;
   qualifications: string;
-  statutConducteur: number;
+  statutConducteur: string;
   telephone: string;
   typEmpl: string;
   cniDateEmi: Date;
@@ -20,6 +20,7 @@ export interface Employee {
   cniLieuEtab: string;
   cniRef: string;
   action?: string;
+  coutHoraireConducteur?: number;
 }
 
 

@@ -15,12 +15,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MaterialModule } from 'src/app/material.module';
 import { ClientsService } from 'src/app/services/apps/clients/clients.service';
 import { EnginService } from 'src/app/services/apps/engin/engin.service';
-import { EmployeeService } from 'src/app/services/apps/employee/employee.service';
 import { LocationService } from 'src/app/services/apps/location/location.service';
 
 import { Client } from '../../clients/client';
 import { Engin } from '../../engins/engin';
-import { EmployeeRequest } from '../../employee/employeeRequest';
 import { EtatLocation } from '../etatLocation';
 
 @Component({
@@ -43,13 +41,11 @@ export class AddLocationComponent implements OnInit {
 
   clients: Client[] = [];
   engins: Engin[] = [];
-  conducteurs: EmployeeRequest[] = [];
 
   tariffMode: 'horaire' | 'journalier' | 'both' | 'none' | null = null;
 
   clientSearchCtrl = new FormControl('');
   enginSearchCtrl = new FormControl('');
-  conducteurSearchCtrl = new FormControl('');
 
   get filteredClients(): Client[] {
     const s = (this.clientSearchCtrl.value || '').toLowerCase();
@@ -69,15 +65,6 @@ export class AddLocationComponent implements OnInit {
     );
   }
 
-  get filteredConducteurs(): EmployeeRequest[] {
-    const s = (this.conducteurSearchCtrl.value || '').toLowerCase();
-    if (!s) return this.conducteurs;
-    return this.conducteurs.filter((c) =>
-      (c.nomConducteur || '').toLowerCase().includes(s) ||
-      (c.prenomsConducteur || '').toLowerCase().includes(s)
-    );
-  }
-
   onClientSelected(client: Client): void {
     this.form.patchValue({ clientId: client.id });
     this.clientSearchCtrl.setValue(client.nameClient || '');
@@ -90,18 +77,10 @@ export class AddLocationComponent implements OnInit {
     );
   }
 
-  onConducteurSelected(conducteur: EmployeeRequest): void {
-    this.form.patchValue({ conducteurId: conducteur.id });
-    this.conducteurSearchCtrl.setValue(
-      `${conducteur.nomConducteur || ''} ${conducteur.prenomsConducteur || ''}`.trim()
-    );
-  }
-
   constructor(
     private fb: FormBuilder,
     private clientsService: ClientsService,
     private enginService: EnginService,
-    private employeeService: EmployeeService,
     private locationService: LocationService,
     private snackBar: MatSnackBar,
     private router: Router,
@@ -114,7 +93,6 @@ export class AddLocationComponent implements OnInit {
 
       clientId: ['', Validators.required],
       enginId: ['', Validators.required],
-      conducteurId: ['', Validators.required],
 
       siteLocation: ['', Validators.required],
 
@@ -131,9 +109,9 @@ export class AddLocationComponent implements OnInit {
   ngOnInit(): void {
     this.loadClients();
     this.loadEngins();
-    this.loadConducteurs();
     this.listenDateChanges();
     this.listenEnginChange();
+    this.generateLocationCode();
   }
 
   get selectedClientLabel(): string {
@@ -154,23 +132,18 @@ export class AddLocationComponent implements OnInit {
     return `${engin.codeEngin || engin.id} - ${engin.marqueEngin || engin.immatriculationEngin || ''}`;
   }
 
-  get selectedConducteurLabel(): string {
-    const conducteurId = this.form.value.conducteurId;
-    const conducteur = this.conducteurs.find((item) => item.id === conducteurId);
-
-    if (!conducteur) {
-      return 'Non sélectionné';
-    }
-
-    return `${conducteur.nomConducteur || ''} ${conducteur.prenomsConducteur || ''}`;
-  }
-
   get formattedDateDebut(): string {
     return this.formatDateForDisplay(this.form.value.dateDbtLoc);
   }
 
   get formattedDateFin(): string {
     return this.formatDateForDisplay(this.form.value.dateFinLoc);
+  }
+
+  get totalHeures(): number {
+    const nbHeures = Number(this.form.value.nbHeuresLocation || 0);
+    const nbJours = Number(this.form.value.nbJoursLocation || 0);
+    return nbHeures * nbJours;
   }
 
   get totalEstime(): number {
@@ -225,6 +198,26 @@ export class AddLocationComponent implements OnInit {
     });
   }
 
+  private generateLocationCode(): void {
+    const year = new Date().getFullYear();
+    const prefix = `LOC-${year}-`;
+    this.locationService.getLocations().subscribe({
+      next: (locations) => {
+        const maxSeq = locations
+          .map(l => l.codeLocation ?? '')
+          .filter(c => c.startsWith(prefix))
+          .map(c => parseInt(c.replace(prefix, ''), 10))
+          .filter(n => !isNaN(n))
+          .reduce((max, n) => Math.max(max, n), 0);
+        const next = String(maxSeq + 1).padStart(3, '0');
+        this.form.get('codeLocation')!.setValue(`${prefix}${next}`);
+      },
+      error: () => {
+        this.form.get('codeLocation')!.setValue(`${prefix}001`);
+      },
+    });
+  }
+
   private loadClients(): void {
     this.clientsService.getClients().subscribe({
       next: (clients) => {
@@ -239,21 +232,10 @@ export class AddLocationComponent implements OnInit {
   private loadEngins(): void {
     this.enginService.getEngins().subscribe({
       next: (engins) => {
-        this.engins = engins;
+        this.engins = engins.filter(e => e.statusEngin === 'DISPONIBLE');
       },
       error: (error) => {
         console.error('Erreur chargement engins:', error);
-      },
-    });
-  }
-
-  private loadConducteurs(): void {
-    this.employeeService.getEmployees().subscribe({
-      next: (conducteurs) => {
-        this.conducteurs = conducteurs;
-      },
-      error: (error) => {
-        console.error('Erreur chargement conducteurs:', error);
       },
     });
   }
@@ -346,7 +328,6 @@ export class AddLocationComponent implements OnInit {
 
       clientId: this.form.value.clientId,
       enginId: this.form.value.enginId,
-      conducteurId: this.form.value.conducteurId,
     };
   }
 

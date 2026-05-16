@@ -11,6 +11,9 @@ import {MatDatepicker, MatDatepickerModule} from "@angular/material/datepicker";
 import {MatNativeDateModule} from "@angular/material/core";
 import {CoreService} from "../../../../services/core.service";
 import {FileUploadComponent} from "../../../../utils/file-upload/file-upload.component";
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
+import {Observable, startWith, map} from "rxjs";
+import {AsyncPipe} from "@angular/common";
 
 @Component({
   selector: 'app-add-employee',
@@ -30,6 +33,8 @@ import {FileUploadComponent} from "../../../../utils/file-upload/file-upload.com
     MatSelect,
     MatOption,
     FileUploadComponent,
+    MatAutocompleteModule,
+    AsyncPipe,
   ],
   templateUrl: './add-employee.component.html',
   styleUrl: './add-employee.component.scss',
@@ -40,6 +45,9 @@ export class AddEmployeeComponent implements OnInit {
   photoFile: File | null = null;
   previewUrl: string = 'assets/images/profile/user-1.jpg';
   isSubmitting = false;
+
+  readonly permisOptions = ['B', 'B1', 'B2', 'B96', 'BE', 'BVA', 'C', 'C1', 'CE', 'C1E', 'D', 'D1', 'D2', 'E', 'F', 'BCD'];
+  filteredPermis!: Observable<string[]>;
 
   constructor(
     private fb: FormBuilder,
@@ -66,10 +74,21 @@ export class AddEmployeeComponent implements OnInit {
       statutConducteur: ['1', Validators.required],
       dateDebutEmp: ['', Validators.required],
       dateFinEmp: [''],
+      coutHoraire: [1500, [Validators.required, Validators.min(1000)]],
     });
   }
 
   ngOnInit(): void {
+    this.filteredPermis = this.form.get('permisCond')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const filter = (value ?? '').toLowerCase();
+        return this.permisOptions.filter(p => p.toLowerCase().includes(filter));
+      })
+    );
+
+    this.generateCode();
+
     this.form.get('typEmpl')!.valueChanges.subscribe((type: string) => {
       const ctrl = this.form.get('dateFinEmp')!;
       if (type === 'CDD' || type === 'Interim') {
@@ -79,6 +98,26 @@ export class AddEmployeeComponent implements OnInit {
         ctrl.reset();
       }
       ctrl.updateValueAndValidity();
+    });
+  }
+
+  private generateCode(): void {
+    const year = new Date().getFullYear();
+    const prefix = `EMPL-${year}-`;
+    this.employeeService.getEmployees().subscribe({
+      next: (employees) => {
+        const maxSeq = employees
+          .map(e => e.codeConducteur ?? '')
+          .filter(c => c.startsWith(prefix))
+          .map(c => parseInt(c.replace(prefix, ''), 10))
+          .filter(n => !isNaN(n))
+          .reduce((max, n) => Math.max(max, n), 0);
+        const next = String(maxSeq + 1).padStart(3, '0');
+        this.form.get('codeConducteur')!.setValue(`${prefix}${next}`);
+      },
+      error: () => {
+        this.form.get('codeConducteur')!.setValue(`${prefix}001`);
+      },
     });
   }
 
@@ -111,6 +150,7 @@ export class AddEmployeeComponent implements OnInit {
     formData.append('qualifications', this.form.value.qualifications);
     formData.append('dateDebutEmp', this.coreService.formatLocalDate(this.form.value.dateDebutEmp));
     formData.append('typEmpl', this.form.value.typEmpl);
+    formData.append('coutHoraireConducteur', this.form.value.coutHoraire);
     const typEmpl = this.form.value.typEmpl;
     if (typEmpl === 'CDD' || typEmpl === 'Interim') {
       formData.append('dateFinEmp', this.coreService.formatLocalDate(this.form.value.dateFinEmp));

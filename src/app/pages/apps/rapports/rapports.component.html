@@ -284,11 +284,11 @@
       <mat-tab label="Missions par conducteur">
         <div class="p-4 flex flex-col gap-4">
 
-          <!-- Filtre conducteur -->
+          <!-- Filtre conducteur + période -->
           <mat-card class="cardWithShadow">
             <mat-card-content>
               <div class="flex flex-wrap items-end gap-4">
-                <mat-form-field appearance="outline" class="hide-hint w-80">
+                <mat-form-field appearance="outline" class="hide-hint w-72">
                   <mat-label>Conducteur</mat-label>
                   <input matInput [formControl]="conducteurSearchCtrl"
                          [matAutocomplete]="autoConducteur"
@@ -303,6 +303,24 @@
                       </mat-option>
                     }
                   </mat-autocomplete>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="hide-hint w-36">
+                  <mat-label>Mois</mat-label>
+                  <mat-select [formControl]="misMoisCtrl">
+                    @for (m of moisOptions; track m.value) {
+                      <mat-option [value]="m.value">{{ m.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="hide-hint w-28">
+                  <mat-label>Année</mat-label>
+                  <mat-select [formControl]="misAnneeCtrl">
+                    @for (a of anneesOptions; track a) {
+                      <mat-option [value]="a">{{ a }}</mat-option>
+                    }
+                  </mat-select>
                 </mat-form-field>
 
                 <button mat-flat-button color="primary"
@@ -349,6 +367,7 @@
                         </div>
                       }
                     </td>
+                    <td mat-footer-cell *matFooterCellDef class="font-semibold">TOTAL</td>
                   </ng-container>
 
                   <ng-container matColumnDef="engin">
@@ -356,11 +375,13 @@
                     <td mat-cell *matCellDef="let r">
                       <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ r.codeLocation || '—' }}</span>
                     </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
 
                   <ng-container matColumnDef="client">
                     <th mat-header-cell *matHeaderCellDef class="font-semibold">Client</th>
                     <td mat-cell *matCellDef="let r" class="text-sm">{{ r.clientNom || '—' }}</td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateDebut">
@@ -371,6 +392,7 @@
                         <div class="text-xs text-muted">{{ r.heureDebutMission }}</div>
                       }
                     </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
 
                   <ng-container matColumnDef="dateFin">
@@ -380,6 +402,27 @@
                       @if (r.heureFinMission) {
                         <div class="text-xs text-muted">{{ r.heureFinMission }}</div>
                       }
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="heures">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Heures</th>
+                    <td mat-cell *matCellDef="let r" class="text-sm text-right">
+                      {{ r.nbHeures ?? 0 }} h
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef class="font-semibold text-right">
+                      {{ totalHeuresMis }} h
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="remuneration">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Rémunération</th>
+                    <td mat-cell *matCellDef="let r" class="text-sm text-right">
+                      {{ (r.nbHeures ?? 0) * (selectedConducteur?.coutHoraireConducteur ?? 0) | number:'1.0-0' }} FCFA
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef class="font-semibold text-right">
+                      {{ totalRemunerationMis | number:'1.0-0' }} FCFA
                     </td>
                   </ng-container>
 
@@ -391,11 +434,16 @@
                         {{ r.statutMission || '—' }}
                       </span>
                     </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
 
                   <tr mat-header-row *matHeaderRowDef="colsMis"></tr>
                   <tr mat-row *matRowDef="let row; columns: colsMis"
                       class="hover:bg-gray-50 transition-colors"></tr>
+                  @if (hasResultsMis) {
+                    <tr mat-footer-row *matFooterRowDef="colsMis"
+                        class="bg-gray-50 font-semibold"></tr>
+                  }
                   <tr class="mat-row" *matNoDataRow>
                     <td [attr.colspan]="colsMis.length" class="text-center py-12 text-muted text-sm">
                       @if (loadingMis) { Chargement… } @else { Sélectionnez un conducteur et lancez la recherche. }

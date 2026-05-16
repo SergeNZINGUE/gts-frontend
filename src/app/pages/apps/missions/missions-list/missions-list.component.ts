@@ -1,6 +1,9 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -23,6 +26,7 @@ import { MatSort } from '@angular/material/sort';
 import { NgClass } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
 import { MissionsService } from 'src/app/services/apps/missions/missions.service';
+import { StatutLabelPipe } from 'src/app/pipe/statut-label.pipe';
 import { Mission } from '../mission';
 
 @Component({
@@ -35,6 +39,7 @@ import { Mission } from '../mission';
     MaterialModule,
     DatePipe,
     NgClass,
+    StatutLabelPipe,
     MatTable,
     MatColumnDef,
     MatHeaderCell,
@@ -78,6 +83,7 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
   searchText = '';
   selectedStatut = 'All';
   selectedPriorite = 'All';
+  selectedDate = '';
 
   allMissions: Mission[] = [];
   missionsDataSource = new MatTableDataSource<Mission>([]);
@@ -86,7 +92,8 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
     private missionsService: MissionsService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private datePipe: DatePipe,
   ) {}
 
   ngOnInit(): void {
@@ -112,6 +119,11 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
     this.applyFilters();
   }
 
+  applyDateFilter(date: string): void {
+    this.selectedDate = date;
+    this.applyFilters();
+  }
+
   applyFilters(): void {
     const search = this.searchText.trim().toLowerCase();
 
@@ -132,7 +144,11 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
       const matchPriorite =
         this.selectedPriorite === 'All' || mission.prioriteMission === this.selectedPriorite;
 
-      return matchSearch && matchStatut && matchPriorite;
+      const missionDate =
+        (mission.dateTravail || mission.dateDebutMission || '').toString().substring(0, 10);
+      const matchDate = !this.selectedDate || missionDate === this.selectedDate;
+
+      return matchSearch && matchStatut && matchPriorite && matchDate;
     });
 
     this.missionsDataSource.data = filtered;
@@ -146,6 +162,7 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
     this.searchText = '';
     this.selectedStatut = 'All';
     this.selectedPriorite = 'All';
+    this.selectedDate = '';
     this.applyFilters();
   }
 
@@ -173,7 +190,7 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
       mission.responsableMission;
 
     if (isComplete) {
-      this.doTerminate(mission.id!, {});
+      this.doCloturer(mission.id!);
     } else {
       const ref = this.dialog.open(CompleteMissionDialogComponent, {
         width: '560px',
@@ -182,14 +199,34 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
       });
       ref.afterClosed().subscribe((result) => {
         if (result) {
-          this.doTerminate(mission.id!, result);
+          this.doTerminer(mission.id!, result);
         }
       });
     }
   }
 
-  private doTerminate(id: number, extra: object): void {
-    this.missionsService.updateMission(id, { ...extra, statutMission: 'TERMINÉE' }).subscribe({
+  private doCloturer(id: number): void {
+    this.missionsService.cloturerMission(id).subscribe({
+      next: () => {
+        this.snackBar.open('Mission terminée avec succès', 'Fermer', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+        this.loadMissions();
+      },
+      error: () => {
+        this.snackBar.open('Erreur lors de la clôture de la mission', 'Fermer', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
+    });
+  }
+
+  private doTerminer(id: number, extra: object): void {
+    this.missionsService.terminerMission(id, extra).subscribe({
       next: () => {
         this.snackBar.open('Mission terminée avec succès', 'Fermer', {
           duration: 3000,
@@ -234,13 +271,15 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
 
   getStatutClass(statut?: string): string {
     switch (statut) {
-      case 'EN ATTENTE':
+      case 'EN_ATTENTE':
         return 'bg-yellow-500';
-      case 'EN COURS':
+      case 'EN_COURS':
         return 'bg-blue-500';
-      case 'TERMINÉE':
+      case 'TERMINEE':
         return 'bg-green-500';
-      case 'ANNULÉE':
+      case 'VALIDEE':
+        return 'bg-teal-500';
+      case 'ANNULEE':
         return 'bg-red-500';
       default:
         return 'bg-gray-400';
@@ -262,16 +301,66 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
     }
   }
 
+  exportPdf(): void {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(14);
+    doc.text('Liste des missions', 14, 15);
+    doc.setFontSize(9);
+    doc.text(`Exporté le ${this.datePipe.transform(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 21);
+
+    autoTable(doc, {
+      startY: 26,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [33, 150, 243] },
+      head: [['Code', 'Location', 'Date', 'Lieu', 'Responsable', 'Statut', 'Priorité', 'Heures', 'Sous-total', 'KM', 'Carburant']],
+      body: this.missionsDataSource.data.map(m => [
+        m.codeMission || '-',
+        m.codeLocation || '-',
+        this.datePipe.transform(m.dateDebutMission, 'dd/MM/yyyy') || '-',
+        m.lieuMission || '-',
+        m.responsableMission || '-',
+        m.statutMission || '-',
+        m.prioriteMission || '-',
+        `${m.nbHeures || 0} h`,
+        `${m.sousTotal || 0} FCFA`,
+        (m.kmFinMission && m.kmDbtMission) ? `${m.kmFinMission - m.kmDbtMission} km` : '0 km',
+        (m.carbtDbtMission && m.carbtFinMission) ? `${m.carbtDbtMission - m.carbtFinMission} L` : '0 L',
+      ]),
+    });
+
+    doc.save(`missions_${this.datePipe.transform(new Date(), 'yyyyMMdd_HHmm')}.pdf`);
+  }
+
+  exportExcel(): void {
+    const rows = this.missionsDataSource.data.map(m => ({
+      'Code Mission': m.codeMission || '',
+      'Location': m.codeLocation || '',
+      'Date Mission': this.datePipe.transform(m.dateDebutMission, 'dd/MM/yyyy') || '',
+      'Lieu': m.lieuMission || '',
+      'Responsable': m.responsableMission || '',
+      'Statut': m.statutMission || '',
+      'Priorité': m.prioriteMission || '',
+      'Heures': m.nbHeures || 0,
+      'Sous-total (FCFA)': m.sousTotal || 0,
+      'KM parcourus': (m.kmFinMission && m.kmDbtMission) ? m.kmFinMission - m.kmDbtMission : 0,
+      'Carburant (L)': (m.carbtDbtMission && m.carbtFinMission) ? m.carbtDbtMission - m.carbtFinMission : 0,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Missions');
+    XLSX.writeFile(wb, `missions_${this.datePipe.transform(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+  }
+
   private loadMissions(): void {
     this.missionsService.getMissions().subscribe({
       next: (response) => {
         this.allMissions = response;
         this.missionsDataSource.data = response;
-        console.log('[DEBUG]',response);
         this.totalMissions = response.length;
-        this.missionsEnAttente = response.filter((m) => m.statutMission === 'EN ATTENTE').length;
+        this.missionsEnAttente = response.filter((m) => m.statutMission === 'EN_ATTENTE').length;
         this.missionsEnCours = response.filter((m) => m.statutMission === 'EN_COURS').length;
-        this.missionsTerminees = response.filter((m) => m.statutMission === 'TERMINÉE').length;
+        this.missionsTerminees = response.filter((m) => m.statutMission === 'TERMINEE').length;
 
         this.missionsDataSource.paginator = this.paginator;
       },

@@ -12,11 +12,11 @@ import { Mission } from '../mission';
 
 const missionBase: Mission = {
   id: 1,
-  codeMission: 1001,
+  codeMission: '1001',
   codeLocation: 'LOC-001',
   lieuMission: 'Cotonou',
   dateTravail: '2024-06-01',
-  statutMission: 'EN ATTENTE',
+  statutMission: 'EN_ATTENTE',
   prioriteMission: 'NORMALE',
   responsableMission: 'Diallo',
   nbHeures: 8,
@@ -38,10 +38,10 @@ const completeMission: Mission = {
 };
 
 const mockMissions: Mission[] = [
-  { ...missionBase, id: 1, statutMission: 'EN ATTENTE',  prioriteMission: 'NORMALE' },
-  { ...missionBase, id: 2, statutMission: 'EN COURS',    prioriteMission: 'HAUTE',   lieuMission: 'Porto-Novo' },
-  { ...missionBase, id: 3, statutMission: 'TERMINÉE',    prioriteMission: 'BASSE',   responsableMission: 'Koné' },
-  { ...missionBase, id: 4, statutMission: 'ANNULÉE',     prioriteMission: 'URGENTE' },
+  { ...missionBase, id: 1, statutMission: 'EN_ATTENTE', prioriteMission: 'NORMALE' },
+  { ...missionBase, id: 2, statutMission: 'EN_COURS',   prioriteMission: 'HAUTE',   lieuMission: 'Porto-Novo' },
+  { ...missionBase, id: 3, statutMission: 'TERMINEE',   prioriteMission: 'BASSE',   responsableMission: 'Koné' },
+  { ...missionBase, id: 4, statutMission: 'ANNULEE',    prioriteMission: 'URGENTE' },
 ];
 
 describe('MissionsListComponent', () => {
@@ -56,10 +56,11 @@ describe('MissionsListComponent', () => {
 
   beforeEach(async () => {
     missionsServiceSpy = jasmine.createSpyObj<MissionsService>('MissionsService', [
-      'getMissions', 'updateMission', 'deleteMission',
+      'getMissions', 'terminerMission', 'cloturerMission', 'deleteMission',
     ]);
     missionsServiceSpy.getMissions.and.returnValue(of([...mockMissions]));
-    missionsServiceSpy.updateMission.and.returnValue(of({ ...completeMission, statutMission: 'TERMINÉE' }));
+    missionsServiceSpy.terminerMission.and.returnValue(of({ ...completeMission, statutMission: 'TERMINEE' }));
+    missionsServiceSpy.cloturerMission.and.returnValue(of({ ...completeMission, statutMission: 'TERMINEE' }));
     missionsServiceSpy.deleteMission.and.returnValue(of(undefined));
 
     await TestBed.configureTestingModule({
@@ -102,11 +103,11 @@ describe('MissionsListComponent', () => {
       expect(component.totalMissions).toBe(4);
     });
 
-    it('devrait compter les missions EN ATTENTE', () => {
+    it('devrait compter les missions EN_ATTENTE', () => {
       expect(component.missionsEnAttente).toBe(1);
     });
 
-    it('devrait compter les missions TERMINÉE', () => {
+    it('devrait compter les missions TERMINEE', () => {
       expect(component.missionsTerminees).toBe(1);
     });
   });
@@ -132,10 +133,10 @@ describe('MissionsListComponent', () => {
   });
 
   describe('applyStatutFilter()', () => {
-    it('devrait filtrer par statut EN ATTENTE', () => {
-      component.applyStatutFilter('EN ATTENTE');
+    it('devrait filtrer par statut EN_ATTENTE', () => {
+      component.applyStatutFilter('EN_ATTENTE');
       expect(component.missionsDataSource.data.length).toBe(1);
-      expect(component.missionsDataSource.data[0].statutMission).toBe('EN ATTENTE');
+      expect(component.missionsDataSource.data[0].statutMission).toBe('EN_ATTENTE');
     });
 
     it('All devrait retourner toutes les missions', () => {
@@ -223,11 +224,9 @@ describe('MissionsListComponent', () => {
 
   // ── termineMission() ──────────────────────────────────────────────────
   describe('termineMission()', () => {
-    it('devrait appeler updateMission directement si la mission est complète', () => {
+    it('devrait appeler cloturerMission directement si la mission est complète', () => {
       component.termineMission(completeMission);
-      expect(missionsServiceSpy.updateMission).toHaveBeenCalledWith(
-        10, jasmine.objectContaining({ statutMission: 'TERMINÉE' }),
-      );
+      expect(missionsServiceSpy.cloturerMission).toHaveBeenCalledWith(10);
     });
 
     it('devrait ouvrir le dialogue si la mission est incomplète', () => {
@@ -235,18 +234,18 @@ describe('MissionsListComponent', () => {
       expect(dialogOpenSpy).toHaveBeenCalled();
     });
 
-    it('devrait appeler updateMission après confirmation du dialogue', () => {
+    it('devrait appeler terminerMission après confirmation du dialogue', () => {
       component.termineMission(mockMissions[0]);
       dialogSubject.next({ heureDebutMission: '08:00' });
-      expect(missionsServiceSpy.updateMission).toHaveBeenCalledWith(
-        1, jasmine.objectContaining({ statutMission: 'TERMINÉE' }),
+      expect(missionsServiceSpy.terminerMission).toHaveBeenCalledWith(
+        1, jasmine.objectContaining({ heureDebutMission: '08:00' }),
       );
     });
 
-    it('ne devrait PAS appeler updateMission si le dialogue est annulé', () => {
+    it('ne devrait PAS appeler terminerMission si le dialogue est annulé', () => {
       component.termineMission(mockMissions[0]);
       dialogSubject.next(null);
-      expect(missionsServiceSpy.updateMission).not.toHaveBeenCalled();
+      expect(missionsServiceSpy.terminerMission).not.toHaveBeenCalled();
     });
 
     it('devrait afficher un snack de succès après terminaison', () => {
@@ -260,10 +259,11 @@ describe('MissionsListComponent', () => {
   // ── getStatutClass() ──────────────────────────────────────────────────
   describe('getStatutClass()', () => {
     const cases: [string | undefined, string][] = [
-      ['EN ATTENTE', 'bg-yellow-500'],
-      ['EN COURS',   'bg-blue-500'  ],
-      ['TERMINÉE',   'bg-green-500' ],
-      ['ANNULÉE',    'bg-red-500'   ],
+      ['EN_ATTENTE', 'bg-yellow-500'],
+      ['EN_COURS',   'bg-blue-500'  ],
+      ['TERMINEE',   'bg-green-500' ],
+      ['VALIDEE',    'bg-teal-500'  ],
+      ['ANNULEE',    'bg-red-500'   ],
       ['INCONNU',    'bg-gray-400'  ],
       [undefined,    'bg-gray-400'  ],
     ];

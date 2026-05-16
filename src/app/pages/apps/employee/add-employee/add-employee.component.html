@@ -7,9 +7,8 @@
         <div class="col-span-12 md:col-span-6">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Code conducteur</mat-label>
-            <input matInput formControlName="codeConducteur"
-                   placeholder="Ex: Emp-2026-001"
-            />
+            <input matInput formControlName="codeConducteur" readonly />
+            <mat-hint>Généré automatiquement</mat-hint>
           </mat-form-field>
         </div>
         <div class="col-span-12 md:col-span-6">
@@ -45,9 +44,16 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <mat-form-field appearance="outline" class="w-full" >
-            <mat-label>Permis : </mat-label>
-            <input matInput formControlName="permisCond" placeholder="Ex : C ; D ou E" />
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Permis</mat-label>
+            <input matInput formControlName="permisCond"
+                   placeholder="Ex : B, C, D..."
+                   [matAutocomplete]="autoPermis" />
+            <mat-autocomplete #autoPermis="matAutocomplete">
+              @for (option of filteredPermis | async; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-autocomplete>
           </mat-form-field>
         </div>
 
@@ -130,6 +136,13 @@
             <mat-label>Date Expiration CNI :</mat-label>
             <input matInput type="date" formControlName="cniDateExp" />
 
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Cout Horaire Conducteur : </mat-label>
+            <input matInput formControlName="coutHoraire" />
           </mat-form-field>
         </div>
 

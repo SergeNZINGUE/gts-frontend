@@ -3,12 +3,13 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 import { MissionsService } from 'src/app/services/apps/missions/missions.service';
+import { StatutLabelPipe } from 'src/app/pipe/statut-label.pipe';
 import { Mission } from '../mission';
 
 @Component({
   selector: 'app-mission-detail',
   standalone: true,
-  imports: [CommonModule, MaterialModule, RouterLink, DatePipe],
+  imports: [CommonModule, MaterialModule, RouterLink, DatePipe, StatutLabelPipe],
   providers: [DatePipe],
   templateUrl: './mission-detail.component.html',
   styleUrl: './mission-detail.component.scss',

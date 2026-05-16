@@ -8,10 +8,20 @@
         </p>
       </div>
 
-      <button mat-flat-button color="primary" (click)="openAddLocation()">
-        <mat-icon>add</mat-icon>
-        Nouvelle location
-      </button>
+      <div class="flex gap-2 items-center">
+        <button mat-stroked-button (click)="exportPdf()" matTooltip="Exporter en PDF">
+          <mat-icon>picture_as_pdf</mat-icon>
+          PDF
+        </button>
+        <button mat-stroked-button (click)="exportExcel()" matTooltip="Exporter en Excel">
+          <mat-icon>table_view</mat-icon>
+          XLS
+        </button>
+        <button mat-flat-button color="primary" (click)="openAddLocation()">
+          <mat-icon>add</mat-icon>
+          Nouvelle location
+        </button>
+      </div>
     </div>
 
     <div class="grid grid-cols-12 gap-4 mb-6">

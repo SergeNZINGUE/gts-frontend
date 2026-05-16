@@ -32,6 +32,10 @@ export class EmployeeService {
     return this.http.post<Employee>(this.apiUrl, formData, { headers: this.getHeaders() });
   }
 
+  updateEmployee(id: number, formData: FormData): Observable<EmployeeRequest> {
+    return this.http.put<EmployeeRequest>(`${this.apiUrl}/${id}`, formData, { headers: this.getHeaders() });
+  }
+
   deleteEmployee(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }

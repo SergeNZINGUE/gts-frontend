@@ -56,15 +56,14 @@ export class AddMissionComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       codeMission: ['', Validators.required],
-      statutMission: ['EN COURS', Validators.required],
       prioriteMission: ['NORMALE', Validators.required],
       responsableMission: [''],
 
       locationId: ['', Validators.required],
       lieuMission: ['', Validators.required],
 
-      dateDebutMission: [''],
-      dateFinMission: [''],
+      dateDebutMission: [new Date()],
+      dateFinMission: [new Date()],
       heureDebutMission: [''],
       heureFinMission: [''],
 
@@ -72,6 +71,8 @@ export class AddMissionComponent implements OnInit {
       kmFinMission: [null],
       carbtDbtMission: [null],
       carbtFinMission: [null],
+      compteurDbtMission: [null],
+      compteurFinMission: [null],
 
       materiauxMission: [''],
       qteMateriauxMission: [null],
@@ -195,11 +196,24 @@ export class AddMissionComponent implements OnInit {
 
         this.router.navigate(['/apps/missions']);
       },
-      error: () => {
+      error: (err: any) => {
         this.isSubmitting = false;
 
-        this.snackBar.open('Erreur lors de la création de la mission', 'Fermer', {
-          duration: 3000,
+        console.log('[DEBUG 403] status:', err?.status);
+        console.log('[DEBUG 403] err.error:', err?.error);
+        console.log('[DEBUG 403] typeof err.error:', typeof err?.error);
+        console.log('[DEBUG 403] err.statusText:', err?.statusText);
+        console.log('[DEBUG 403] err.message:', err?.message);
+        console.log('[DEBUG 403] err.headers content-type:', err?.headers?.get('content-type'));
+
+        const message =
+          err?.error?.message ||
+          err?.error?.error ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          'Erreur lors de la création de la mission';
+
+        this.snackBar.open(message, 'Fermer', {
+          duration: 5000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
         });
@@ -228,28 +242,33 @@ export class AddMissionComponent implements OnInit {
   }
 
   private listenTimeChanges(): void {
-    this.form.get('heureDebutMission')?.valueChanges.subscribe((debut) => {
-      this.calculateNbHeures(debut, this.form.get('heureFinMission')?.value);
-    });
-    this.form.get('heureFinMission')?.valueChanges.subscribe((fin) => {
-      this.calculateNbHeures(this.form.get('heureDebutMission')?.value, fin);
+    const fields = ['heureDebutMission', 'heureFinMission', 'compteurDbtMission', 'compteurFinMission'];
+    fields.forEach(f => {
+      this.form.get(f)?.valueChanges.subscribe(() => this.recalculateNbHeures());
     });
   }
 
-  private calculateNbHeures(heureDebut: string, heureFin: string): void {
+  private recalculateNbHeures(): void {
+    const compteurDbt = Number(this.form.get('compteurDbtMission')?.value || 0);
+    const compteurFin = Number(this.form.get('compteurFinMission')?.value || 0);
+    const diff = compteurFin - compteurDbt;
+
+    if (diff > 0) {
+      this.form.patchValue({ nbHeures: diff }, { emitEvent: false });
+      return;
+    }
+
+    const heureDebut = this.form.get('heureDebutMission')?.value as string;
+    const heureFin = this.form.get('heureFinMission')?.value as string;
+
     if (!heureDebut || !heureFin) {
       this.form.patchValue({ nbHeures: 0 }, { emitEvent: false });
       return;
     }
     const [hD, mD] = heureDebut.split(':').map(Number);
     const [hF, mF] = heureFin.split(':').map(Number);
-    const minutesDebut = hD * 60 + mD;
-    const minutesFin = hF * 60 + mF;
-    if (minutesFin <= minutesDebut) {
-      this.form.patchValue({ nbHeures: 0 }, { emitEvent: false });
-      return;
-    }
-    const heures = Math.round((minutesFin - minutesDebut) / 60 * 10) / 10;
+    const minutesDiff = (hF * 60 + mF) - (hD * 60 + mD);
+    const heures = minutesDiff > 0 ? Math.round(minutesDiff / 60 * 10) / 10 : 0;
     this.form.patchValue({ nbHeures: heures }, { emitEvent: false });
   }
 
@@ -262,7 +281,7 @@ export class AddMissionComponent implements OnInit {
   private loadLocations(): void {
     this.locationService.getLocations().subscribe({
       next: (locations) => {
-        this.locations = locations;
+        this.locations = locations.filter(l => l.statut === 'VALIDEE');
         this.prefillFromRoute();
       },
     });
@@ -293,7 +312,6 @@ export class AddMissionComponent implements OnInit {
   private buildPayload() {
     return {
       codeMission: this.form.value.codeMission,
-      statutMission: this.form.value.statutMission,
       prioriteMission: this.form.value.prioriteMission,
       responsableMission: this.form.value.responsableMission || undefined,
 
@@ -320,6 +338,12 @@ export class AddMissionComponent implements OnInit {
       carbtFinMission: this.form.value.carbtFinMission
         ? Number(this.form.value.carbtFinMission)
         : undefined,
+      compteurDbtMission: this.form.value.compteurDbtMission
+        ? Number(this.form.value.compteurDbtMission)
+        : undefined,
+      compteurFinMission: this.form.value.compteurFinMission
+        ? Number(this.form.value.compteurFinMission)
+        : undefined,
 
       materiauxMission: this.form.value.materiauxMission || undefined,
       qteMateriauxMission: this.form.value.qteMateriauxMission
@@ -333,6 +357,7 @@ export class AddMissionComponent implements OnInit {
       observationMission: this.form.value.observationMission || undefined,
 
       conducteurId: Number(this.form.value.conducteurId),
+      statutMission: 'EN_COURS'
     };
   }
 
@@ -341,6 +366,6 @@ export class AddMissionComponent implements OnInit {
   }
 
   private formatDateForDisplay(date: string | Date): string {
-    return this.datePipe.transform(date, 'dd/MM/yyyy') || 'Non renseignée';
+    return this.datePipe.transform(date, 'dd-MM-yyyy') || 'Non renseignée';
   }
 }

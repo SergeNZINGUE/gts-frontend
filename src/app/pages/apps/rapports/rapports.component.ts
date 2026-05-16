@@ -52,10 +52,21 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   conducteurSearchCtrl = new FormControl('');
   filteredConducteurs: Employee[] = [];
   selectedConducteurId: number | null = null;
+  selectedConducteur: Employee | null = null;
+  misMoisCtrl = new FormControl<number>(new Date().getMonth() + 1);
+  misAnneeCtrl = new FormControl<number>(new Date().getFullYear());
   missionsDs = new MatTableDataSource<MissionRapportDto>([]);
   loadingMis = false;
   hasResultsMis = false;
-  readonly colsMis = ['mission', 'engin', 'client', 'dateDebut', 'dateFin', 'statut'];
+  readonly colsMis = ['mission', 'engin', 'client', 'dateDebut', 'dateFin', 'heures', 'remuneration', 'statut'];
+  readonly moisOptions = [
+    { value: 1, label: 'Janvier' }, { value: 2, label: 'Février' },
+    { value: 3, label: 'Mars' },    { value: 4, label: 'Avril' },
+    { value: 5, label: 'Mai' },     { value: 6, label: 'Juin' },
+    { value: 7, label: 'Juillet' }, { value: 8, label: 'Août' },
+    { value: 9, label: 'Septembre' },{ value: 10, label: 'Octobre' },
+    { value: 11, label: 'Novembre' },{ value: 12, label: 'Décembre' },
+  ];
 
   // Tab 4 — Suivi des impayés
   clientImpSearchCtrl = new FormControl('');
@@ -170,15 +181,35 @@ export class RapportsComponent implements OnInit, AfterViewInit {
   }
 
   // ── Tab 3 ─────────────────────────────────────────────────────────────
+  get anneesOptions(): number[] {
+    const y = new Date().getFullYear();
+    return [y - 3, y - 2, y - 1, y, y + 1];
+  }
+
+  get totalHeuresMis(): number {
+    return this.missionsDs.data.reduce((s, r) => s + (r.nbHeures ?? 0), 0);
+  }
+
+  get totalRemunerationMis(): number {
+    const tarif = this.selectedConducteur?.coutHoraireConducteur ?? 0;
+    return this.totalHeuresMis * tarif;
+  }
+
   selectConducteur(emp: Employee): void {
     this.selectedConducteurId = emp.id;
+    this.selectedConducteur = emp;
     this.conducteurSearchCtrl.setValue(`${emp.nomConducteur} ${emp.prenomsConducteur}`, { emitEvent: false });
   }
 
   searchMissionsConducteur(): void {
     if (!this.selectedConducteurId) { this.snack('Veuillez sélectionner un conducteur'); return; }
+    const mois  = this.misMoisCtrl.value!;
+    const annee = this.misAnneeCtrl.value!;
+    const dateDebut = `${annee}-${String(mois).padStart(2, '0')}-01`;
+    const lastDay   = new Date(annee, mois, 0).getDate();
+    const dateFin   = `${annee}-${String(mois).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     this.loadingMis = true;
-    this.reportingService.getMissionsConducteur(this.selectedConducteurId).subscribe({
+    this.reportingService.getMissionsConducteur(this.selectedConducteurId, dateDebut, dateFin).subscribe({
       next: (data) => { this.missionsDs.data = data; this.hasResultsMis = data.length > 0; this.loadingMis = false; },
       error: () => { this.snack('Erreur de chargement'); this.loadingMis = false; },
     });
@@ -257,17 +288,17 @@ export class RapportsComponent implements OnInit, AfterViewInit {
         return { headers, rows, foot, title: `Locations par client : ${client}`, filename: 'locations_client' };
       }
       case 'mis': {
-        const headers = ['Mission', 'Lieu', 'Location', 'Client', 'Début', 'Fin', 'Nb Heures', 'Montant (FCFA)', 'Statut'];
+        const tarif = this.selectedConducteur?.coutHoraireConducteur ?? 0;
+        const headers = ['Mission', 'Lieu', 'Location', 'Client', 'Début', 'Fin', 'Heures', 'Rémunération (FCFA)', 'Statut'];
         const rows = this.missionsDs.data.map((r: MissionRapportDto) => [
           r.codeMission ?? r.codeLocation ?? '', r.lieuMission ?? '', r.codeLocation ?? '',
           r.clientNom ?? '', this.fmtDate(r.dateDebutMission), this.fmtDate(r.dateFinMission),
-          r.nbHeures ?? 0, r.sousTotal ?? 0, r.statutMission ?? '',
+          r.nbHeures ?? 0, (r.nbHeures ?? 0) * tarif, r.statutMission ?? '',
         ]);
-        const totalHeures = this.missionsDs.data.reduce((s, r) => s + (r.nbHeures ?? 0), 0);
-        const totalMontantMis = this.missionsDs.data.reduce((s, r) => s + (r.sousTotal ?? 0), 0);
-        const foot: (string | number)[][] = [['TOTAL', '', '', '', '', '', totalHeures, totalMontantMis, '']];
+        const foot: (string | number)[][] = [['TOTAL', '', '', '', '', '', this.totalHeuresMis, this.totalRemunerationMis, '']];
         const conducteur = this.conducteurSearchCtrl.value ?? '';
-        return { headers, rows, foot, title: `Missions par conducteur : ${conducteur}`, filename: 'missions_conducteur' };
+        const moisLabel = this.moisOptions.find(m => m.value === this.misMoisCtrl.value)?.label ?? '';
+        return { headers, rows, foot, title: `Missions : ${conducteur} — ${moisLabel} ${this.misAnneeCtrl.value}`, filename: 'missions_conducteur' };
       }
       case 'imp': {
         const headers = ['Facture', 'Location', 'Client', 'Site', 'Date émission', 'Jours', 'Montant TTC', 'Versé', 'Reste (FCFA)', 'Statut'];

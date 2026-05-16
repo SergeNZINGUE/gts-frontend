@@ -1,0 +1,150 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <h4 class="text-xl font-semibold mb-6">Modifier le conducteur</h4>
+
+    @if (isLoading) {
+      <mat-progress-bar mode="indeterminate" class="mb-4"></mat-progress-bar>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Code conducteur</mat-label>
+            <input matInput formControlName="codeConducteur" placeholder="Ex: Emp-2026-001" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Téléphone</mat-label>
+            <input matInput formControlName="telephone" placeholder="Ex: +22676112233" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="nomConducteur" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Prénoms</mat-label>
+            <input matInput formControlName="prenomsConducteur" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date de Naissance</mat-label>
+            <input matInput [matDatepicker]="pickerdateNaissance" formControlName="dateNaissance" />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerdateNaissance"></mat-datepicker-toggle>
+            <mat-datepicker #pickerdateNaissance></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Permis</mat-label>
+            <input matInput formControlName="permisCond"
+                   placeholder="Ex : B, C, D..."
+                   [matAutocomplete]="autoPermis" />
+            <mat-autocomplete #autoPermis="matAutocomplete">
+              @for (option of filteredPermis | async; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Qualifications</mat-label>
+            <input matInput formControlName="qualifications"
+                   placeholder="Ex: Expert DUMPER; PELLEUSE" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Type de contrat</mat-label>
+            <mat-select formControlName="typEmpl">
+              <mat-option value="CDD">Contrat à durée déterminée</mat-option>
+              <mat-option value="CDI">Contrat à durée indéterminée</mat-option>
+              <mat-option value="Interim">Contrat Interim</mat-option>
+              <mat-option value="Externe">Contrat Externe</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Statut</mat-label>
+            <mat-select formControlName="statutConducteur">
+              <mat-option value="1">Actif</mat-option>
+              <mat-option value="0">Inactif</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date début emploi</mat-label>
+            <input matInput [matDatepicker]="pickerdateDebutEmpl" formControlName="dateDebutEmp" />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerdateDebutEmpl"></mat-datepicker-toggle>
+            <mat-datepicker #pickerdateDebutEmpl></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        @if (form.get('typEmpl')?.value === 'CDD' || form.get('typEmpl')?.value === 'Interim') {
+          <div class="col-span-12 md:col-span-6">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Date Fin emploi *</mat-label>
+              <input matInput [matDatepicker]="pickerdateFinEmpl" formControlName="dateFinEmp" />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerdateFinEmpl"></mat-datepicker-toggle>
+              <mat-datepicker #pickerdateFinEmpl></mat-datepicker>
+              @if (form.get('dateFinEmp')?.hasError('required') && form.get('dateFinEmp')?.touched) {
+                <mat-error>La date de fin est obligatoire</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        }
+
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Reference CNI</mat-label>
+            <input matInput formControlName="cniRef" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date Emission CNI</mat-label>
+            <input matInput type="date" formControlName="cniDateEmi" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Lieu Emission CNI</mat-label>
+            <input matInput formControlName="cniLieuEtab" />
+          </mat-form-field>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date Expiration CNI</mat-label>
+            <input matInput type="date" formControlName="cniDateExp" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-span-12 flex justify-end gap-3">
+          <button mat-stroked-button type="button" routerLink="/apps/employee">
+            Annuler
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting || isLoading">
+            {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

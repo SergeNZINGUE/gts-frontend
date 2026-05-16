@@ -20,9 +20,22 @@ export interface LocationEngin {
   dateFinLoc?: string | Date;
 
   etatLocation?: EtatLocation;
-  enginCode?:string;
 
-  coutHoraireLocation? : number;
+  enginId?: number;
+  enginCode?: string;
+  enginMarque?: string;
+  enginModel?: string;
+
+  conducteurId?: number;
+  conducteurNom?: string;
+  conducteurPrenoms?: string;
+
+  clientId?: number;
+  clientDescriptionEntreprise?: string;
+
+  nbHeureLocation?: number;
+
+  coutHoraireLocation?: number;
   coutJournalierLocation?: number;
 
   client?: Client;

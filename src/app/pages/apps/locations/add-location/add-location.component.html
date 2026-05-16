@@ -35,8 +35,9 @@
                     <input
                       matInput
                       formControlName="codeLocation"
-                      placeholder="Ex : LOC-2026-0001"
+                      readonly
                     />
+                    <mat-hint>Généré automatiquement</mat-hint>
                   </mat-form-field>
                 </div>
 
@@ -74,14 +75,14 @@
                   </mat-form-field>
                 </div>
 
-                <!-- Client / Engin / Conducteur -->
+                <!-- Client / Engin -->
                 <div class="col-span-12 mt-4">
                   <h5 class="text-base font-semibold mb-3">
-                    Client, engin et conducteur
+                    Client et engin
                   </h5>
                 </div>
 
-                <div class="col-span-12 md:col-span-4">
+                <div class="col-span-12 md:col-span-6">
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Client</mat-label>
                     <input
@@ -98,7 +99,7 @@
                   </mat-form-field>
                 </div>
 
-                <div class="col-span-12 md:col-span-4">
+                <div class="col-span-12 md:col-span-6">
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Engin</mat-label>
                     <input
@@ -110,23 +111,6 @@
                     <mat-autocomplete #enginAuto (optionSelected)="onEnginSelected($event.option.value)">
                       <mat-option *ngFor="let engin of filteredEngins" [value]="engin">
                         {{ engin.codeEngin || engin.id }} — {{ engin.marqueEngin || engin.immatriculationEngin }}
-                      </mat-option>
-                    </mat-autocomplete>
-                  </mat-form-field>
-                </div>
-
-                <div class="col-span-12 md:col-span-4">
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Conducteur</mat-label>
-                    <input
-                      matInput
-                      [formControl]="conducteurSearchCtrl"
-                      [matAutocomplete]="conducteurAuto"
-                      placeholder="Rechercher un conducteur..."
-                    />
-                    <mat-autocomplete #conducteurAuto (optionSelected)="onConducteurSelected($event.option.value)">
-                      <mat-option *ngFor="let conducteur of filteredConducteurs" [value]="conducteur">
-                        {{ conducteur.nomConducteur }} {{ conducteur.prenomsConducteur }}
                       </mat-option>
                     </mat-autocomplete>
                   </mat-form-field>
@@ -317,13 +301,6 @@
                   </h6>
                 </div>
 
-                <div>
-                  <span class="text-sm text-muted">Conducteur</span>
-                  <h6 class="font-semibold mb-0">
-                    {{ selectedConducteurLabel }}
-                  </h6>
-                </div>
-
                 <mat-divider></mat-divider>
 
                 <div>
@@ -394,6 +371,13 @@
                   <div class="flex justify-between">
                     <span class="text-sm text-muted">Tarification</span>
                     <span class="text-xs text-muted italic">—</span>
+                  </div>
+                }
+
+                @if (tariffMode === 'horaire' || tariffMode === 'none') {
+                  <div class="flex justify-between">
+                    <span class="text-sm text-muted">Total heures</span>
+                    <strong>{{ totalHeures }} h</strong>
                   </div>
                 }
 

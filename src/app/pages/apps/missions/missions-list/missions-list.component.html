@@ -8,10 +8,20 @@
         </p>
       </div>
 
-      <button mat-flat-button color="primary" (click)="openAddMission()">
-        <mat-icon>add</mat-icon>
-        Nouvelle mission
-      </button>
+      <div class="flex gap-2 items-center">
+        <button mat-stroked-button (click)="exportPdf()" matTooltip="Exporter en PDF">
+          <mat-icon>picture_as_pdf</mat-icon>
+          PDF
+        </button>
+        <button mat-stroked-button (click)="exportExcel()" matTooltip="Exporter en Excel">
+          <mat-icon>table_view</mat-icon>
+          XLS
+        </button>
+        <button mat-flat-button color="primary" (click)="openAddMission()">
+          <mat-icon>add</mat-icon>
+          Nouvelle mission
+        </button>
+      </div>
     </div>
 
     <div class="grid grid-cols-12 gap-4 mb-6">
@@ -70,21 +80,34 @@
 
       <div class="col-span-12 md:col-span-3">
         <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Date de mission</mat-label>
+          <input
+            matInput
+            type="date"
+            [value]="selectedDate"
+            (change)="applyDateFilter($any($event.target).value)"
+          />
+          <mat-icon matSuffix>calendar_today</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="col-span-12 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
           <mat-label>Statut</mat-label>
           <mat-select
             [value]="selectedStatut"
             (selectionChange)="applyStatutFilter($event.value)"
           >
             <mat-option value="All">Tous</mat-option>
-            <mat-option value="EN ATTENTE">En Attente</mat-option>
-            <mat-option value="EN COURS">En Cours</mat-option>
-            <mat-option value="TERMINÉE">Terminée</mat-option>
-            <mat-option value="ANNULÉE">Annulée</mat-option>
+            <mat-option value="EN_COURS">En cours</mat-option>
+            <mat-option value="TERMINEE">Terminée</mat-option>
+            <mat-option value="VALIDEE">Validée</mat-option>
+            <mat-option value="ANNULEE">Annulée</mat-option>
           </mat-select>
         </mat-form-field>
       </div>
 
-      <div class="col-span-12 md:col-span-3">
+      <div class="col-span-12 md:col-span-2">
         <mat-form-field appearance="outline" class="w-full hide-hint">
           <mat-label>Priorité</mat-label>
           <mat-select
@@ -100,7 +123,7 @@
         </mat-form-field>
       </div>
 
-      <div class="col-span-12 md:col-span-2 flex items-center justify-end">
+      <div class="col-span-12 md:col-span-1 flex items-center justify-end">
         <button mat-stroked-button color="warn" (click)="clearFilters()">
           Réinitialiser
         </button>
@@ -134,10 +157,10 @@
 
         <ng-container matColumnDef="dateTravail">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
-            Date Travail
+            Date Mission
           </th>
           <td mat-cell *matCellDef="let mission">
-            {{ mission.dateTravail | date:'dd/MM/yyyy' }}
+            {{ mission.dateDebutMission | date:'dd/MM/yyyy' }}
           </td>
         </ng-container>
 
@@ -168,7 +191,7 @@
               class="px-3 py-1 rounded-full text-xs font-medium text-white"
               [ngClass]="getStatutClass(mission.statutMission)"
             >
-              {{ mission.statutMission }}
+              {{ mission.statutMission | statutLabel }}
             </span>
           </td>
         </ng-container>
@@ -228,7 +251,7 @@
             Actions
           </th>
           <td mat-cell *matCellDef="let mission" class="text-right">
-            @if (mission.statutMission === 'EN COURS') {
+            @if (mission.statutMission === 'EN_COURS') {
               <button
                 mat-icon-button
                 color="primary"

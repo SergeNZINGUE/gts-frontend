@@ -26,9 +26,13 @@ export class ReportingService {
     }).pipe(map(r => r.locations ?? []));
   }
 
-  getMissionsConducteur(conducteurId: number): Observable<MissionRapportDto[]> {
+  getMissionsConducteur(conducteurId: number, dateDebut?: string, dateFin?: string): Observable<MissionRapportDto[]> {
+    let params = new HttpParams();
+    if (dateDebut) params = params.set('dateDebut', dateDebut);
+    if (dateFin)   params = params.set('dateFin', dateFin);
     return this.http.get<MissionsConducteurResponse>(`${this.apiUrl}/missions/conducteur/${conducteurId}`, {
       headers: this.coreService.getHeaders(),
+      params,
     }).pipe(map(r => r.missions ?? []));
   }
 

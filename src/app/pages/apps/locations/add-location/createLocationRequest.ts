@@ -17,5 +17,5 @@ export interface CreateLocationRequest {
 
   clientId: number;
   enginId: number;
-  conducteurId: number;
+  //conducteurId: number;
 }

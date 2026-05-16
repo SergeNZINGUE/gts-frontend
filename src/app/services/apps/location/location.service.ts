@@ -49,6 +49,7 @@ export class LocationService {
   }
 
   terminerLocation(locationId: number,payload:{}): Observable<LocationEngin> {
+    console.log("payload",payload);
     return this.http.put<LocationEngin>(
       `${this.apiUrl}/${locationId}/terminer`,payload,
       {

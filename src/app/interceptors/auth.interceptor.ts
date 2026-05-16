@@ -5,10 +5,14 @@ import {
   HttpHandler,
   HttpEvent,
   HttpErrorResponse,
+  HttpContextToken,
+  HttpContext,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+
+export const BYPASS_403 = new HttpContextToken<boolean>(() => false);
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -22,8 +26,12 @@ export class AuthInterceptor implements HttpInterceptor {
         if (!isAuthEndpoint) {
           const isCorsOrNetworkError =
             error.status === 0 && !!localStorage.getItem('token');
+
+          const bypass403 = req.context.get(BYPASS_403);
+
           const isAuthError =
-            error.status === 401 || error.status === 403;
+            error.status === 401 ||
+            (error.status === 403 && !bypass403);
 
           if (isCorsOrNetworkError || isAuthError) {
             this.authService.sessionExpired();
