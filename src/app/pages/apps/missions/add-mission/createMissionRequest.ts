@@ -29,4 +29,6 @@ export interface CreateMissionRequest {
 
   descriptionMission?: string;
   observationMission?: string;
+
+  conducteurId: number;
 }

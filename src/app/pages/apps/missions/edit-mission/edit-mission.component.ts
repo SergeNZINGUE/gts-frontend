@@ -11,6 +11,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { forkJoin } from 'rxjs';
 
 import { MaterialModule } from 'src/app/material.module';
 import { MissionsService } from 'src/app/services/apps/missions/missions.service';
@@ -18,9 +19,10 @@ import { LocationService } from 'src/app/services/apps/location/location.service
 import { EmployeeService } from 'src/app/services/apps/employee/employee.service';
 import { LocationEngin } from '../../locations/location-engin';
 import { Employee } from '../../employee/employee';
+import { Mission } from '../mission';
 
 @Component({
-  selector: 'app-add-mission',
+  selector: 'app-edit-mission',
   standalone: true,
   imports: [
     CommonModule,
@@ -31,12 +33,14 @@ import { Employee } from '../../employee/employee';
     MatDatepickerModule,
   ],
   providers: [DatePipe],
-  templateUrl: './add-mission.component.html',
-  styleUrl: './add-mission.component.scss',
+  templateUrl: './edit-mission.component.html',
+  styleUrl: './edit-mission.component.scss',
 })
-export class AddMissionComponent implements OnInit {
+export class EditMissionComponent implements OnInit {
   form: FormGroup;
   isSubmitting = false;
+  isLoading = true;
+  missionId!: number;
 
   locations: LocationEngin[] = [];
   locationSearchCtrl = new FormControl('');
@@ -87,10 +91,29 @@ export class AddMissionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadLocations();
-    this.loadConducteurs();
+    this.missionId = Number(this.route.snapshot.paramMap.get('id'));
     this.listenTimeChanges();
-    this.generateMissionCode();
+
+    forkJoin({
+      locations: this.locationService.getLocations(),
+      conducteurs: this.employeeService.getEmployees(),
+      mission: this.missionsService.getMissionById(this.missionId),
+    }).subscribe({
+      next: ({ locations, conducteurs, mission }) => {
+        this.locations = locations;
+        this.conducteurs = conducteurs;
+        this.prefillForm(mission);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.snackBar.open('Erreur lors du chargement de la mission', 'Fermer', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
+    });
   }
 
   get filteredConducteurs(): Employee[] {
@@ -139,12 +162,8 @@ export class AddMissionComponent implements OnInit {
 
   get selectedLocationLabel(): string {
     const locationId = this.form.value.locationId;
-    const location = this.locations.find((item) => item.id === locationId);
-
-    if (!location) {
-      return 'Non sélectionné';
-    }
-
+    const location = this.locations.find(item => item.id === locationId);
+    if (!location) return 'Non sélectionné';
     return `${location.codeLocation || location.id} - ${location.siteLocation || ''}`;
   }
 
@@ -183,22 +202,19 @@ export class AddMissionComponent implements OnInit {
 
     const payload = this.buildPayload();
 
-    this.missionsService.createMission(payload).subscribe({
+    this.missionsService.editMission(this.missionId, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
-
-        this.snackBar.open('Mission créée avec succès', 'Fermer', {
+        this.snackBar.open('Mission modifiée avec succès', 'Fermer', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
         });
-
         this.router.navigate(['/apps/missions']);
       },
       error: () => {
         this.isSubmitting = false;
-
-        this.snackBar.open('Erreur lors de la création de la mission', 'Fermer', {
+        this.snackBar.open('Erreur lors de la modification de la mission', 'Fermer', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
@@ -207,24 +223,48 @@ export class AddMissionComponent implements OnInit {
     });
   }
 
-  private generateMissionCode(): void {
-    const year = new Date().getFullYear();
-    const prefix = `MI-${year}-`;
-    this.missionsService.getMissions().subscribe({
-      next: (missions) => {
-        const maxSeq = missions
-          .map(m => m.codeMission ?? '')
-          .filter(c => c.startsWith(prefix))
-          .map(c => parseInt(c.replace(prefix, ''), 10))
-          .filter(n => !isNaN(n))
-          .reduce((max, n) => Math.max(max, n), 0);
-        const next = String(maxSeq + 1).padStart(3, '0');
-        this.form.get('codeMission')!.setValue(`${prefix}${next}`);
-      },
-      error: () => {
-        this.form.get('codeMission')!.setValue(`${prefix}001`);
-      },
-    });
+  private prefillForm(mission: Mission): void {
+    const conducteurId = mission.conducteurId ?? mission.conducteur?.id ?? null;
+
+    this.form.patchValue({
+      codeMission: mission.codeMission || '',
+      statutMission: mission.statutMission || 'EN COURS',
+      prioriteMission: mission.prioriteMission || 'NORMALE',
+      responsableMission: mission.responsableMission || '',
+      locationId: mission.locationId || null,
+      lieuMission: mission.lieuMission || '',
+      dateDebutMission: mission.dateDebutMission ? new Date(mission.dateDebutMission) : null,
+      dateFinMission: mission.dateFinMission ? new Date(mission.dateFinMission) : null,
+      heureDebutMission: mission.heureDebutMission || '',
+      heureFinMission: mission.heureFinMission || '',
+      kmDbtMission: mission.kmDbtMission ?? null,
+      kmFinMission: mission.kmFinMission ?? null,
+      carbtDbtMission: mission.carbtDbtMission ?? null,
+      carbtFinMission: mission.carbtFinMission ?? null,
+      materiauxMission: mission.materiauxMission || '',
+      qteMateriauxMission: mission.qteMateriauxMission ?? null,
+      nbHeures: mission.nbHeures || 0,
+      tarifHoraireApplique: mission.tarifHoraireApplique || 0,
+      descriptionMission: mission.descriptionMission || '',
+      observationMission: mission.observationMission || '',
+      conducteurId,
+    }, { emitEvent: false });
+
+    const loc = this.locations.find(l => l.id === mission.locationId);
+    if (loc) {
+      this.locationSearchCtrl.setValue(
+        `${loc.codeLocation || loc.id} — ${loc.siteLocation || ''}`
+      );
+    }
+
+    if (conducteurId) {
+      const cond = this.conducteurs.find(c => c.id === conducteurId);
+      if (cond) {
+        this.conducteurSearchCtrl.setValue(
+          `${cond.codeConducteur} — ${cond.prenomsConducteur} ${cond.nomConducteur}`
+        );
+      }
+    }
   }
 
   private listenTimeChanges(): void {
@@ -253,44 +293,7 @@ export class AddMissionComponent implements OnInit {
     this.form.patchValue({ nbHeures: heures }, { emitEvent: false });
   }
 
-  private loadConducteurs(): void {
-    this.employeeService.getEmployees().subscribe({
-      next: (conducteurs) => { this.conducteurs = conducteurs; },
-    });
-  }
-
-  private loadLocations(): void {
-    this.locationService.getLocations().subscribe({
-      next: (locations) => {
-        this.locations = locations;
-        this.prefillFromRoute();
-      },
-    });
-  }
-
-  private prefillFromRoute(): void {
-    const qp = this.route.snapshot.queryParamMap;
-    const locationId = qp.get('locationId') ? Number(qp.get('locationId')) : null;
-    const coutHoraire = qp.get('coutHoraireLoc') ? Number(qp.get('coutHoraireLoc')) : null;
-
-    if (!locationId) return;
-
-    const location = this.locations.find((l) => l.id === locationId);
-    if (location) {
-      this.form.patchValue({ locationId: location.id }, { emitEvent: false });
-      this.locationSearchCtrl.setValue(
-        `${location.codeLocation || location.id} — ${location.siteLocation || ''}`
-      );
-    } else {
-      this.form.patchValue({ locationId }, { emitEvent: false });
-    }
-
-    if (coutHoraire !== null && coutHoraire > 0) {
-      this.form.patchValue({ tarifHoraireApplique: coutHoraire }, { emitEvent: false });
-    }
-  }
-
-  private buildPayload() {
+  private buildPayload(): Partial<any> {
     return {
       codeMission: this.form.value.codeMission,
       statutMission: this.form.value.statutMission,
@@ -308,18 +311,10 @@ export class AddMissionComponent implements OnInit {
         : undefined,
       heureDebutMission: this.form.value.heureDebutMission || undefined,
       heureFinMission: this.form.value.heureFinMission || undefined,
-      kmDbtMission: this.form.value.kmDbtMission
-        ? Number(this.form.value.kmDbtMission)
-        : undefined,
-      kmFinMission: this.form.value.kmFinMission
-        ? Number(this.form.value.kmFinMission)
-        : undefined,
-      carbtDbtMission: this.form.value.carbtDbtMission
-        ? Number(this.form.value.carbtDbtMission)
-        : undefined,
-      carbtFinMission: this.form.value.carbtFinMission
-        ? Number(this.form.value.carbtFinMission)
-        : undefined,
+      kmDbtMission: this.form.value.kmDbtMission ? Number(this.form.value.kmDbtMission) : undefined,
+      kmFinMission: this.form.value.kmFinMission ? Number(this.form.value.kmFinMission) : undefined,
+      carbtDbtMission: this.form.value.carbtDbtMission ? Number(this.form.value.carbtDbtMission) : undefined,
+      carbtFinMission: this.form.value.carbtFinMission ? Number(this.form.value.carbtFinMission) : undefined,
 
       materiauxMission: this.form.value.materiauxMission || undefined,
       qteMateriauxMission: this.form.value.qteMateriauxMission

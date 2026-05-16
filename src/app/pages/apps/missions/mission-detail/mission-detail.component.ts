@@ -30,8 +30,8 @@ export class MissionDetailComponent implements OnInit {
     this.missionsService.getMissionById(id).subscribe({
       next: (mission) => {
         this.mission = mission;
-        console.log("[DEBUG]",this.mission)
         this.isLoading = false;
+        console.log("[DEBUG][mission]",mission);
       },
     });
   }
@@ -47,4 +47,6 @@ export class MissionDetailComponent implements OnInit {
     const carbtFin = Number(this.mission?.carbtFinMission || 0);
     return carbtDbt > carbtFin ? carbtDbt - carbtFin : 0;
   }
+
+
 }

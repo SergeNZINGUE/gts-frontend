@@ -41,6 +41,12 @@ export class MissionsService {
     });
   }
 
+  editMission(id: number, payload: Partial<CreateMissionRequest>): Observable<Mission> {
+    return this.http.put<Mission>(`${this.apiUrl}/${id}`, payload, {
+      headers: this.coreService.getHeaders(),
+    });
+  }
+
   deleteMission(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {
       headers: this.coreService.getHeaders(),

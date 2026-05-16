@@ -53,6 +53,13 @@
               <strong>{{ mission.responsableMission || '-' }}</strong>
             </div>
             <div class="col-span-12 md:col-span-6">
+              <span class="text-sm text-muted block">Conducteur</span>
+              <strong>
+
+                <span class="text-xs text-muted ml-2">({{ mission.nomConducteur}}  {{mission?.prenomsConducteur }})</span>
+              </strong>
+            </div>
+            <div class="col-span-12 md:col-span-6">
               <span class="text-sm text-muted block">Lieu</span>
               <strong>{{ mission.lieuMission || '-' }}</strong>
             </div>
@@ -150,6 +157,16 @@
             <div class="flex justify-between">
               <span class="text-sm text-muted">Carburant consommé</span>
               <strong>{{ litresConsommes }} L</strong>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div>
+              <span class="text-sm text-muted block">Conducteur</span>
+              <strong>
+
+                <div class="text-xs text-muted mt-1">{{ mission.telephone }}</div>
+              </strong>
             </div>
 
             <mat-divider></mat-divider>

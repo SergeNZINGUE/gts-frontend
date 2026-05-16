@@ -26,4 +26,17 @@ export interface Mission {
   lieuMission?: string;
   descriptionMission?: string;
   sousTotal?: number;
+
+  conducteurId?: number;
+  codeConducteur?: string;
+  nomConducteur?: string;
+  prenomsConducteur?: string;
+  telephone?: string;
+  conducteur?: {
+    id?: number;
+    codeConducteur?: string;
+    nomConducteur?: string;
+    prenomsConducteur?: string;
+    telephone?: string;
+  };
 }

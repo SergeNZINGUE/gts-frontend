@@ -35,8 +35,9 @@
                     <input
                       matInput
                       formControlName="codeMission"
-                      placeholder="Ex : 1001"
+                      readonly
                     />
+                    <mat-hint>Généré automatiquement</mat-hint>
                   </mat-form-field>
                 </div>
 
@@ -72,6 +73,26 @@
                       formControlName="responsableMission"
                       placeholder="Ex : Jean Dupont"
                     />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-span-12 md:col-span-6">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Conducteur</mat-label>
+                    <input
+                      matInput
+                      [formControl]="conducteurSearchCtrl"
+                      [matAutocomplete]="conducteurAuto"
+                      placeholder="Rechercher par code ou nom..."
+                    />
+                    <mat-autocomplete #conducteurAuto (optionSelected)="onConducteurSelected($event.option.value)">
+                      <mat-option *ngFor="let cond of filteredConducteurs" [value]="cond">
+                        {{ cond.codeConducteur }} — {{ cond.prenomsConducteur }} {{ cond.nomConducteur }}
+                      </mat-option>
+                    </mat-autocomplete>
+                    <mat-error *ngIf="form.get('conducteurId')?.hasError('required') && form.get('conducteurId')?.touched">
+                      Conducteur requis
+                    </mat-error>
                   </mat-form-field>
                 </div>
 
@@ -354,6 +375,13 @@
                   <span class="text-sm text-muted">Responsable</span>
                   <h6 class="font-semibold mb-0">
                     {{ form.value.responsableMission || 'Non renseigné' }}
+                  </h6>
+                </div>
+
+                <div>
+                  <span class="text-sm text-muted">Conducteur</span>
+                  <h6 class="font-semibold mb-0">
+                    {{ selectedConducteurLabel }}
                   </h6>
                 </div>
 
