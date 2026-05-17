@@ -355,8 +355,13 @@ export class MissionsListComponent implements OnInit, AfterViewInit {
   private loadMissions(): void {
     this.missionsService.getMissions().subscribe({
       next: (response) => {
-        this.allMissions = response;
-        this.missionsDataSource.data = response;
+        const sorted = response.slice().sort((a, b) => {
+          const da = a.dateCreation ? new Date(a.dateCreation).getTime() : 0;
+          const db = b.dateCreation ? new Date(b.dateCreation).getTime() : 0;
+          return db - da;
+        });
+        this.allMissions = sorted;
+        this.missionsDataSource.data = sorted;
         this.totalMissions = response.length;
         this.missionsEnAttente = response.filter((m) => m.statutMission === 'EN_ATTENTE').length;
         this.missionsEnCours = response.filter((m) => m.statutMission === 'EN_COURS').length;

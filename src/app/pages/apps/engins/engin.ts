@@ -1,3 +1,5 @@
+import {TypeEnginResponse} from "./type-engin";
+
 export interface Engin {
   id: number;
   codeEngin: string;
@@ -5,7 +7,7 @@ export interface Engin {
   anneeEngin: string | Date;
   immatriculationEngin: string;
   typeEnginId?: number;
-  typeEngin?: string;
+  typeEngin?: TypeEnginResponse;
   marqueEngin: string;
   etatEngin: number;
   statusEngin: string;

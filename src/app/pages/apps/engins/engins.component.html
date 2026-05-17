@@ -30,6 +30,36 @@
       </mat-card-content>
     </mat-card>
   </div>
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-secondary flex items-center justify-center shrink-0">
+            <i-tabler name="circle-check" class="bg-light-secondary size-6!"></i-tabler>
+          </div>
+          <div>
+            <div class="text-sm text-muted">EN MISSION</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : enMISSION }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-error flex items-center justify-center shrink-0">
+            <i-tabler name="alert-octagon" class="bg-error size-6!"></i-tabler>
+          </div>
+          <div>
+            <div class="text-sm text-muted">EN REPARATION</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : enREPARATION }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>
 
 <!-- Recherche + ajout -->
@@ -39,8 +69,24 @@
       <mat-form-field appearance="outline" class="hide-hint flex-1 min-w-48">
         <mat-icon matPrefix>search</mat-icon>
         <input matInput placeholder="Rechercher un engin…"
+               [value]="searchText"
                (keyup)="applyFilter($any($event.target).value)" />
       </mat-form-field>
+
+      <mat-form-field appearance="outline" class="hide-hint w-52">
+        <mat-label>Statut</mat-label>
+        <mat-select [value]="selectedStatus" (selectionChange)="applyStatusFilter($event.value)">
+          <mat-option value="All">Tous</mat-option>
+          <mat-option value="DISPONIBLE">Disponible</mat-option>
+          <mat-option value="EN_MISSION">En mission</mat-option>
+          <mat-option value="EN_COURS_DE_REPARATION">En réparation</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button color="warn" (click)="clearFilters()">
+        Réinitialiser
+      </button>
+
       <button mat-flat-button color="primary"
               routerLink="/apps/engins/add-engin"
               class="flex! items-center gap-1">

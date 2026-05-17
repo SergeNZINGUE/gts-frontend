@@ -77,9 +77,9 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
     'codeLocation',
     'client',
     'engin',
-    'conducteur',
     'periode',
     'nbJoursLocation',
+    'nbHeureLocation',
     'siteLocation',
     'statut',
     'actions',
@@ -155,15 +155,15 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
     const filteredLocations = this.allLocations.filter((location) => {
       const codeLocation = location.codeLocation?.toLowerCase() || '';
       const clientName = location.client?.nameClient?.toLowerCase() || '';
-      const enginCode = location.engins?.codeEngin?.toLowerCase() || '';
-      const conducteurNom = location.conducteur?.nomConducteur?.toLowerCase() || '';
+      const enginCode = (location.enginCode || location.engins?.codeEngin || '').toLowerCase();
+      const siteLocation = location.siteLocation?.toLowerCase() || '';
 
       const matchSearch =
         !search ||
         codeLocation.includes(search) ||
         clientName.includes(search) ||
         enginCode.includes(search) ||
-        conducteurNom.includes(search);
+        siteLocation.includes(search);
 
       const matchStatus =
         this.selectedStatus === 'All' ||
@@ -401,8 +401,13 @@ export class LocationsComponent implements OnInit, AfterViewInit  {
   private loadLocations() {
     this.locationService.getLocations().subscribe({
       next: (response) => {
-        this.allLocations = response;
-        this.locationsDataSource.data = response;
+        const sorted = response.slice().sort((a, b) => {
+          const da = a.dateCreation ? new Date(a.dateCreation).getTime() : 0;
+          const db = b.dateCreation ? new Date(b.dateCreation).getTime() : 0;
+          return db - da;
+        });
+        this.allLocations = sorted;
+        this.locationsDataSource.data = sorted;
 
         this.totalLocations = response.length;
         this.locationsEnCours = response.filter(location => location.statut === 'EN ATTENTE').length;

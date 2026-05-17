@@ -173,16 +173,6 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="conducteur">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
-            Conducteur
-          </th>
-          <td mat-cell *matCellDef="let location">
-            {{ location?.conducteurNom || '-' }}
-            {{ location?.conducteurPrenoms || '' }}
-          </td>
-        </ng-container>
-
         <ng-container matColumnDef="periode">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
             Période
@@ -200,6 +190,15 @@
           </th>
           <td mat-cell *matCellDef="let location">
             {{ location.nbJoursLocation || 0 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nbHeureLocation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-base font-semibold">
+            Nb Heures
+          </th>
+          <td mat-cell *matCellDef="let location">
+            {{ location.nbHeureLocation ?? 0 }} h
           </td>
         </ng-container>
 

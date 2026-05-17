@@ -26,9 +26,15 @@ export class AppEnginsComponent implements OnInit, AfterViewInit {
     'immatriculationEngin', 'statusEngin', 'action',
   ];
   dataSource = new MatTableDataSource<Engin>([]);
+  private allEngins: Engin[] = [];
 
-  get total(): number { return this.dataSource.data.length; }
-  get enActif(): number { return this.dataSource.data.filter(e => e.statusEngin === 'DISPONIBLE').length; }
+  searchText = '';
+  selectedStatus = 'All';
+
+  get total(): number { return this.allEngins.length; }
+  get enActif(): number { return this.allEngins.filter(e => e.statusEngin === 'DISPONIBLE').length; }
+  get enREPARATION(): number { return this.allEngins.filter(e => e.statusEngin === 'EN_COURS_DE_REPARATION').length; }
+  get enMISSION(): number { return this.allEngins.filter(e => e.statusEngin === 'EN_MISSION').length; }
 
   constructor(
     private enginService: EnginService,
@@ -44,9 +50,9 @@ export class AppEnginsComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     this.enginService.getEngins().subscribe({
       next: (engins) => {
-        this.dataSource.data = engins;
+        this.allEngins = engins;
+        this.applyFilters();
         this.isLoading = false;
-        console.log(engins);
       },
       error: () => {
         this.isLoading = false;
@@ -56,7 +62,35 @@ export class AppEnginsComponent implements OnInit, AfterViewInit {
   }
 
   applyFilter(value: string): void {
-    this.dataSource.filter = value.trim().toLowerCase();
+    this.searchText = value;
+    this.applyFilters();
+  }
+
+  applyStatusFilter(status: string): void {
+    this.selectedStatus = status;
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchText = '';
+    this.selectedStatus = 'All';
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    const search = this.searchText.trim().toLowerCase();
+    this.dataSource.data = this.allEngins.filter(e => {
+      const matchText = !search ||
+        (e.codeEngin || '').toLowerCase().includes(search) ||
+        (e.modelEngin || '').toLowerCase().includes(search) ||
+        (e.marqueEngin || '').toLowerCase().includes(search) ||
+        (e.immatriculationEngin || '').toLowerCase().includes(search);
+      const matchStatus = this.selectedStatus === 'All' || e.statusEngin === this.selectedStatus;
+      return matchText && matchStatus;
+    });
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
   }
 
   goToDetails(id: number): void {
