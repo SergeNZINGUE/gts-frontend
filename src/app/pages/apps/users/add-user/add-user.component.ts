@@ -32,7 +32,7 @@ export class AddUserComponent {
   hidePassword = true;
   hideConfirm  = true;
 
-  readonly roleOptions = ['ADMIN', 'USER'];
+  readonly roleOptions = ['ADMIN', 'MANAGER','OPERATEUR','COMPTABLE'];
 
   form = new FormGroup(
     {

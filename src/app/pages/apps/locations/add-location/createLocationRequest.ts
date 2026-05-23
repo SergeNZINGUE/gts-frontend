@@ -11,6 +11,7 @@ export interface CreateLocationRequest {
   dateDbtLoc: string;
   dateFinLoc: string;
   nbJoursLocation: number;
+  nbHeureLocation: number;
 
   coutHoraireLocation?: number;
   coutJournalierLocation?: number;

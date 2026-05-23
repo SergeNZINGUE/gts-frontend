@@ -25,6 +25,14 @@ import { RapportsComponent } from './rapports/rapports.component';
 import { UsersComponent } from './users/users.component';
 import { AddUserComponent } from './users/add-user/add-user.component';
 import { DetailsUserComponent } from './users/details-user/details-user.component';
+import { AuthorizationGuard } from '../../guards/authorization.guard';
+
+const FLOTTE = ['ADMIN', 'MANAGER', 'OPERATEUR'];
+const FLOTTE_LECTURE = ['ADMIN', 'MANAGER', 'OPERATEUR', 'COMPTABLE'];
+const FINANCE = ['ADMIN', 'MANAGER', 'COMPTABLE'];
+const EXPLOITATION = ['ADMIN', 'MANAGER', 'OPERATEUR', 'COMPTABLE'];
+const ADMIN_MANAGER = ['ADMIN', 'MANAGER'];
+const ADMIN_ONLY = ['ADMIN'];
 
 export const AppsRoutes: Routes = [
   {
@@ -35,7 +43,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'employee',
         component: AppEmployeeComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE_LECTURE,
           title: 'Conducteurs',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -46,7 +56,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'employee/details-employee/:id',
         component: DetailsEmployeeComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE_LECTURE,
           title: 'Détails conducteur',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -58,7 +70,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'employee/add-employee',
         component: AddEmployeeComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Ajouter un conducteur',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -72,7 +86,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'engins',
         component: AppEnginsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Engins',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -83,7 +99,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'engins/add-engin',
         component: AddEnginComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Ajouter un engin',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -95,7 +113,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'engins/details-engins/:id',
         component: DetailsEnginsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Détails engin',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -109,7 +129,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'clients',
         component: ClientsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: [...ADMIN_MANAGER, 'COMPTABLE', 'OPERATEUR'],
           title: 'Clients',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -120,7 +142,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'clients/add-client',
         component: AddClientComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: ADMIN_MANAGER,
           title: 'Ajouter un client',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -132,7 +156,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'clients/details-client/:id',
         component: DetailsClientComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: [...ADMIN_MANAGER, 'COMPTABLE', 'OPERATEUR'],
           title: 'Détails client',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -146,7 +172,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'engins/assurances-engins',
         component: AssurancesEnginsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Assurances engins',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -155,11 +183,12 @@ export const AppsRoutes: Routes = [
           ],
         },
       },
-
       {
         path: 'engins/controles-des-engins',
         component: ControlesVGPComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Contrôles VGP',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -173,7 +202,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'locations',
         component: LocationsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: EXPLOITATION,
           title: 'Locations',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -184,7 +215,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'locations/details-location/:id',
         component: DetailsLocationComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: EXPLOITATION,
           title: 'Détails location',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -196,7 +229,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'locations/add-location',
         component: AddLocationComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: ADMIN_MANAGER,
           title: 'Nouvelle location',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -210,7 +245,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'missions',
         component: MissionsListComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: EXPLOITATION,
           title: 'Missions',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -221,7 +258,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'missions/add',
         component: AddMissionComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FLOTTE,
           title: 'Nouvelle mission',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -233,7 +272,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'missions/detail/:id',
         component: MissionDetailComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: EXPLOITATION,
           title: 'Détails mission',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -247,7 +288,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'users',
         component: UsersComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: ADMIN_ONLY,
           title: 'Utilisateurs',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -258,7 +301,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'users/add-user',
         component: AddUserComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: ADMIN_ONLY,
           title: 'Nouvel utilisateur',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -270,7 +315,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'users/details-user/:id',
         component: DetailsUserComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: ADMIN_ONLY,
           title: 'Détails utilisateur',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -284,7 +331,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'rapports',
         component: RapportsComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FINANCE,
           title: 'Rapports',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -297,7 +346,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'factures',
         component: FacturesListComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FINANCE,
           title: 'Factures',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -308,7 +359,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'factures/add',
         component: AddFactureComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FINANCE,
           title: 'Nouvelle facture',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
@@ -320,7 +373,9 @@ export const AppsRoutes: Routes = [
       {
         path: 'factures/detail/:id',
         component: DetailsFactureComponent,
+        canActivate: [AuthorizationGuard],
         data: {
+          roles: FINANCE,
           title: 'Détails facture',
           urls: [
             { title: 'Accueil', url: '/dashboards/dashboard1' },

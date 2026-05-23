@@ -7,7 +7,9 @@ import { AppSettings } from 'src/app/config';
 import { filter } from 'rxjs/operators';
 import { NavigationEnd, Router } from '@angular/router';
 import { navItems } from './vertical/sidebar/sidebar-data';
+import { NavItem } from './vertical/sidebar/nav-item/nav-item';
 import { NavService } from '../../services/nav.service';
+import { NgxPermissionsService } from 'ngx-permissions';
 import { AppNavItemComponent } from './vertical/sidebar/nav-item/nav-item.component';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
@@ -63,7 +65,8 @@ interface quicklinks {
     encapsulation: ViewEncapsulation.None
 })
 export class FullComponent implements OnInit {
-  navItems = navItems;
+  private readonly allNavItems = navItems;
+  navItems: NavItem[] = [];
 
 
 
@@ -194,9 +197,10 @@ export class FullComponent implements OnInit {
     private mediaMatcher: MediaMatcher,
     private router: Router,
     private breakpointObserver: BreakpointObserver,
-    private navService: NavService, private cdr: ChangeDetectorRef,
-    public authService:AuthService
-
+    private navService: NavService,
+    private cdr: ChangeDetectorRef,
+    public authService: AuthService,
+    private permissionsService: NgxPermissionsService
   ) {
     this.options.sidenavOpened = true;
     this.options.sidenavCollapsed = false;
@@ -250,12 +254,26 @@ export class FullComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('options.Horizontal =', this.options.horizontal);
+    // Charge les items filtrés une première fois, puis se met à jour si les permissions changent
+    this.permissionsService.permissions$.subscribe(() => {
+      this.navItems = this.filterNavItems(this.allNavItems);
+      this.cdr.markForCheck();
+    });
+    this.navItems = this.filterNavItems(this.allNavItems);
+  }
 
-    if(this.authService.isLoggedIn){
-      let username = this.authService.username;
-      console.log('Logged in user:', username);
-    }
+  private filterNavItems(items: NavItem[]): NavItem[] {
+    const perms = this.permissionsService.getPermissions();
+    const hasAccess = (roles: string[] | undefined): boolean => {
+      if (!roles || roles.length === 0) return true;
+      return roles.some(r => r in perms);
+    };
+    return items
+      .filter(item => hasAccess(item.roles))
+      .map(item => ({
+        ...item,
+        children: item.children ? this.filterNavItems(item.children) : undefined,
+      }));
   }
 
   ngOnDestroy() {

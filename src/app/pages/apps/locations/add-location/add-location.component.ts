@@ -101,7 +101,7 @@ export class AddLocationComponent implements OnInit {
       nbJoursLocation: [{ value: 0, disabled: false }],
 
       coutHoraireLocation: [0],
-      nbHeuresLocation: [0],
+      nbHeureLocation: [0],
       coutJournalierLocation: [0],
     });
   }
@@ -141,7 +141,7 @@ export class AddLocationComponent implements OnInit {
   }
 
   get totalHeures(): number {
-    const nbHeures = Number(this.form.value.nbHeuresLocation || 0);
+    const nbHeures = Number(this.form.value.nbHeureLocation || 0);
     const nbJours = Number(this.form.value.nbJoursLocation || 0);
     return nbHeures * nbJours;
   }
@@ -149,7 +149,7 @@ export class AddLocationComponent implements OnInit {
   get totalEstime(): number {
     const nbJours = Number(this.form.value.nbJoursLocation || 0);
     const coutHoraire = Number(this.form.value.coutHoraireLocation || 0);
-    const nbHeures = Number(this.form.value.nbHeuresLocation || 0);
+    const nbHeures = Number(this.form.value.nbHeureLocation || 0);
     const coutJournalier = Number(this.form.value.coutJournalierLocation || 0);
 
     if (this.tariffMode === 'journalier') {
@@ -323,7 +323,7 @@ export class AddLocationComponent implements OnInit {
       nbJoursLocation: this.form.value.nbJoursLocation,
 
       coutHoraireLocation: Number(this.form.value.coutHoraireLocation || 0),
-      nbHeuresLocation: Number(this.form.value.nbHeuresLocation || 0),
+      nbHeureLocation: Number(this.form.value.nbHeureLocation || 0),
       coutJournalierLocation: Number(this.form.value.coutJournalierLocation || 0),
 
       clientId: this.form.value.clientId,

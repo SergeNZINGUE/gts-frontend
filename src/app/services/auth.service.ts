@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { NgxPermissionsService } from 'ngx-permissions';
 
 @Injectable({
   providedIn: 'root',
@@ -11,14 +12,15 @@ import { ToastrService } from 'ngx-toastr';
 export class AuthService {
   public isLoggedIn: boolean = false;
   public isAdmin: boolean = false;
-  public role: string[] = [''];
+  public role: string[] = [];
   public username: string | null | undefined = '';
   private apiUrl = environment.apiUrl + '/api/gts/auth/login';
 
   constructor(
     private http: HttpClient,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private permissionsService: NgxPermissionsService
   ) {}
 
   public login(username: string | null | undefined, password: string | null | undefined) {
@@ -37,16 +39,32 @@ export class AuthService {
           this.role = res.roles;
           this.isAdmin = this.role.includes('ADMIN');
           localStorage.setItem('roles', JSON.stringify(res.roles));
+          this.permissionsService.loadPermissions(res.roles);
         }
       })
     );
+  }
+
+  /** Restaure la session depuis localStorage (appelé au démarrage de l'app). */
+  restoreSession(): void {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const roles: string[] = JSON.parse(localStorage.getItem('roles') || '[]');
+
+    if (token && username) {
+      this.isLoggedIn = true;
+      this.username = username;
+      this.role = roles;
+      this.isAdmin = roles.includes('ADMIN');
+      this.permissionsService.loadPermissions(roles);
+    }
   }
 
   forgotPassword(email: string): Observable<any> {
     return this.http.post(
       `${environment.apiUrl}/api/gts/emails/forgot-password`,
       { email },
-      { responseType: 'text'}
+      { responseType: 'text' }
     );
   }
 
@@ -59,28 +77,25 @@ export class AuthService {
   }
 
   sessionExpired() {
-    this.isLoggedIn = false;
-    this.username = '';
-    this.role = [];
-    this.isAdmin = false;
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('roles');
-
+    this.clearSession();
     this.toastr.warning(
       'Votre session a expiré. Veuillez vous reconnecter.',
       'Session expirée',
       { timeOut: 5000, progressBar: true }
     );
-
     void this.router.navigate(['/authentication/login']);
   }
 
   logout() {
+    this.clearSession();
+  }
+
+  private clearSession() {
     this.isLoggedIn = false;
     this.username = '';
     this.role = [];
     this.isAdmin = false;
+    this.permissionsService.flushPermissions();
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('roles');

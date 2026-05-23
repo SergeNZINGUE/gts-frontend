@@ -1,25 +1,36 @@
-import {ActivatedRouteSnapshot, CanActivate, CanActivateFn, Router, RouterStateSnapshot} from '@angular/router';
-import {Injectable} from "@angular/core";
-import {AuthService} from "../services/auth.service";
-@Injectable(
-  {providedIn: 'root'}
-)
-export class AuthorizationGuard implements CanActivate {
-  constructor(private routes: Router, private authService: AuthService) {
-  }
+import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
-  canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean {
-    if (localStorage.getItem('username') != null) {
-      if (this.authService.role.includes('ADMIN') && next.data["roles"].includes('ADMIN')) {
-        return true;
-      } else {
-        this.routes.navigate(['/authentication/login']);
-        return false;
-      }
+@Injectable({ providedIn: 'root' })
+export class AuthorizationGuard implements CanActivate {
+
+  constructor(private router: Router, private toastr: ToastrService) {}
+
+  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      void this.router.navigate(['/authentication/login']);
+      return false;
     }
-    return false;
+
+    const requiredRoles: string[] = next.data['roles'] ?? [];
+    if (requiredRoles.length === 0) return true;
+
+    const userRoles: string[] = JSON.parse(localStorage.getItem('roles') || '[]');
+    const hasRole = requiredRoles.some(r => userRoles.includes(r));
+
+    if (!hasRole) {
+      this.toastr.error(
+        'Vous n\'avez pas les droits nécessaires pour accéder à cette page.',
+        'Accès refusé',
+        { timeOut: 4000, progressBar: true }
+      );
+      void this.router.navigate(['/dashboards/dashboard1']);
+      return false;
+    }
+
+    return true;
   }
 }

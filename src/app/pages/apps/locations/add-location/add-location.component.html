@@ -46,9 +46,6 @@
                     <mat-label>Statut</mat-label>
                     <mat-select formControlName="statut">
                       <mat-option value="EN ATTENTE">EN ATTENTE</mat-option>
-                      <mat-option value="VALIDEE">VALIDÉE</mat-option>
-                      <mat-option value="TERMINEE">TERMINÉE</mat-option>
-                      <mat-option value="ANNULEE">ANNULÉE</mat-option>
                     </mat-select>
                   </mat-form-field>
                 </div>
@@ -58,8 +55,6 @@
                     <mat-label>État de la location</mat-label>
                     <mat-select formControlName="etatLocation">
                       <mat-option [value]="1">Actif</mat-option>
-                      <mat-option [value]="2">Validé</mat-option>
-                      <mat-option [value]="3">Livré</mat-option>
                     </mat-select>
                   </mat-form-field>
                 </div>
@@ -201,7 +196,7 @@
                   <div class="col-span-12 md:col-span-4">
                     <mat-form-field appearance="outline" class="w-full">
                       <mat-label>Nombre d'heures / jour</mat-label>
-                      <input matInput type="number" formControlName="nbHeuresLocation" placeholder="Ex : 8" />
+                      <input matInput type="number" formControlName="nbHeureLocation" placeholder="Ex : 8" />
                     </mat-form-field>
                   </div>
                   <div class="col-span-12 md:col-span-4">
@@ -231,7 +226,7 @@
                       <input
                         matInput
                         type="number"
-                        formControlName="nbHeuresLocation"
+                        formControlName="nbHeureLocation"
                         placeholder="Ex : 8"
                       />
                     </mat-form-field>
@@ -333,7 +328,7 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-sm text-muted">Heures / jour</span>
-                    <strong>{{ form.value.nbHeuresLocation || 0 }} h</strong>
+                    <strong>{{ form.value.nbHeureLocation || 0 }} h</strong>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-sm text-muted">Nombre de jours</span>
@@ -359,7 +354,7 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-sm text-muted">Heures / jour</span>
-                    <strong>{{ form.value.nbHeuresLocation || 0 }} h</strong>
+                    <strong>{{ form.value.nbHeureLocation || 0 }} h</strong>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-sm text-muted">Nombre de jours</span>

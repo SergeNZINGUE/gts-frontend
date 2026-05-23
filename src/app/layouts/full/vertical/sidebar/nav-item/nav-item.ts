@@ -12,4 +12,5 @@ export interface NavItem {
     route?: string;
     children?: NavItem[];
     ddType?: string;
+    roles?: string[];   // rôles autorisés (vide = tous les utilisateurs connectés)
 }

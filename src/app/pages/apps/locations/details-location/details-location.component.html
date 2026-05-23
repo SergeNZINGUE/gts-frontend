@@ -91,7 +91,7 @@
         </h5>
         <a [routerLink]="['/apps/missions/add']"
            [queryParams]="{ locationId: location.id, coutHoraireLoc: location.coutHoraireLocation }"
-           mat-flat-button color="primary">
+           mat-flat-button color="primary" [disabled]="statusMission">
           <mat-icon>add</mat-icon>
           Nouvelle mission
         </a>

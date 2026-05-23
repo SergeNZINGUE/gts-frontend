@@ -5,10 +5,20 @@
         <h2 class="text-2xl font-semibold mb-1">Factures</h2>
         <p class="text-sm text-gray-500">Gestion de la facturation</p>
       </div>
-      <button mat-flat-button color="primary" (click)="openAddFacture()">
-        <mat-icon>add</mat-icon>
-        Nouvelle facture
-      </button>
+      <div class="flex gap-2 items-center">
+        <button mat-stroked-button (click)="exportXLSX()" matTooltip="Exporter en Excel">
+          <mat-icon>table_view</mat-icon>
+          Excel
+        </button>
+        <button mat-stroked-button color="warn" (click)="exportPDF()" matTooltip="Exporter en PDF">
+          <mat-icon>picture_as_pdf</mat-icon>
+          PDF
+        </button>
+        <button mat-flat-button color="primary" (click)="openAddFacture()">
+          <mat-icon>add</mat-icon>
+          Nouvelle facture
+        </button>
+      </div>
     </div>
 
     <!-- KPI -->
@@ -51,14 +61,19 @@
 
     <!-- Filtres -->
     <div class="grid grid-cols-12 gap-4 py-6">
-      <div class="col-span-12 md:col-span-5">
+      <!-- Recherche -->
+      <div class="col-span-12 md:col-span-4">
         <mat-form-field appearance="outline" class="w-full hide-hint">
           <mat-label>Recherche</mat-label>
-          <input matInput placeholder="N° facture, location, client..." [value]="searchText" (keyup)="applySearch($any($event.target).value)" />
+          <input matInput placeholder="N° facture, location, client..."
+            [value]="searchText"
+            (keyup)="applySearch($any($event.target).value)" />
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
       </div>
-      <div class="col-span-12 md:col-span-4">
+
+      <!-- État -->
+      <div class="col-span-12 md:col-span-3">
         <mat-form-field appearance="outline" class="w-full hide-hint">
           <mat-label>État</mat-label>
           <mat-select [value]="selectedEtat" (selectionChange)="applyEtatFilter($event.value)">
@@ -69,8 +84,38 @@
           </mat-select>
         </mat-form-field>
       </div>
-      <div class="col-span-12 md:col-span-3 flex items-center justify-end">
-        <button mat-stroked-button color="warn" (click)="clearFilters()">Réinitialiser</button>
+
+      <!-- Mois -->
+      <div class="col-span-6 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Mois</mat-label>
+          <mat-select [(ngModel)]="selectedMonth" (selectionChange)="applyFilters()">
+            <mat-option [value]="0">Tous</mat-option>
+            @for (m of months; track m.value) {
+              <mat-option [value]="m.value">{{ m.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Année -->
+      <div class="col-span-6 md:col-span-2">
+        <mat-form-field appearance="outline" class="w-full hide-hint">
+          <mat-label>Année</mat-label>
+          <mat-select [(ngModel)]="selectedYear" (selectionChange)="applyFilters()">
+            <mat-option [value]="0">Toutes</mat-option>
+            @for (y of availableYears; track y) {
+              <mat-option [value]="y">{{ y }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Reset -->
+      <div class="col-span-12 md:col-span-1 flex items-center justify-end">
+        <button mat-stroked-button color="warn" (click)="clearFilters()" matTooltip="Réinitialiser les filtres">
+          <mat-icon>filter_alt_off</mat-icon>
+        </button>
       </div>
     </div>
 

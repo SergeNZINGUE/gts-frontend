@@ -46,7 +46,7 @@ export class AddControleDialogComponent implements OnInit {
 
     this.form.get('resultat')?.valueChanges.subscribe((val) => {
       const reserveCtrl = this.form.get('reserveVGP');
-      if (val === 'AVEC_RESERVES') {
+      if ( (val === 'NON_CONFORME')|| (val === 'AVEC_RESERVES')) {
         reserveCtrl?.setValidators(Validators.required);
       } else {
         reserveCtrl?.clearValidators();
@@ -82,7 +82,7 @@ export class AddControleDialogComponent implements OnInit {
   }
 
   get showReserve(): boolean {
-    return this.form.get('resultat')?.value === 'AVEC_RESERVES';
+    return this.form.get('resultat')?.value === 'AVEC_RESERVES' || this.form.get('resultat')?.value === 'NON_CONFORME';
   }
 
   submit(): void {

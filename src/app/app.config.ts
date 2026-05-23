@@ -1,4 +1,5 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { AuthService } from './services/auth.service';
 import { provideHttpClient, HttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { Observable } from 'rxjs';
@@ -70,6 +71,12 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: AuthService) => () => auth.restoreSession(),
+      deps: [AuthService],
+      multi: true,
+    },
     provideClientHydration(),
     provideAnimationsAsync(),
     provideNativeDateAdapter(),

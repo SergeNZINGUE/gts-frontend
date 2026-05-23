@@ -20,7 +20,7 @@ export class DetailsUserComponent implements OnInit {
   isSendingCode = false;
   user: UserResponse | null = null;
 
-  readonly roleOptions = ['ADMIN', 'USER'];
+  readonly roleOptions = ['ADMIN', 'MANAGER','OPERATEUR','COMPTABLE'];
 
   form = new FormGroup({
     username:     new FormControl('', [Validators.required, Validators.minLength(5)]),

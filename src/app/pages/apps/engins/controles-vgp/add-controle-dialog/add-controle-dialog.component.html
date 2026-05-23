@@ -49,7 +49,7 @@
     <!-- Organisme -->
     <mat-form-field appearance="outline" class="w-full">
       <mat-label>Organisme contrôleur</mat-label>
-      <input matInput formControlName="organismeControleur" placeholder="Ex : Véritas, Apave…" />
+      <input matInput formControlName="organismeControleur" placeholder="Ex : CCVA, Véritas, Apave…" />
       @if (form.get('organismeControleur')?.invalid && form.get('organismeControleur')?.touched) {
         <mat-error>Champ requis</mat-error>
       }

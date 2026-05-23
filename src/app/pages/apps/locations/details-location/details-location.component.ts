@@ -52,6 +52,9 @@ export class DetailsLocationComponent implements OnInit {
   get totalMissions(): number {
     return this.missions.reduce((sum, m) => sum + (m.sousTotal || 0), 0);
   }
+  get statusMission(): boolean {
+    return this.location?.statut !== 'VALIDEE';
+  }
 
   openMissionDetail(mission: Mission): void {
     this.router.navigate(['/apps/missions/detail', mission.id]);
