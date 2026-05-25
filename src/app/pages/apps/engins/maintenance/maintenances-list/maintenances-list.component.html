@@ -1,0 +1,250 @@
+<!-- En-tête -->
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-3">
+    <a routerLink="/apps/engins" mat-stroked-button>
+      <mat-icon>arrow_back</mat-icon>
+      Engins
+    </a>
+    <h2 class="text-2xl font-semibold mb-0">Fiches de maintenance</h2>
+  </div>
+  <button mat-flat-button color="primary" (click)="goToAdd()" class="flex! items-center gap-1">
+    <mat-icon>add</mat-icon>
+    Nouvelle fiche
+  </button>
+</div>
+
+<!-- KPI cards -->
+<div class="grid grid-cols-12 gap-6 mb-6">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-primary flex items-center justify-center shrink-0">
+            <mat-icon class="text-primary">build_circle</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Total</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : total }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-success flex items-center justify-center shrink-0">
+            <mat-icon class="text-success">shield</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Préventives</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : preventives }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-error flex items-center justify-center shrink-0">
+            <mat-icon class="text-error">warning</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Curatives</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : curatives }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-warning flex items-center justify-center shrink-0">
+            <mat-icon class="text-warning">autorenew</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Révisions</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : revisions }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Filtres -->
+<mat-card class="cardWithShadow mb-4">
+  <mat-card-content>
+    <div class="flex flex-wrap items-center gap-4">
+      <mat-form-field appearance="outline" class="hide-hint flex-1 min-w-48">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Engin, technicien, code fiche…"
+               [(ngModel)]="searchText"
+               (ngModelChange)="applyFilters()" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="hide-hint w-56">
+        <mat-label>Type</mat-label>
+        <mat-select [(ngModel)]="selectedType" (ngModelChange)="applyFilters()">
+          @for (t of typeOptions; track t.value) {
+            <mat-option [value]="t.value">{{ t.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<!-- Table -->
+<mat-card class="cardWithShadow">
+  @if (isLoading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+  <mat-card-content>
+    <div class="overflow-auto">
+      <table mat-table [dataSource]="dataSource" class="w-full no-wrap v-middle">
+
+        <!-- Engin -->
+        <ng-container matColumnDef="engin">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Engin</th>
+          <td mat-cell *matCellDef="let m">
+            <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+              {{ m.codeEngin || '—' }}
+            </span>
+            @if (m.modelEngin) {
+              <div class="text-xs text-muted mt-0.5">{{ m.modelEngin }}</div>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Date -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Date</th>
+          <td mat-cell *matCellDef="let m" class="text-sm">
+            {{ m.dateDbtMaintenance | date:'dd/MM/yyyy' }}
+          </td>
+        </ng-container>
+
+        <!-- Type -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Type</th>
+          <td mat-cell *matCellDef="let m">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="typeClass(m.type)">
+              {{ TYPE_LABELS[m.type] }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Technicien -->
+        <ng-container matColumnDef="technicien">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Technicien</th>
+          <td mat-cell *matCellDef="let m" class="text-sm">
+            {{ m.nomTechnicien || '—' }}
+          </td>
+        </ng-container>
+
+        <!-- Horamètre -->
+        <ng-container matColumnDef="horametre">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold">Horamètre</th>
+          <td mat-cell *matCellDef="let m" class="text-sm text-right">
+            @if (m.horametreIntervention != null) {
+              {{ m.horametreIntervention | number:'1.0-0' }} h
+            } @else {
+              —
+            }
+          </td>
+        </ng-container>
+
+        <!-- Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-center">Actions</th>
+          <td mat-cell *matCellDef="let m" class="text-center">
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-primary">
+              <mat-icon class="text-base leading-none">task_alt</mat-icon>
+              {{ m.nbActions }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Pièces -->
+        <ng-container matColumnDef="pieces">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-center">Pièces</th>
+          <td mat-cell *matCellDef="let m" class="text-center">
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-accent">
+              <mat-icon class="text-base leading-none">settings</mat-icon>
+              {{ m.nbPieces }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Coût total -->
+        <ng-container matColumnDef="cout">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Coût total</th>
+          <td mat-cell *matCellDef="let m" class="text-sm text-right font-medium">
+            @if (m.coutTotal != null && m.coutTotal > 0) {
+              {{ m.coutTotal | number:'1.0-0' }} FCFA
+            } @else {
+              —
+            }
+          </td>
+        </ng-container>
+
+        <!-- Opérationnel -->
+        <ng-container matColumnDef="operationnel">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-center">Opérationnel</th>
+          <td mat-cell *matCellDef="let m" class="text-center">
+            @if (m.enginOperationnel === true) {
+              <mat-icon class="text-success text-lg">check_circle</mat-icon>
+            } @else if (m.enginOperationnel === false) {
+              <mat-icon class="text-error text-lg">cancel</mat-icon>
+            } @else {
+              <span class="text-muted text-sm">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Actions boutons -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let m" class="whitespace-nowrap">
+            <button mat-icon-button matTooltip="Voir le détail"
+                    (click)="goToDetail(m); $event.stopPropagation()">
+              <mat-icon class="text-gray-500">visibility</mat-icon>
+            </button>
+            <a mat-icon-button matTooltip="Modifier"
+               [routerLink]="['/apps/engins/maintenance/edit', m.id]"
+               (click)="$event.stopPropagation()">
+              <mat-icon class="text-gray-500">edit</mat-icon>
+            </a>
+            <button mat-icon-button matTooltip="Supprimer" color="warn"
+                    (click)="confirmDelete(m, $event)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            class="hover:bg-gray-50 transition-colors cursor-pointer"
+            (click)="goToDetail(row)">
+        </tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td [attr.colspan]="displayedColumns.length" class="text-center py-12 text-muted text-sm">
+            @if (isLoading) { Chargement… } @else { Aucune fiche de maintenance trouvée. }
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </mat-card-content>
+</mat-card>

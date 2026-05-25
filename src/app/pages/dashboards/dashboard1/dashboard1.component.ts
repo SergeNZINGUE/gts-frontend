@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -9,17 +9,19 @@ import { MissionsService } from 'src/app/services/apps/missions/missions.service
 import { FacturesService } from 'src/app/services/apps/factures/factures.service';
 import { AssurancesService } from 'src/app/services/apps/assurances/assurances.service';
 import { ControlesVGPService } from 'src/app/services/apps/controles-vgp/controles-vgp.service';
+import { LocationService } from 'src/app/services/apps/location/location.service';
+import { DashboardService } from 'src/app/services/apps/dashboard/dashboard.service';
 import { Mission } from 'src/app/pages/apps/missions/mission';
 import { Facture } from 'src/app/pages/apps/factures/facture';
 import { StatutAssurance } from 'src/app/pages/apps/engins/assurances-engins/assurance-engin';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard1',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule, RouterLink, DatePipe],
-  providers: [DatePipe],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, RouterLink, DatePipe, DecimalPipe],
+  providers: [DatePipe, DecimalPipe],
   templateUrl: './dashboard1.component.html',
 })
 export class AppDashboard1Component implements OnInit {
@@ -32,6 +34,10 @@ export class AppDashboard1Component implements OnInit {
   totalMissions = 0;
   missionsEnCours = 0;
   missionsEnAttente = 0;
+
+  // Locations
+  totalLocationsAnnee = 0;   // locations démarrées dans l'année en cours
+  locationsActives    = 0;   // locations en statut VALIDEE (toutes années)
 
   totalFactures = 0;
   montantAEncaisser = 0;
@@ -49,6 +55,14 @@ export class AppDashboard1Component implements OnInit {
   controlesEnRetard = 0;
   controlesBientot = 0;
 
+  // ── KPI financiers ────────────────────────────────────────────────────────
+  anneeEnCours = new Date().getFullYear();
+  caAnneeEnCours      = 0;   // Σ montantTTC factures de l'année (hors brouillons)
+  depensesCarburant   = 0;
+  depensesMaintenance = 0;
+  totalDepenses       = 0;
+  kpiFinanciersLoaded = false;
+
   recentMissions: Mission[] = [];
   recentFactures: Facture[] = [];
 
@@ -62,9 +76,26 @@ export class AppDashboard1Component implements OnInit {
     private facturesService: FacturesService,
     private assurancesService: AssurancesService,
     private controlesVGPService: ControlesVGPService,
+    private locationService: LocationService,
+    private dashboardService: DashboardService,
   ) {}
 
   ngOnInit(): void {
+    // ── KPI dépenses (carburant + maintenance) ────────────────────────────
+    this.dashboardService.getKpiDepenses(this.anneeEnCours)
+      .pipe(
+        tap({ error: (err) => console.error('[Dashboard] KPI dépenses — erreur API :', err) }),
+        catchError(() => of(null)),
+      )
+      .subscribe(kpi => {
+        if (kpi) {
+          this.depensesCarburant   = kpi.depensesCarburant   ?? 0;
+          this.depensesMaintenance = kpi.depensesMaintenance ?? 0;
+          this.totalDepenses       = kpi.totalDepenses       ?? 0;
+        }
+        this.kpiFinanciersLoaded = true;
+      });
+
     forkJoin({
       clients:    this.clientsService.getClients().pipe(catchError(() => of([]))),
       engins:     this.enginService.getEngins().pipe(catchError(() => of([]))),
@@ -72,8 +103,9 @@ export class AppDashboard1Component implements OnInit {
       factures:   this.facturesService.getFactures().pipe(catchError(() => of([]))),
       assurances: this.assurancesService.getAll().pipe(catchError(() => of([]))),
       controles:  this.controlesVGPService.getAll().pipe(catchError(() => of([]))),
+      locations:  this.locationService.getLocations().pipe(catchError(() => of([]))),
     }).subscribe({
-      next: ({ clients, engins, missions, factures, assurances, controles }) => {
+      next: ({ clients, engins, missions, factures, assurances, controles, locations }) => {
         this.totalClients = clients.length;
 
         this.totalEngins = engins.length;
@@ -94,6 +126,20 @@ export class AppDashboard1Component implements OnInit {
         this.recentFactures = [...factures]
           .sort((a, b) => new Date(b.dateEmission || 0).getTime() - new Date(a.dateEmission || 0).getTime())
           .slice(0, 5);
+
+        // CA année en cours = Σ montantTTC des factures non-brouillon émises cette année
+        this.caAnneeEnCours = factures
+          .filter(f => f.etatPaiement !== 'BROUILLON'
+                    && f.dateEmission?.startsWith(String(this.anneeEnCours)))
+          .reduce((s, f) => s + (f.montantTTC ?? 0), 0);
+
+        // ── Locations ────────────────────────────────────────────────
+        this.totalLocationsAnnee = locations.filter(
+          l => l.dateDbtLoc?.toString().startsWith(String(this.anneeEnCours)),
+        ).length;
+        this.locationsActives = locations.filter(
+          l => l.statut === 'VALIDEE',
+        ).length;
 
         // ── Assurances ───────────────────────────────────────────────
         const now = new Date();

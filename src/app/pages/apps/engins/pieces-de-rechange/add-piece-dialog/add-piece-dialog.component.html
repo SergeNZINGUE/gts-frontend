@@ -1,0 +1,71 @@
+<h2 mat-dialog-title class="flex items-center gap-2">
+  <mat-icon class="text-primary">{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+  {{ isEdit ? 'Modifier la pièce' : 'Nouvelle pièce de rechange' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="grid grid-cols-12 gap-4 pt-2">
+
+    <!-- Désignation -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Désignation *</mat-label>
+      <input matInput formControlName="designation"
+             placeholder="ex : Filtre à huile moteur CAT 320" />
+      @if (form.get('designation')?.hasError('required') && form.get('designation')?.touched) {
+        <mat-error>La désignation est obligatoire</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Référence constructeur -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Référence constructeur</mat-label>
+      <input matInput formControlName="referenceConstructeur"
+             placeholder="ex : CAT-1R-0739" />
+    </mat-form-field>
+
+    <!-- Stock actuel -->
+    <mat-form-field appearance="outline" class="col-span-6">
+      <mat-label>Stock actuel *</mat-label>
+      <input matInput type="number" min="0" formControlName="quantiteEnStock" />
+      <span matSuffix class="text-muted text-sm pr-2">pce</span>
+      @if (form.get('quantiteEnStock')?.hasError('min') && form.get('quantiteEnStock')?.touched) {
+        <mat-error>Valeur ≥ 0</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Seuil d'alerte -->
+    <mat-form-field appearance="outline" class="col-span-6">
+      <mat-label>Seuil d'alerte *</mat-label>
+      <input matInput type="number" min="0" formControlName="seuilAlerteStock" />
+      <span matSuffix class="text-muted text-sm pr-2">pce</span>
+      <mat-hint>Alerte si stock ≤ seuil</mat-hint>
+    </mat-form-field>
+
+    <!-- Prix unitaire -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Prix unitaire d'achat *</mat-label>
+      <input matInput type="number" min="0" formControlName="prixUnitaireAchat" />
+      <span matSuffix class="text-muted text-sm pr-2">FCFA</span>
+      @if (form.get('prixUnitaireAchat')?.hasError('required') && form.get('prixUnitaireAchat')?.touched) {
+        <mat-error>Le prix est obligatoire</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Indicateur alerte en temps réel -->
+    @if ((form.value.quantiteEnStock ?? 0) <= (form.value.seuilAlerteStock ?? 0)
+          && form.value.seuilAlerteStock != null) {
+      <div class="col-span-12 flex items-center gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200 text-orange-800 text-sm">
+        <mat-icon class="text-orange-500 shrink-0">warning</mat-icon>
+        Le stock saisi déclenche une alerte de réapprovisionnement.
+      </div>
+    }
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" (click)="submit()" class="ml-2">
+    {{ isEdit ? 'Enregistrer' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

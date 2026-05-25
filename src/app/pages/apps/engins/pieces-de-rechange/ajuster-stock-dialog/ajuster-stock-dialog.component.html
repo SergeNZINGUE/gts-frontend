@@ -1,0 +1,77 @@
+<h2 mat-dialog-title class="flex items-center gap-2">
+  <mat-icon class="text-primary">inventory</mat-icon>
+  Mouvement de stock
+</h2>
+
+<mat-dialog-content>
+  <!-- Info pièce -->
+  <div class="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+    <div class="font-semibold text-sm">{{ piece.designation }}</div>
+    @if (piece.referenceConstructeur) {
+      <div class="text-xs text-muted font-mono">{{ piece.referenceConstructeur }}</div>
+    }
+    <div class="text-sm mt-1">
+      Stock actuel :
+      <strong [class.text-error]="piece.alerteReapprovisionnement">
+        {{ piece.quantiteEnStock }} pce
+      </strong>
+    </div>
+  </div>
+
+  <form [formGroup]="form" class="grid grid-cols-12 gap-4">
+
+    <!-- Mode -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Type de mouvement</mat-label>
+      <mat-select formControlName="mode">
+        @for (m of modeOptions; track m.value) {
+          <mat-option [value]="m.value">
+            <div class="flex items-center gap-2">
+              <mat-icon [class]="m.color">{{ m.icon }}</mat-icon>
+              {{ m.label }}
+            </div>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Quantité -->
+    <mat-form-field appearance="outline" class="col-span-6">
+      <mat-label>
+        {{ form.value.mode === 'ajustement' ? 'Nouveau stock (valeur absolue)' : 'Quantité' }}
+      </mat-label>
+      <input matInput type="number" min="1" formControlName="quantite" />
+      <span matSuffix class="text-muted text-sm pr-2">pce</span>
+    </mat-form-field>
+
+    <!-- Aperçu stock après -->
+    <div class="col-span-6 flex flex-col justify-center">
+      <div class="text-xs text-muted mb-0.5">Stock après mouvement</div>
+      <div class="text-xl font-bold"
+           [class.text-success]="!stockApresNegatif && stockApres > (piece.seuilAlerteStock ?? 0)"
+           [class.text-warning]="!stockApresNegatif && stockApres > 0 && stockApres <= (piece.seuilAlerteStock ?? 0)"
+           [class.text-error]="stockApresNegatif || stockApres === 0">
+        {{ stockApres }} pce
+      </div>
+      @if (stockApresNegatif) {
+        <div class="text-xs text-error mt-0.5">⚠ Stock insuffisant</div>
+      }
+    </div>
+
+    <!-- Motif (optionnel) -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Motif (optionnel)</mat-label>
+      <input matInput formControlName="motif"
+             placeholder="ex : Réception commande N° 2024-045, Utilisation chantier…" />
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" (click)="submit()"
+          [disabled]="form.invalid || stockApresNegatif" class="ml-2">
+    Valider le mouvement
+  </button>
+</mat-dialog-actions>

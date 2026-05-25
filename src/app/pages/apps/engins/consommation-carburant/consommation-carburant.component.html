@@ -1,0 +1,435 @@
+<div class="container-fluid py-4">
+
+  <!-- ══════════════════════════════════════════════════════════
+       FILTRE
+       ══════════════════════════════════════════════════════════ -->
+  <mat-card class="mat-elevation-z3 mb-4">
+    <mat-card-content class="p-3">
+      <form [formGroup]="filterForm" (ngSubmit)="search()" class="row g-3 align-items-end">
+
+        <!-- Période -->
+        <div class="col-12 col-sm-6 col-lg-3">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Date début</mat-label>
+            <input matInput [matDatepicker]="dpDebut" formControlName="dateDebut" placeholder="JJ/MM/AAAA">
+            <mat-datepicker-toggle matSuffix [for]="dpDebut"></mat-datepicker-toggle>
+            <mat-datepicker #dpDebut></mat-datepicker>
+            <mat-error>Date début requise</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Date fin</mat-label>
+            <input matInput [matDatepicker]="dpFin" formControlName="dateFin" placeholder="JJ/MM/AAAA">
+            <mat-datepicker-toggle matSuffix [for]="dpFin"></mat-datepicker-toggle>
+            <mat-datepicker #dpFin></mat-datepicker>
+            <mat-error>Date fin requise</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Engin (optionnel) -->
+        <div class="col-12 col-sm-6 col-lg-4">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Engin (optionnel)</mat-label>
+            <input matInput [formControl]="enginSearchCtrl" placeholder="Code ou modèle…"
+                   [matAutocomplete]="autoEngin">
+            <button *ngIf="selectedEnginId" matSuffix mat-icon-button type="button" (click)="clearEngin()" matTooltip="Effacer">
+              <mat-icon>close</mat-icon>
+            </button>
+            <mat-icon matPrefix>construction</mat-icon>
+            <mat-autocomplete #autoEngin="matAutocomplete" (optionSelected)="selectEngin($event.option.value)">
+              <mat-option *ngFor="let e of filteredEngins" [value]="e">
+                <span class="fw-semibold">{{ e.codeEngin }}</span>
+                <span class="text-muted ms-2">{{ e.modelEngin }}</span>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+        <!-- Bouton -->
+        <div class="col-12 col-sm-6 col-lg-2 d-flex">
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="w-100">
+            <mat-icon class="me-1">search</mat-icon>
+            <span *ngIf="!loading">Analyser</span>
+            <span *ngIf="loading">Chargement…</span>
+          </button>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Spinner -->
+  <div *ngIf="loading" class="d-flex justify-content-center py-5">
+    <mat-spinner diameter="52"></mat-spinner>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       RÉSULTATS
+       ══════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="!loading && rapport">
+
+    <!-- ── Onglets ─────────────────────────────────────────────────────── -->
+    <mat-tab-group animationDuration="200ms" class="mat-elevation-z3">
+
+      <!-- ╔════════════════════════════════════════╗
+           ║  Onglet 1 — Synthèse par engin         ║
+           ╚════════════════════════════════════════╝ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="me-1">bar_chart</mat-icon> Synthèse par engin
+        </ng-template>
+
+        <div class="p-3 overflow-auto">
+
+          <mat-table [dataSource]="bilansDs" matSort #sortBilans="matSort" class="w-100">
+
+            <!-- Code engin -->
+            <ng-container matColumnDef="codeEngin">
+              <mat-header-cell *matHeaderCellDef mat-sort-header>Code</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="fw-semibold">{{ b.codeEngin }}</mat-cell>
+              <mat-footer-cell *matFooterCellDef class="fw-bold">TOTAL</mat-footer-cell>
+            </ng-container>
+
+            <!-- Modèle -->
+            <ng-container matColumnDef="modelEngin">
+              <mat-header-cell *matHeaderCellDef mat-sort-header>Modèle</mat-header-cell>
+              <mat-cell *matCellDef="let b">{{ b.modelEngin }}</mat-cell>
+              <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <!-- Litres pleins -->
+            <ng-container matColumnDef="totalLitresPleins">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Litres (pleins)</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                {{ b.totalLitresPleins != null ? (b.totalLitresPleins | number:'1.1-1') + ' L' : '—' }}
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">{{ totalLitresBilans | number:'1.1-1' }} L</mat-footer-cell>
+            </ng-container>
+
+            <!-- Coût pleins -->
+            <ng-container matColumnDef="coutTotalPleins">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Coût (F)</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                {{ b.coutTotalPleins != null ? (b.coutTotalPleins | number:'1.0-0') : '—' }}
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">{{ totalCoutBilans | number:'1.0-0' }}</mat-footer-cell>
+            </ng-container>
+
+            <!-- Δ horamètre -->
+            <ng-container matColumnDef="deltaHorametre">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Δ Hm</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                {{ b.deltaHorametre != null ? (b.deltaHorametre | number:'1.1-1') + ' h' : '—' }}
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <!-- Ratio L/h pleins -->
+            <ng-container matColumnDef="ratioHorairePleins">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">L/h (pleins)</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                <span *ngIf="b.ratioHorairePleins != null"
+                      [class]="b.ratioHorairePleins > 15 ? 'badge bg-danger' : b.ratioHorairePleins > 10 ? 'badge bg-warning text-dark' : 'badge bg-success'">
+                  {{ b.ratioHorairePleins | number:'1.2-2' }}
+                </span>
+                <span *ngIf="b.ratioHorairePleins == null" class="text-muted">—</span>
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <!-- Nb missions -->
+            <ng-container matColumnDef="nbMissionsTotal">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-center">Missions</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-center">
+                {{ b.nbMissionsAvecCarburant }} / {{ b.nbMissionsTotal }}
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef class="justify-content-center fw-bold">
+                {{ rapport.nbMissionsAvecCarburant }} / {{ rapport.nbMissionsTotal }}
+              </mat-footer-cell>
+            </ng-container>
+
+            <!-- Taux couverture -->
+            <ng-container matColumnDef="tauxCouverture">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Couverture</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                <span *ngIf="b.tauxCouverture != null"
+                      [class]="b.tauxCouverture >= 80 ? 'text-success fw-semibold' : b.tauxCouverture >= 50 ? 'text-warning fw-semibold' : 'text-danger fw-semibold'">
+                  {{ b.tauxCouverture | number:'1.0-0' }} %
+                </span>
+                <span *ngIf="b.tauxCouverture == null" class="text-muted">—</span>
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">
+                {{ rapport.tauxCouvertureGlobal | number:'1.0-0' }} %
+              </mat-footer-cell>
+            </ng-container>
+
+            <!-- Consommation missions -->
+            <ng-container matColumnDef="consommationMissions">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Conso missions (L)</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                {{ b.consommationMissions != null ? (b.consommationMissions | number:'1.1-1') : '—' }}
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">{{ totalConsoMissions | number:'1.1-1' }}</mat-footer-cell>
+            </ng-container>
+
+            <!-- Ratio L/h missions -->
+            <ng-container matColumnDef="ratioHoraireMissions">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">L/h (missions)</mat-header-cell>
+              <mat-cell *matCellDef="let b" class="justify-content-end">
+                <span *ngIf="b.ratioHoraireMissions != null"
+                      [class]="b.ratioHoraireMissions > 15 ? 'badge bg-danger' : b.ratioHoraireMissions > 10 ? 'badge bg-warning text-dark' : 'badge bg-success'">
+                  {{ b.ratioHoraireMissions | number:'1.2-2' }}
+                </span>
+                <span *ngIf="b.ratioHoraireMissions == null" class="text-muted">—</span>
+              </mat-cell>
+              <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="colsBilans; sticky: true"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: colsBilans;"></mat-row>
+            <mat-footer-row *matFooterRowDef="colsBilans; sticky: true" class="bg-light fw-bold"></mat-footer-row>
+          </mat-table>
+
+          <mat-paginator #paginatorBilans [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+
+          <div *ngIf="bilansDs.data.length === 0" class="text-center text-muted py-4">
+            <mat-icon class="fs-1 text-muted">info</mat-icon>
+            <p class="mt-2">Aucun engin actif sur cette période.</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ╔════════════════════════════════════════╗
+           ║  Onglet 2 — Détail missions            ║
+           ╚════════════════════════════════════════╝ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="me-1">assignment</mat-icon> Détail missions
+          <span class="badge bg-primary ms-2">{{ allMissions.length }}</span>
+        </ng-template>
+
+        <div class="p-3">
+
+          <!-- Filtre complet/incomplet -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="fw-semibold">Afficher :</span>
+            <mat-button-toggle-group [formControl]="misFilterCtrl" aria-label="Filtre missions">
+              <mat-button-toggle value="TOUS">Toutes</mat-button-toggle>
+              <mat-button-toggle value="COMPLETS">
+                <mat-icon class="me-1 text-success" style="font-size:18px">check_circle</mat-icon>
+                Complètes
+              </mat-button-toggle>
+              <mat-button-toggle value="INCOMPLETS">
+                <mat-icon class="me-1 text-warning" style="font-size:18px">warning</mat-icon>
+                Incomplètes
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+            <span class="text-muted small ms-auto">
+              {{ rapport.nbMissionsAvecCarburant }} / {{ rapport.nbMissionsTotal }} missions avec données carburant
+            </span>
+          </div>
+
+          <div class="overflow-auto">
+            <mat-table [dataSource]="misDs" matSort #sortMis="matSort" class="w-100">
+
+              <!-- Date -->
+              <ng-container matColumnDef="dateTravail">
+                <mat-header-cell *matHeaderCellDef mat-sort-header>Date</mat-header-cell>
+                <mat-cell *matCellDef="let m">{{ m.dateTravail | date:'dd/MM/yy' }}</mat-cell>
+                <mat-footer-cell *matFooterCellDef class="fw-bold">TOTAL</mat-footer-cell>
+              </ng-container>
+
+              <!-- Code mission -->
+              <ng-container matColumnDef="codeMission">
+                <mat-header-cell *matHeaderCellDef mat-sort-header>Mission</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="fw-semibold">{{ m.codeMission }}</mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Engin -->
+              <ng-container matColumnDef="codeEngin">
+                <mat-header-cell *matHeaderCellDef mat-sort-header>Engin</mat-header-cell>
+                <mat-cell *matCellDef="let m">
+                  <span *ngIf="m.codeEngin">{{ m.codeEngin }}</span>
+                  <span *ngIf="!m.codeEngin" class="text-muted">—</span>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Carbt début -->
+              <ng-container matColumnDef="carbtDbt">
+                <mat-header-cell *matHeaderCellDef class="justify-content-end">Jg. Dbt (L)</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  {{ m.carbtDbt != null ? (m.carbtDbt | number:'1.1-1') : '—' }}
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Carbt fin -->
+              <ng-container matColumnDef="carbtFin">
+                <mat-header-cell *matHeaderCellDef class="justify-content-end">Jg. Fin (L)</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  {{ m.carbtFin != null ? (m.carbtFin | number:'1.1-1') : '—' }}
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Delta réservoir -->
+              <ng-container matColumnDef="deltaReservoir">
+                <mat-header-cell *matHeaderCellDef class="justify-content-end">Δ Réservoir</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  {{ m.deltaReservoir != null ? (m.deltaReservoir | number:'1.1-1') + ' L' : '—' }}
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Ravitaillement -->
+              <ng-container matColumnDef="ravitaillementsLitres">
+                <mat-header-cell *matHeaderCellDef class="justify-content-end">Ravit. (L)</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  <span *ngIf="m.ravitaillementsLitres != null && m.ravitaillementsLitres > 0"
+                        class="badge bg-info text-dark">
+                    +{{ m.ravitaillementsLitres | number:'1.1-1' }}
+                  </span>
+                  <span *ngIf="!m.ravitaillementsLitres || m.ravitaillementsLitres === 0" class="text-muted">0</span>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Consommation réelle -->
+              <ng-container matColumnDef="consommationReelle">
+                <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Conso (L)</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  <span *ngIf="m.consommationReelle != null"
+                        [class]="m.consommationReelle < 0 ? 'text-danger fw-semibold' : 'fw-semibold'">
+                    {{ m.consommationReelle | number:'1.1-1' }}
+                  </span>
+                  <span *ngIf="m.consommationReelle == null" class="text-muted">—</span>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">{{ totalConsoMis | number:'1.1-1' }}</mat-footer-cell>
+              </ng-container>
+
+              <!-- Heures -->
+              <ng-container matColumnDef="nbHeures">
+                <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">Heures</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  {{ m.nbHeures != null ? (m.nbHeures | number:'1.1-1') + ' h' : '—' }}
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef class="justify-content-end fw-bold">{{ totalHeuresMis | number:'1.1-1' }} h</mat-footer-cell>
+              </ng-container>
+
+              <!-- Ratio L/h -->
+              <ng-container matColumnDef="ratioLH">
+                <mat-header-cell *matHeaderCellDef mat-sort-header class="justify-content-end">L/h</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-end">
+                  <span *ngIf="m.ratioLH != null"
+                        [class]="m.ratioLH > 15 ? 'badge bg-danger' : m.ratioLH > 10 ? 'badge bg-warning text-dark' : 'badge bg-success'">
+                    {{ m.ratioLH | number:'1.2-2' }}
+                  </span>
+                  <span *ngIf="m.ratioLH == null" class="text-muted">—</span>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <!-- Statut données -->
+              <ng-container matColumnDef="statut">
+                <mat-header-cell *matHeaderCellDef class="justify-content-center">Données</mat-header-cell>
+                <mat-cell *matCellDef="let m" class="justify-content-center">
+                  <mat-icon *ngIf="m.donneesCompletes" class="text-success" matTooltip="Données complètes">check_circle</mat-icon>
+                  <mat-icon *ngIf="!m.donneesCompletes" class="text-warning" matTooltip="Données incomplètes">warning</mat-icon>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="colsMis; sticky: true"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: colsMis;"
+                       [class.bg-warning-subtle]="!row.donneesCompletes"
+                       [class.bg-danger-subtle]="row.consommationReelle != null && row.consommationReelle < 0">
+              </mat-row>
+              <mat-footer-row *matFooterRowDef="colsMis; sticky: true" class="bg-light fw-bold"></mat-footer-row>
+            </mat-table>
+
+            <mat-paginator #paginatorMis [pageSizeOptions]="[15, 30, 50, 100]" showFirstLastButtons></mat-paginator>
+          </div>
+
+          <div *ngIf="misDs.data.length === 0" class="text-center text-muted py-4">
+            <mat-icon class="fs-1 text-muted">info</mat-icon>
+            <p class="mt-2">Aucune mission trouvée pour ces critères.</p>
+          </div>
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+
+    <!-- ── KPI Cards ─────────────────────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon class="text-primary fs-2">local_gas_station</mat-icon>
+          <div class="fw-bold fs-5 mt-1">{{ rapport.totalLitresConsommes | number:'1.1-1' }} L</div>
+          <div class="text-muted small">Litres ravitaillés</div>
+        </mat-card>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon class="text-success fs-2">payments</mat-icon>
+          <div class="fw-bold fs-5 mt-1">{{ rapport.coutTotalCarburant | number:'1.0-0' }} F</div>
+          <div class="text-muted small">Coût total</div>
+        </mat-card>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon class="text-warning fs-2">speed</mat-icon>
+          <div class="fw-bold fs-5 mt-1">
+            {{ rapport.ratioHoraireMoyenFlotte != null ? (rapport.ratioHoraireMoyenFlotte | number:'1.2-2') + ' L/h' : '—' }}
+          </div>
+          <div class="text-muted small">Ratio L/h moyen</div>
+        </mat-card>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon class="text-info fs-2">precision_manufacturing</mat-icon>
+          <div class="fw-bold fs-5 mt-1">{{ rapport.nbEnginsActifs }}</div>
+          <div class="text-muted small">Engins actifs</div>
+        </mat-card>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon class="text-secondary fs-2">fact_check</mat-icon>
+          <div class="fw-bold fs-5 mt-1">{{ rapport.nbMissionsTotal }}</div>
+          <div class="text-muted small">Missions</div>
+        </mat-card>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <mat-card class="mat-elevation-z2 h-100 text-center py-3">
+          <mat-icon [class]="rapport.tauxCouvertureGlobal >= 80 ? 'text-success fs-2' : rapport.tauxCouvertureGlobal >= 50 ? 'text-warning fs-2' : 'text-danger fs-2'">
+            pie_chart
+          </mat-icon>
+          <div class="fw-bold fs-5 mt-1">{{ rapport.tauxCouvertureGlobal | number:'1.0-1' }} %</div>
+          <div class="text-muted small">Couverture jauges</div>
+        </mat-card>
+      </div>
+
+    </div><!-- /KPI -->
+
+
+
+  </ng-container><!-- /résultats -->
+
+  <!-- Placeholder initial -->
+  <div *ngIf="!loading && !rapport" class="text-center text-muted py-6 mt-4">
+    <mat-icon style="font-size: 64px; height: 64px; width: 64px;" class="text-muted">local_gas_station</mat-icon>
+    <h5 class="mt-3">Rapport de consommation carburant</h5>
+    <p class="text-muted">Sélectionnez une période et cliquez sur <strong>Analyser</strong> pour générer le rapport.</p>
+  </div>
+
+</div>

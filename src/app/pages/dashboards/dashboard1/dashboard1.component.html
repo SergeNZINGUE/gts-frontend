@@ -7,13 +7,14 @@
   <!-- ── KPI row ───────────────────────────────────────────── -->
 
   <!-- Clients -->
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3 flex">
+    <mat-card class="cardWithShadow flex-1 flex flex-col">
+      <mat-card-content class="flex flex-col flex-1 justify-between">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-muted mb-1">Clients</p>
             <h3 class="text-3xl font-bold mb-0">{{ totalClients }}</h3>
+            <p class="text-xs text-muted mt-1">Référencés dans la flotte</p>
           </div>
           <div class="w-14 h-14 rounded-full bg-light-primary flex items-center justify-center">
             <i-tabler name="building-store" class="text-primary size-7!"></i-tabler>
@@ -27,9 +28,9 @@
   </div>
 
   <!-- Engins -->
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3 flex">
+    <mat-card class="cardWithShadow flex-1 flex flex-col">
+      <mat-card-content class="flex flex-col flex-1 justify-between">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-muted mb-1">Engins</p>
@@ -47,33 +48,33 @@
     </mat-card>
   </div>
 
-  <!-- Missions -->
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
+  <!-- Locations année en cours -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3 flex">
+    <mat-card class="cardWithShadow flex-1 flex flex-col">
+      <mat-card-content class="flex flex-col flex-1 justify-between">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-muted mb-1">Missions</p>
-            <h3 class="text-3xl font-bold mb-0">{{ totalMissions }}</h3>
+            <p class="text-sm text-muted mb-1">Locations {{ anneeEnCours }}</p>
+            <h3 class="text-3xl font-bold mb-0">{{ totalLocationsAnnee }}</h3>
             <p class="text-xs text-muted mt-1">
-              {{ missionsEnCours }} en cours · {{ missionsEnAttente }} en attente
+              {{ locationsActives }} active(s) en ce moment
             </p>
           </div>
           <div class="w-14 h-14 rounded-full bg-light-warning flex items-center justify-center">
-            <i-tabler name="map-pin" class="text-warning size-7!"></i-tabler>
+            <i-tabler name="crane" class="text-warning size-7!"></i-tabler>
           </div>
         </div>
-        <a routerLink="/apps/missions" class="text-xs text-primary mt-3 block">
-          Voir toutes les missions →
+        <a routerLink="/apps/locations" class="text-xs text-primary mt-3 block">
+          Voir toutes les locations →
         </a>
       </mat-card-content>
     </mat-card>
   </div>
 
   <!-- Factures à encaisser -->
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3 flex">
+    <mat-card class="cardWithShadow flex-1 flex flex-col">
+      <mat-card-content class="flex flex-col flex-1 justify-between">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-muted mb-1">À encaisser</p>
@@ -88,6 +89,104 @@
         </div>
         <a routerLink="/apps/factures" class="text-xs text-primary mt-3 block">
           Voir les factures →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ── KPI Financiers ───────────────────────────────────────── -->
+
+  <!-- Chiffre d'affaires année en cours -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-4">
+    <mat-card class="cardWithShadow border-l-4 border-l-green-500">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-muted mb-1 flex items-center gap-1">
+              <mat-icon class="text-green-500" style="font-size:16px;width:16px;height:16px;">trending_up</mat-icon>
+              Chiffre d'affaires {{ anneeEnCours }}
+            </p>
+            @if (!isLoading) {
+              <h3 class="text-2xl font-bold mb-0 text-green-700">
+                {{ caAnneeEnCours | number:'1.0-0' }}
+                <span class="text-base font-normal text-muted">FCFA</span>
+              </h3>
+              <p class="text-xs text-muted mt-1">Factures validées + payées</p>
+            } @else {
+              <div class="h-8 bg-gray-100 rounded animate-pulse w-40 mt-1"></div>
+            }
+          </div>
+          <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+            <mat-icon class="text-green-500 text-3xl!">payments</mat-icon>
+          </div>
+        </div>
+        <a routerLink="/apps/factures" class="text-xs text-primary mt-3 block">
+          Voir les factures →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Dépenses carburant -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-4">
+    <mat-card class="cardWithShadow border-l-4 border-l-orange-400">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-muted mb-1 flex items-center gap-1">
+              <mat-icon class="text-orange-400" style="font-size:16px;width:16px;height:16px;">local_gas_station</mat-icon>
+              Carburant {{ anneeEnCours }}
+            </p>
+            @if (kpiFinanciersLoaded) {
+              <h3 class="text-2xl font-bold mb-0 text-orange-600">
+                {{ depensesCarburant | number:'1.0-0' }}
+                <span class="text-base font-normal text-muted">FCFA</span>
+              </h3>
+              <p class="text-xs text-muted mt-1">Coût total des ravitaillements</p>
+            } @else {
+              <div class="h-8 bg-gray-100 rounded animate-pulse w-40 mt-1"></div>
+            }
+          </div>
+          <div class="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+            <mat-icon class="text-orange-400 text-3xl!">oil_barrel</mat-icon>
+          </div>
+        </div>
+        <a routerLink="/apps/engins/consommation-carburant" class="text-xs text-primary mt-3 block">
+          Voir le rapport carburant →
+        </a>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Dépenses maintenance -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-4">
+    <mat-card class="cardWithShadow border-l-4 border-l-red-400">
+      <mat-card-content>
+        <div class="flex items-center justify-between">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-muted mb-1 flex items-center gap-1">
+              <mat-icon class="text-red-400" style="font-size:16px;width:16px;height:16px;">build</mat-icon>
+              Maintenance {{ anneeEnCours }}
+            </p>
+            @if (kpiFinanciersLoaded) {
+              <h3 class="text-2xl font-bold mb-0 text-red-600">
+                {{ depensesMaintenance | number:'1.0-0' }}
+                <span class="text-base font-normal text-muted">FCFA</span>
+              </h3>
+              <p class="text-xs text-muted mt-1">
+                Total dépenses :
+                <span class="font-semibold text-gray-700">{{ totalDepenses | number:'1.0-0' }} FCFA</span>
+              </p>
+            } @else {
+              <div class="h-8 bg-gray-100 rounded animate-pulse w-40 mt-1"></div>
+            }
+          </div>
+          <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+            <mat-icon class="text-red-400 text-3xl!">handyman</mat-icon>
+          </div>
+        </div>
+        <a routerLink="/apps/engins/maintenance" class="text-xs text-primary mt-3 block">
+          Voir les maintenances →
         </a>
       </mat-card-content>
     </mat-card>

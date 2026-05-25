@@ -1,0 +1,255 @@
+<!-- En-tête -->
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-3">
+    <a routerLink="/apps/engins" mat-stroked-button>
+      <mat-icon>arrow_back</mat-icon>
+      Engins
+    </a>
+    <h2 class="text-2xl font-semibold mb-0">Pièces de rechange</h2>
+  </div>
+  <button mat-flat-button color="primary" (click)="openDialog()"
+          class="flex! items-center gap-1">
+    <mat-icon>add</mat-icon>
+    Nouvelle pièce
+  </button>
+</div>
+
+<!-- Alerte stock -->
+@if (enAlerte > 0 && !filtreAlerte) {
+  <div class="flex items-start gap-3 p-4 mb-6 rounded-lg border border-orange-300 bg-orange-50
+              cursor-pointer hover:bg-orange-100 transition-colors"
+       (click)="toggleFiltreAlerte()">
+    <mat-icon class="text-orange-500 shrink-0 mt-0.5">warning</mat-icon>
+    <div class="text-sm text-orange-800 flex-1">
+      <strong>{{ enAlerte }} pièce(s) en alerte de réapprovisionnement.</strong>
+      Cliquez pour filtrer.
+    </div>
+    <mat-icon class="text-orange-400 text-base">filter_list</mat-icon>
+  </div>
+}
+
+<!-- KPI cards -->
+<div class="grid grid-cols-12 gap-6 mb-6">
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-primary flex items-center justify-center shrink-0">
+            <mat-icon class="text-primary">settings</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Références</div>
+            <div class="text-2xl font-bold">{{ isLoading ? '—' : total }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-error flex items-center justify-center shrink-0">
+            <mat-icon class="text-error">warning</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">En alerte</div>
+            <div class="text-2xl font-bold"
+                 [class.text-error]="enAlerte > 0">
+              {{ isLoading ? '—' : enAlerte }}
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-success flex items-center justify-center shrink-0">
+            <mat-icon class="text-success">account_balance_wallet</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">Valeur stock</div>
+            <div class="text-lg font-bold">
+              {{ isLoading ? '—' : (valeurTotaleStock | number:'1.0-0') }} <span class="text-sm font-normal">FCFA</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-light-warning flex items-center justify-center shrink-0">
+            <mat-icon class="text-warning">shopping_cart</mat-icon>
+          </div>
+          <div>
+            <div class="text-sm text-muted">À commander</div>
+            <div class="text-lg font-bold text-warning">
+              {{ isLoading ? '—' : (valeurAlerte | number:'1.0-0') }} <span class="text-sm font-normal">FCFA</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>
+
+<!-- Filtres -->
+<mat-card class="cardWithShadow mb-4">
+  <mat-card-content>
+    <div class="flex flex-wrap items-center gap-4">
+
+      <mat-form-field appearance="outline" class="hide-hint flex-1 min-w-48">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Désignation, référence…"
+               [(ngModel)]="searchText"
+               (ngModelChange)="applyFilters()" />
+      </mat-form-field>
+
+      <button mat-stroked-button
+              [color]="filtreAlerte ? 'warn' : undefined"
+              (click)="toggleFiltreAlerte()"
+              class="flex! items-center gap-1 shrink-0">
+        <mat-icon>{{ filtreAlerte ? 'filter_list_off' : 'filter_list' }}</mat-icon>
+        {{ filtreAlerte ? 'Afficher tout' : 'Alertes seulement' }}
+        @if (enAlerte > 0) {
+          <span class="ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
+            {{ enAlerte }}
+          </span>
+        }
+      </button>
+
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<!-- Table -->
+<mat-card class="cardWithShadow">
+  @if (isLoading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+  <mat-card-content>
+    <div class="overflow-auto">
+      <table mat-table [dataSource]="dataSource" matSort class="w-full no-wrap v-middle">
+
+        <!-- Désignation -->
+        <ng-container matColumnDef="designation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">Désignation</th>
+          <td mat-cell *matCellDef="let p">
+            <div class="font-medium text-sm">{{ p.designation }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Référence -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">Référence</th>
+          <td mat-cell *matCellDef="let p" class="font-mono text-xs text-muted">
+            {{ p.referenceConstructeur || '—' }}
+          </td>
+        </ng-container>
+
+        <!-- Stock -->
+        <ng-container matColumnDef="stock">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-center">Stock</th>
+          <td mat-cell *matCellDef="let p" class="text-center">
+            <span class="text-base font-bold"
+                  [class.text-error]="p.alerteReapprovisionnement"
+                  [class.text-success]="!p.alerteReapprovisionnement">
+              {{ p.quantiteEnStock }}
+            </span>
+            <span class="text-xs text-muted ml-1">pce</span>
+          </td>
+        </ng-container>
+
+        <!-- Seuil -->
+        <ng-container matColumnDef="seuil">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-center">Seuil</th>
+          <td mat-cell *matCellDef="let p" class="text-center text-sm text-muted">
+            {{ p.seuilAlerteStock }} pce
+          </td>
+        </ng-container>
+
+        <!-- Prix unitaire -->
+        <ng-container matColumnDef="prix">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-right">Prix unitaire</th>
+          <td mat-cell *matCellDef="let p" class="text-sm text-right">
+            {{ (p.prixUnitaireAchat ?? 0) | number:'1.0-0' }} FCFA
+          </td>
+        </ng-container>
+
+        <!-- Valeur stock -->
+        <ng-container matColumnDef="valeur">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-right">Valeur stock</th>
+          <td mat-cell *matCellDef="let p" class="text-sm text-right font-medium">
+            {{ valeurStock(p) | number:'1.0-0' }} FCFA
+          </td>
+        </ng-container>
+
+        <!-- Alerte -->
+        <ng-container matColumnDef="alerte">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-center">Statut</th>
+          <td mat-cell *matCellDef="let p" class="text-center">
+            @if (p.alerteReapprovisionnement) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+                           bg-orange-100 text-orange-700 text-xs font-semibold">
+                <mat-icon class="text-sm leading-none">warning</mat-icon>
+                Réappro.
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+                           bg-green-100 text-green-700 text-xs font-semibold">
+                <mat-icon class="text-sm leading-none">check_circle</mat-icon>
+                OK
+              </span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Actions -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let p" class="whitespace-nowrap">
+            <button mat-icon-button matTooltip="Mouvement de stock"
+                    (click)="openAjusterStock(p, $event)">
+              <mat-icon class="text-primary">inventory</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Modifier"
+                    (click)="openDialog(p); $event.stopPropagation()">
+              <mat-icon class="text-gray-500">edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Supprimer" color="warn"
+                    (click)="confirmDelete(p, $event)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            class="hover:bg-gray-50 transition-colors"
+            [class.bg-orange-50]="row.alerteReapprovisionnement">
+        </tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td [attr.colspan]="displayedColumns.length" class="text-center py-12 text-muted text-sm">
+            @if (isLoading) { Chargement… }
+            @else if (filtreAlerte) { Aucune pièce en alerte. }
+            @else { Aucune pièce de rechange trouvée. }
+          </td>
+        </tr>
+
+      </table>
+    </div>
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </mat-card-content>
+</mat-card>

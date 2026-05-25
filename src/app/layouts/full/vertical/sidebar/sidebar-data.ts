@@ -82,7 +82,7 @@ export const navItems: NavItem[] = [
       {
         displayName: 'Consommation en carburant',
         iconName: 'tabler:point',
-        route: 'apps/engins/consommation-en-carburant',
+        route: 'apps/engins/consommation-carburant',
         roles: ['ADMIN', 'MANAGER', 'OPERATEUR'],
       },
     ],

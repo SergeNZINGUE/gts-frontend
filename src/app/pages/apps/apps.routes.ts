@@ -21,6 +21,11 @@ import { AddFactureComponent } from './factures/add-facture/add-facture.componen
 import { DetailsFactureComponent } from './factures/details-facture/details-facture.component';
 import { AssurancesEnginsComponent } from './engins/assurances-engins/assurances-engins.component';
 import { ControlesVGPComponent } from './engins/controles-vgp/controles-vgp.component';
+import { PiecesDeRechangeComponent } from './engins/pieces-de-rechange/pieces-de-rechange.component';
+import { MaintenancesListComponent } from './engins/maintenance/maintenances-list/maintenances-list.component';
+import { AddMaintenanceComponent } from './engins/maintenance/add-maintenance/add-maintenance.component';
+import { DetailsMaintenanceComponent } from './engins/maintenance/details-maintenance/details-maintenance.component';
+import { ConsommationCarburantComponent } from './engins/consommation-carburant/consommation-carburant.component';
 import { RapportsComponent } from './rapports/rapports.component';
 import { UsersComponent } from './users/users.component';
 import { AddUserComponent } from './users/add-user/add-user.component';
@@ -194,6 +199,96 @@ export const AppsRoutes: Routes = [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
             { title: 'Engins', url: '/apps/engins' },
             { title: 'Contrôles VGP' },
+          ],
+        },
+      },
+
+      // ── Consommation carburant ─────────────────────────────────────
+      {
+        path: 'engins/consommation-carburant',
+        component: ConsommationCarburantComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: [...FLOTTE, 'COMPTABLE'],
+          title: 'Consommation carburant',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Engins', url: '/apps/engins' },
+            { title: 'Consommation carburant' },
+          ],
+        },
+      },
+
+      // ── Pièces de rechange ─────────────────────────────────────────
+      {
+        path: 'engins/pieces-de-rechange',
+        component: PiecesDeRechangeComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Pièces de rechange',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Engins', url: '/apps/engins' },
+            { title: 'Pièces de rechange' },
+          ],
+        },
+      },
+
+      // ── Maintenance ────────────────────────────────────────────────
+      {
+        path: 'engins/maintenance',
+        component: MaintenancesListComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Maintenances',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Engins', url: '/apps/engins' },
+            { title: 'Maintenances' },
+          ],
+        },
+      },
+      {
+        path: 'engins/maintenance/add',
+        component: AddMaintenanceComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Nouvelle fiche de maintenance',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Maintenances', url: '/apps/engins/maintenance' },
+            { title: 'Nouvelle fiche' },
+          ],
+        },
+      },
+      {
+        path: 'engins/maintenance/edit/:id',
+        component: AddMaintenanceComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Modifier la fiche',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Maintenances', url: '/apps/engins/maintenance' },
+            { title: 'Modifier' },
+          ],
+        },
+      },
+      {
+        path: 'engins/maintenance/:id',
+        component: DetailsMaintenanceComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Détail maintenance',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Maintenances', url: '/apps/engins/maintenance' },
+            { title: 'Détail' },
           ],
         },
       },

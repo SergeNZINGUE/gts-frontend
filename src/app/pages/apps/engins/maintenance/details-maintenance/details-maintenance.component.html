@@ -1,0 +1,274 @@
+<!-- En-tête -->
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-3">
+    <a routerLink="/apps/engins/maintenance" mat-stroked-button>
+      <mat-icon>arrow_back</mat-icon>
+      Maintenances
+    </a>
+    <h2 class="text-2xl font-semibold mb-0">Fiche de maintenance</h2>
+  </div>
+  @if (maintenance) {
+    <div class="flex gap-2">
+      <button mat-stroked-button (click)="goToEdit()" class="flex! items-center gap-1">
+        <mat-icon>edit</mat-icon>
+        Modifier
+      </button>
+      <button mat-stroked-button color="warn" (click)="confirmDelete()"
+              class="flex! items-center gap-1">
+        <mat-icon>delete_outline</mat-icon>
+        Supprimer
+      </button>
+    </div>
+  }
+</div>
+
+@if (isLoading) {
+  <mat-progress-bar mode="indeterminate" class="mb-4"></mat-progress-bar>
+}
+
+@if (maintenance) {
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- ── Résumé ──────────────────────────────────────────────────────── -->
+    <div class="col-span-12">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="pt-4">
+          <div class="flex flex-wrap gap-6 items-start">
+
+            <!-- Type badge + code -->
+            <div>
+              <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                    [ngClass]="typeClass(maintenance.type)">
+                {{ TYPE_LABELS[maintenance.type] }}
+              </span>
+              @if (maintenance.codeMaintenance) {
+                <div class="text-xs text-muted mt-1 font-mono">{{ maintenance.codeMaintenance }}</div>
+              }
+            </div>
+
+            <!-- Engin -->
+            <div>
+              <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Engin</div>
+              <div class="font-semibold">
+                <span class="font-mono text-sm bg-gray-100 px-2 py-0.5 rounded mr-1">
+                  {{ maintenance.codeEngin }}
+                </span>
+                {{ maintenance.modelEngin }}
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div>
+              <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Date</div>
+              <div class="font-semibold">{{ maintenance.dateDbtMaintenance | date:'dd/MM/yyyy' }}</div>
+              @if (maintenance.heureDebut || maintenance.heureFin) {
+                <div class="text-xs text-muted">
+                  {{ maintenance.heureDebut }} → {{ maintenance.heureFin }}
+                </div>
+              }
+            </div>
+
+            <!-- Horamètre -->
+            @if (maintenance.horametreIntervention != null) {
+              <div>
+                <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Horamètre</div>
+                <div class="font-semibold">{{ maintenance.horametreIntervention | number:'1.0-0' }} h</div>
+              </div>
+            }
+
+            <!-- Technicien -->
+            @if (maintenance.nomTechnicien) {
+              <div>
+                <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Technicien</div>
+                <div class="font-semibold">{{ maintenance.nomTechnicien }}</div>
+              </div>
+            }
+
+            <!-- Conducteur -->
+            @if (maintenance.nomConducteur) {
+              <div>
+                <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Conducteur</div>
+                <div class="font-semibold">{{ maintenance.nomConducteur }} {{ maintenance.prenomsConducteur }}</div>
+              </div>
+            }
+
+            <!-- Engin opérationnel -->
+            <div>
+              <div class="text-xs text-muted uppercase tracking-wide mb-0.5">Remis en service</div>
+              @if (maintenance.enginOperationnel === true) {
+                <div class="flex items-center gap-1 text-success font-semibold">
+                  <mat-icon class="text-base">check_circle</mat-icon> Oui
+                </div>
+              } @else if (maintenance.enginOperationnel === false) {
+                <div class="flex items-center gap-1 text-error font-semibold">
+                  <mat-icon class="text-base">cancel</mat-icon> Non
+                </div>
+              } @else {
+                <span class="text-muted text-sm">—</span>
+              }
+            </div>
+
+          </div>
+
+          <!-- Libellé / Objet -->
+          @if (maintenance.libMaintenance) {
+            <div class="mt-4 text-sm text-gray-700 italic">
+              « {{ maintenance.libMaintenance }} »
+            </div>
+          }
+
+          <!-- Observations générales -->
+          @if (maintenance.descriptionTravaux) {
+            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div class="text-xs text-muted uppercase tracking-wide mb-1">Observations générales</div>
+              <div class="text-sm whitespace-pre-line">{{ maintenance.descriptionTravaux }}</div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- ── Actions réalisées ───────────────────────────────────────────── -->
+    <div class="col-span-12 lg:col-span-7">
+      <mat-card class="cardWithShadow h-full">
+        <mat-card-header>
+          <mat-card-title class="flex items-center gap-2 text-base">
+            <mat-icon class="text-primary">task_alt</mat-icon>
+            Actions réalisées
+            <span class="ml-2 px-2 py-0.5 rounded-full bg-primary text-white text-xs font-bold">
+              {{ maintenance.actions?.length ?? 0 }}
+            </span>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (!maintenance.actions?.length) {
+            <p class="text-sm text-muted py-4">Aucune action enregistrée.</p>
+          } @else {
+            <div class="divide-y divide-gray-100">
+              @for (action of maintenance.actions; track action.id) {
+                <div class="py-3">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-semibold">
+                      {{ SYSTEME_LABELS[action.systeme] }}
+                    </span>
+                  </div>
+                  <div class="text-sm text-gray-800">{{ action.descriptionAction }}</div>
+                  @if (action.resultat) {
+                    <div class="text-xs text-muted mt-1 italic">→ {{ action.resultat }}</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- ── Pièces consommées ───────────────────────────────────────────── -->
+    <div class="col-span-12 lg:col-span-5">
+      <mat-card class="cardWithShadow h-full">
+        <mat-card-header>
+          <mat-card-title class="flex items-center gap-2 text-base">
+            <mat-icon class="text-primary">settings</mat-icon>
+            Pièces et consommables
+            <span class="ml-2 px-2 py-0.5 rounded-full bg-primary text-white text-xs font-bold">
+              {{ maintenance.piecesConsommees?.length ?? 0 }}
+            </span>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (!maintenance.piecesConsommees?.length) {
+            <p class="text-sm text-muted py-4">Aucune pièce enregistrée.</p>
+          } @else {
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-xs text-muted uppercase tracking-wide border-b border-gray-200">
+                  <th class="text-left py-2 font-medium">Désignation</th>
+                  <th class="text-right py-2 font-medium">Qté</th>
+                  <th class="text-right py-2 font-medium">P.U.</th>
+                  <th class="text-right py-2 font-medium">Montant</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (p of maintenance.piecesConsommees; track p.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="py-2 pr-2">
+                      <div class="font-medium">{{ p.designation }}</div>
+                      @if (p.referencePiece) {
+                        <div class="text-xs text-muted font-mono">{{ p.referencePiece }}</div>
+                      }
+                    </td>
+                    <td class="py-2 text-right whitespace-nowrap">
+                      {{ p.quantite }} {{ p.unite }}
+                    </td>
+                    <td class="py-2 text-right whitespace-nowrap">
+                      @if (p.prixUnitaire != null) {
+                        {{ p.prixUnitaire | number:'1.0-0' }}
+                      } @else {
+                        —
+                      }
+                    </td>
+                    <td class="py-2 text-right font-medium whitespace-nowrap">
+                      @if (p.montantTotal != null) {
+                        {{ p.montantTotal | number:'1.0-0' }} FCFA
+                      } @else {
+                        —
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <!-- Totaux -->
+            <div class="mt-4 pt-3 border-t border-gray-200 space-y-1 text-sm">
+              <div class="flex justify-between text-gray-600">
+                <span>Pièces</span>
+                <span class="font-medium">{{ maintenance.coutPieces | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Main d'œuvre</span>
+                <span class="font-medium">{{ (maintenance.coutMainOeuvre ?? 0) | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="flex justify-between font-bold text-base text-primary border-t border-gray-300 pt-2 mt-1">
+                <span>Total</span>
+                <span>{{ maintenance.coutTotal | number:'1.0-0' }} FCFA</span>
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- ── Prochaine maintenance ───────────────────────────────────────── -->
+    @if (maintenance.prochaineMaintenanceDate || maintenance.prochaineEcheanceHeures) {
+      <div class="col-span-12">
+        <mat-card class="cardWithShadow border-l-4 border-l-warning">
+          <mat-card-content class="pt-4">
+            <div class="flex items-center gap-3">
+              <mat-icon class="text-warning text-2xl">schedule</mat-icon>
+              <div>
+                <div class="font-semibold text-sm">Prochaine maintenance prévue</div>
+                <div class="text-sm text-gray-700 flex flex-wrap gap-4 mt-1">
+                  @if (maintenance.prochaineMaintenanceDate) {
+                    <span>
+                      <mat-icon class="text-base align-text-bottom">event</mat-icon>
+                      {{ maintenance.prochaineMaintenanceDate | date:'dd/MM/yyyy' }}
+                    </span>
+                  }
+                  @if (maintenance.prochaineEcheanceHeures) {
+                    <span>
+                      <mat-icon class="text-base align-text-bottom">timer</mat-icon>
+                      Dans {{ maintenance.prochaineEcheanceHeures | number:'1.0-0' }} h
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+  </div>
+}
