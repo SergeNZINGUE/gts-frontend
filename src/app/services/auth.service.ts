@@ -14,6 +14,7 @@ export class AuthService {
   public isAdmin: boolean = false;
   public role: string[] = [];
   public username: string | null | undefined = '';
+  public useremail: string | null | undefined = 'No email';
   private apiUrl = environment.apiUrl + '/api/gts/auth/login';
 
   constructor(
@@ -28,6 +29,7 @@ export class AuthService {
       tap((res: any) => {
         this.isLoggedIn = true;
         this.username = username;
+        this.useremail = res.email;
 
         if (res?.username) {
           localStorage.setItem('username', res.username);
