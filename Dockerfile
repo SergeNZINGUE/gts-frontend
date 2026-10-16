@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --force
 RUN pnpm rebuild
 COPY . .
-RUN pnpm run build --configuration=production
+RUN pnpm run build --configuration=homol
 
 # Stage 2: Serve with nginx
 FROM nginx:alpine
