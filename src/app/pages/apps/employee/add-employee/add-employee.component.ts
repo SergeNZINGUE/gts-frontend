@@ -46,7 +46,7 @@ export class AddEmployeeComponent implements OnInit {
   previewUrl: string = 'assets/images/profile/user-1.jpg';
   isSubmitting = false;
 
-  readonly permisOptions = ['B', 'B1', 'B2', 'B96', 'BE', 'BVA', 'C', 'C1', 'CE', 'C1E', 'D', 'D1', 'D2', 'E', 'F', 'BCD'];
+  readonly permisOptions = ['B', 'B1', 'B2', 'B96', 'BE', 'BVA', 'C', 'C1', 'CE', 'C1E', 'D', 'D1', 'D2', 'E', 'F', 'BCD', 'Attestation ou certificat'];
   filteredPermis!: Observable<string[]>;
 
   constructor(
@@ -74,7 +74,7 @@ export class AddEmployeeComponent implements OnInit {
       statutConducteur: ['1', Validators.required],
       dateDebutEmp: ['', Validators.required],
       dateFinEmp: [''],
-      coutHoraire: [1500, [Validators.required, Validators.min(1000)]],
+      coutHoraire: [null, [Validators.min(1000)]],
     });
   }
 
@@ -150,7 +150,9 @@ export class AddEmployeeComponent implements OnInit {
     formData.append('qualifications', this.form.value.qualifications);
     formData.append('dateDebutEmp', this.coreService.formatLocalDate(this.form.value.dateDebutEmp));
     formData.append('typEmpl', this.form.value.typEmpl);
-    formData.append('coutHoraireConducteur', this.form.value.coutHoraire);
+    if (this.form.value.coutHoraire != null) {
+      formData.append('coutHoraireConducteur', this.form.value.coutHoraire);
+    }
     const typEmpl = this.form.value.typEmpl;
     if (typEmpl === 'CDD' || typEmpl === 'Interim') {
       formData.append('dateFinEmp', this.coreService.formatLocalDate(this.form.value.dateFinEmp));
