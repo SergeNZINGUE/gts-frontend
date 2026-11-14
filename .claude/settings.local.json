@@ -4,7 +4,28 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\" -Recurse -Force | Select-Object Name, FullName, @{Name='Type';Expression={if \\($_.PSIsContainer\\) { 'Folder' } else { 'File' }}} | Sort-Object FullName)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\" -Depth 2 | Select-Object Name, @{Name='Type';Expression={if \\($_.PSIsContainer\\) { 'Folder' } else { 'File' }}})",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\serge\\\\OneDrive\\\\Documents\\\\FrontGTS\\\\src\" -Recurse -Directory | Where-Object { $_.FullName -notmatch \"node_modules|\\\\.angular|dist\" } | Select-Object -ExpandProperty Name | Sort-Object | Get-Unique)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(where ffmpeg *)",
+      "Bash(where puppeteer *)",
+      "Read(//c/Users/serge/AppData/Roaming/npm/**)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" --version)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -c \"import sys; print\\(sys.version\\)\")",
+      "Bash(npm list *)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -c \"import PIL; print\\('Pillow OK'\\)\")",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -c \"import cairosvg; print\\('cairosvg OK'\\)\")",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -m pip list)",
+      "Read(//c/Program Files/**)",
+      "Read(//c//**)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -m pip install Pillow --quiet)",
+      "Bash(npm install *)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" -m pip install imageio[ffmpeg] --quiet)",
+      "Bash(C:/Users/serge/AppData/Local/Python/bin/python.exe *)",
+      "Bash(\"C:/Users/serge/AppData/Local/Python/bin/python.exe\" render.py)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

@@ -1,590 +1,331 @@
-# TerraOps GTS — Documentation Technique
+# TerraOps GTS — Documentation technique
 
-> **Version :** Angular 19+ (standalone components)
-> **Backend :** Spring Boot — Railway.app
-> **Date :** 2026-05-07
+> **Frontend :** Angular 21 (composants standalone, Signals) — dépôt `FrontGTS`
+> **Backend :** Spring Boot 4 / Java 21 / MySQL — dépôt `backgts`
+> **Hébergement :** Railway (déploiement par GitHub Actions)
+> **Mise à jour :** 2026-11-14
 
 ---
 
 ## Table des matières
 
 1. [Vue d'ensemble](#1-vue-densemble)
-2. [Architecture](#2-architecture)
-3. [Environnements](#3-environnements)
-4. [Authentification & Sécurité](#4-authentification--sécurité)
-5. [Guards](#5-guards)
-6. [Intercepteur HTTP](#6-intercepteur-http)
-7. [Modules & Routes](#7-modules--routes)
-8. [Services](#8-services)
+2. [Architecture du frontend](#2-architecture-du-frontend)
+3. [Environnements et déploiement](#3-environnements-et-déploiement)
+4. [Développement local](#4-développement-local)
+5. [Authentification et sécurité](#5-authentification-et-sécurité)
+6. [Rôles et droits](#6-rôles-et-droits)
+7. [Routes](#7-routes)
+8. [Services et API](#8-services-et-api)
 9. [Notifications](#9-notifications)
-10. [Impression](#10-impression)
-11. [Navigation & Layout](#11-navigation--layout)
-12. [Modèles de données](#12-modèles-de-données)
-13. [Configuration globale](#13-configuration-globale)
+10. [Impression et exports](#10-impression-et-exports)
+11. [Navigation et layout](#11-navigation-et-layout)
+12. [Backend : points notables](#12-backend--points-notables)
+13. [Configuration globale](#13-configuration-globale-appconfigts)
+14. [Fonctionnalités en attente](#14-fonctionnalités-en-attente)
 
 ---
 
 ## 1. Vue d'ensemble
 
-**TerraOps GTS** est une application web de gestion de parc matériel et de transport. Elle couvre :
+**TerraOps GTS** gère un parc d'engins (mines, BTP) et son exploitation.
 
 | Domaine | Périmètre |
 |---|---|
-| Parc matériel | Engins, assurances, contrôles VGP |
-| Exploitation | Locations, missions, planning |
-| Ressources humaines | Conducteurs (employés) |
-| Finance | Clients, factures, règlements |
-| Rapports | Analyses par période, client, conducteur |
-| Administration | Utilisateurs, rôles, accès |
+| Parc matériel | Engins (types et familles), assurances, contrôles VGP |
+| Suivi technique | Maintenance (fiches, actions, pièces consommées), pièces de rechange (stock, alertes), consommation de carburant |
+| Exploitation | Locations, missions (clôture automatique) |
+| Ressources humaines | Conducteurs |
+| Clients | Clients, activités clients |
+| Finance | Factures, règlements |
+| Pilotage | Tableau de bord (KPI dépenses), rapports, exports PDF/Excel |
+| Administration | Utilisateurs, rôles, journal d'audit (back) |
 
-**Stack technique :**
-- Angular 19+ (composants standalone, Signals)
-- Angular Material + Tailwind CSS
-- `ngx-toastr` pour les notifications toast
-- `ngx-scrollbar` pour les scrollbars personnalisées
-- `angular-tabler-icons` + Iconify pour les icônes
-- `@ngx-translate/core` pour l'internationalisation
-- `ngx-permissions` pour la gestion des droits
+**Stack frontend :** Angular 21, Angular Material, Tailwind CSS 4, `ngx-toastr`, `ngx-permissions`,
+`@ngx-translate/core`, `angular-tabler-icons` + Iconify, ApexCharts, `jspdf` + `jspdf-autotable`, `xlsx`.
 
 ---
 
-## 2. Architecture
+## 2. Architecture du frontend
 
 ```
 src/app/
-├── app.config.ts          # Bootstrap, providers globaux
-├── app.routes.ts          # Routage racine + AuthGuard
-├── config.ts              # Interface AppSettings
-├── material.module.ts     # Barrel des imports Material
-│
+├── app.config.ts            # Providers globaux
+├── app.routes.ts            # Routage racine (AuthGuard)
+├── material.module.ts       # Barrel des modules Material
 ├── guards/
-│   ├── auth.guard.ts          # Vérifie la session (localStorage)
-│   └── authorization.guard.ts # Vérifie le rôle ADMIN
-│
+│   ├── auth.guard.ts            # Token présent ET non expiré
+│   └── authorization.guard.ts   # Rôles requis (route.data.roles)
 ├── interceptors/
-│   └── auth.interceptor.ts    # Gestion expiration token (401/403/CORS)
-│
-├── layouts/
-│   └── full/
-│       ├── full.component.*       # Shell principal (sidenav, header)
-│       ├── vertical/
-│       │   ├── header/            # Toolbar desktop
-│       │   └── sidebar/           # Sidebar + données de navigation
-│       ├── horizontal/            # Layout alternatif horizontal
-│       └── shared/
-│           ├── breadcrumb/        # Breadcrumb + title service
-│           └── customizer/        # Panneau de personnalisation du thème
-│
+│   └── auth.interceptor.ts      # Bearer + 401 → session expirée, 403 → toast
+├── layouts/full/                # Shell (sidebar, header, breadcrumb)
 ├── models/
-│   └── app-notification.model.ts
-│
 ├── services/
-│   ├── auth.service.ts
-│   ├── core.service.ts
-│   ├── nav.service.ts
-│   ├── notification.service.ts
-│   ├── print.service.ts
-│   └── apps/
-│       ├── activite-client/
-│       ├── assurances/
-│       ├── clients/
-│       ├── controles-vgp/
-│       ├── employee/
-│       ├── engin/
-│       ├── factures/
-│       ├── location/
-│       ├── missions/
-│       ├── reglements/
-│       ├── reporting/
-│       └── users/
-│
+│   ├── auth.service.ts, core.service.ts, nav.service.ts, notification.service.ts
+│   ├── print/print.service.ts       # Facture, proforma, reçu
+│   ├── export/export.service.ts     # PDF / Excel
+│   └── apps/                        # Un service par domaine (voir §8)
 └── pages/
-    ├── authentication/    # Login, forgot password, 2FA
-    ├── dashboards/        # Tableau de bord
-    └── apps/              # Tous les modules métier
-        ├── employee/
-        ├── engins/
-        ├── clients/
-        ├── locations/
-        ├── missions/
-        ├── factures/
-        ├── rapports/
-        └── users/
+    ├── authentication/   # Login, mot de passe oublié, 2 étapes
+    ├── dashboards/       # dashboard1 (principal)
+    └── apps/             # Modules métier (voir §7)
 ```
 
 ---
 
-## 3. Environnements
+## 3. Environnements et déploiement
 
-| Environnement | Fichier | `apiUrl` |
-|---|---|---|
-| Développement | `environment.ts` | `http://localhost:8081` |
-| Homologation | `environment.homol.ts` | `https://gts-backend-homologation.up.railway.app` |
-| Production | `environment.prod.ts` | `https://gts-backend-production.up.railway.app` |
+| Environnement | Fichier | `apiUrl` | Branche Git |
+|---|---|---|---|
+| Développement | `environment.ts` | `http://localhost:8081` | — |
+| Homologation | `environment.homol.ts` | `https://gts-backend-homologation.up.railway.app` | `homologation` |
+| Production | `environment.prod.ts` | `https://gts-backend-production.up.railway.app` | `main` |
 
----
+**CI/CD :** `.github/workflows/deploy.yml` lance `railway up --service gts-frontend` à chaque push sur
+`main`, `homologation` ou `dev`, avec le jeton Railway propre à chaque environnement.
 
-## 4. Authentification & Sécurité
+**Image Docker du front** (`Dockerfile`, `Dockerfile.prod`, `Dockerfile.homol`) :
+1. `node:22-alpine` : `npm ci` (à partir de `package-lock.json`), puis `npm run build -- --configuration=<env>`.
+2. `nginx:alpine` : sert `dist/Modernize/browser` avec `nginx.conf` (SPA + relais `/api/`).
 
-### Service : `AuthService`
+> **Gestionnaire de paquets : npm uniquement.** `pnpm-lock.yaml` a été supprimé.
+> `package.json` et `package-lock.json` doivent rester synchronisés, sinon `npm ci` échoue sur Railway :
+> après tout ajout ou mise à jour de dépendance, commiter les deux fichiers ensemble.
 
-Fichier : `src/app/services/auth.service.ts`
-
-**Propriétés d'état :**
-
-| Propriété | Type | Description |
-|---|---|---|
-| `isLoggedIn` | `boolean` | Session active |
-| `isAdmin` | `boolean` | Rôle ADMIN détecté |
-| `role` | `string[]` | Liste des rôles de l'utilisateur |
-| `username` | `string` | Identifiant connecté |
-
-**Méthodes :**
-
-| Méthode | Endpoint | Description |
-|---|---|---|
-| `login(username, password)` | `POST /api/gts/auth/login` | Authentification, stockage token/rôles |
-| `forgotPassword(email)` | `POST /api/gts/emails/forgot-password` | Envoi code par email |
-| `resetPassword(email, code, newPassword)` | `POST /api/gts/emails/` | Réinitialisation mot de passe |
-| `sessionExpired()` | — | Efface le localStorage, redirige vers login avec toastr warning |
-| `logout()` | — | Efface l'état et le localStorage |
-
-**Persistance localStorage :**
-
-```
-token      → JWT Bearer token
-username   → identifiant utilisateur
-roles      → JSON.stringify(string[])
-```
-
-> Les rôles sont relus depuis `localStorage` lors du rechargement de page pour maintenir l'état `isAdmin` et les notifications sans redemander un login.
-
-### Flux de connexion
-
-```
-Login form
-  → POST /api/gts/auth/login
-  → tap(): isLoggedIn=true, username, token, roles → localStorage
-  → navigate('/dashboards/dashboard1')
-
-Erreur 401/403:
-  → authError = 'Identifiant ou mot de passe incorrect.'
-
-Page refresh:
-  → AuthGuard vérifie localStorage.getItem('username')
-  → NotificationService relit localStorage.getItem('roles') pour isAdmin
-```
+`.dockerignore` exclut `node_modules`, `dist`, `.angular`, `.git` : un build local n'embarque jamais
+les dépendances de la machine hôte.
 
 ---
 
-## 5. Guards
+## 4. Développement local
 
-### `AuthGuard`
+Le poste de dev (Windows 11 ARM) bloque l'exécution de binaires non signés (`esbuild`, `tailwindcss-oxide`),
+ce qui empêche `ng serve` de compiler correctement. **Le front tourne donc dans un conteneur Docker Linux :**
 
-Fichier : `src/app/guards/auth.guard.ts`
+```powershell
+cd C:\Users\serge\IdeaProjects\FrontGTS
+docker run --rm -it -p 4300:4200 -v "${PWD}:/app" -v gts_front_modules:/app/node_modules -w /app node:22 `
+  sh -c "npm install && npx ng serve --host 0.0.0.0 --poll 2000"
+```
 
-- **Vérifie :** `localStorage.getItem('username')` non nul
-- **Si absent :** redirige vers `/authentication/login`
-- **Appliqué sur :** toutes les routes sous `FullComponent` (layout principal)
+- Application : `http://localhost:4300` (le port 4200 est souvent occupé).
+- Le volume `gts_front_modules` garde des dépendances Linux séparées du `node_modules` Windows.
+- `--poll 2000` détecte les modifications faites depuis Windows.
+- Le back tourne dans IntelliJ (profil `dev`, port 8081, MySQL WAMP `db_gts`).
+  `app.cors.allowed-origins` (dans `application-dev.properties`) doit contenir `http://localhost:4300`.
+
+---
+
+## 5. Authentification et sécurité
+
+### `AuthService` (`services/auth.service.ts`)
+
+| Méthode | Endpoint | Rôle |
+|---|---|---|
+| `login(username, password)` | `POST /api/gts/auth/login` | Stocke `token`, `username`, `roles` dans le localStorage et charge `ngx-permissions` |
+| `restoreSession()` | — | Relit le localStorage au démarrage (`APP_INITIALIZER`) |
+| `forgotPassword(email)` | `POST /api/gts/emails/forgot-password` | Envoie un code par e-mail |
+| `resetPassword(email, code, pwd)` | `POST /api/gts/emails/` | Réinitialise le mot de passe |
+| `sessionExpired()` | — | Vide la session, affiche un toast, redirige vers le login |
+| `logout()` | — | Vide la session |
+
+### `AuthGuard` (toutes les routes sous le layout principal)
+- Exige un `token` **et** un `username` dans le localStorage ; sinon, redirection vers `/authentication/login`.
+- Décode le champ `exp` du JWT : si le token est expiré ou illisible, appelle `sessionExpired()`.
 
 ### `AuthorizationGuard`
+- Exige un token, puis compare `route.data.roles` aux rôles stockés.
+- Si l'utilisateur n'a pas le rôle : toast « Accès refusé » et redirection vers `/dashboards/dashboard1`.
 
-Fichier : `src/app/guards/authorization.guard.ts`
+### `AuthInterceptor`
+- Ajoute `Authorization: Bearer <token>` à chaque requête.
+- **401**, ou statut `0` alors qu'un token existe (CORS sur token expiré) → `sessionExpired()`.
+- **403** → toast « Accès refusé », sans déconnexion (désactivable par requête via le `HttpContextToken` `BYPASS_403`).
+- Les erreurs de `/auth/login` sont laissées au composant de login.
 
-- **Vérifie :** rôle `ADMIN` dans `authService.role` + données de route
-- **Si non autorisé :** redirige vers `/authentication/login`
-- **Usage :** routes d'administration réservées aux admins
+### Côté back
+- JWT sans état (`JwtAuthenticationFilter`), mots de passe en BCrypt, durée de validité `jwt.expiration` (4 h).
+- Contrôle d'accès à deux niveaux : règles par URL (`SecurityConfig`) et `@PreAuthorize` sur les contrôleurs.
+- Un refus `@PreAuthorize` renvoie **403** (handler `AccessDeniedException` dans `GlobalExceptionHandler`).
+  Auparavant, ce refus tombait dans le handler générique et renvoyait une 500.
+- Les starters non utilisés ont été retirés : **data-rest** (il exposait automatiquement tous les repositories
+  JPA, dont `Users`, à la racine de l'API), data-ldap, ldap, graphql, h2.
 
----
-
-## 6. Intercepteur HTTP
-
-Fichier : `src/app/interceptors/auth.interceptor.ts`
-
-Enregistré dans `app.config.ts` via `HTTP_INTERCEPTORS`.
-
-**Logique :**
-
-```
-Chaque requête HTTP sortante passe par l'intercepteur.
-Sur erreur :
-  - Si endpoint = /auth/login → ne pas intercepter (laisser passer au composant)
-  - Si status === 401 ou 403 → token expiré → authService.sessionExpired()
-  - Si status === 0 ET localStorage contient un token
-      → CORS causé par un token expiré → authService.sessionExpired()
-  - Sinon → throwError() vers l'appelant
-```
-
-> Le cas `status === 0` permet de distinguer une vraie erreur réseau d'une requête bloquée par CORS suite à un token expiré côté backend.
+### Nginx (`nginx.conf`)
+- Relais `/api/` vers le back de production avec **vérification TLS** activée
+  (`proxy_ssl_verify on`, bundle CA d'Alpine installé dans l'image).
+- L'app appelle le back directement via `environment.apiUrl`. Le relais `/api/` ne sert qu'aux URL relatives.
+  Attention : l'image d'homologation relaie elle aussi vers la **production**.
 
 ---
 
-## 7. Modules & Routes
+## 6. Rôles et droits
 
-### Routage racine (`app.routes.ts`)
+| Rôle | Périmètre |
+|---|---|
+| `ADMIN` | Tout, y compris utilisateurs, rôles, types d'engins, audit |
+| `MANAGER` | Flotte, exploitation, clients, finance |
+| `OPERATEUR` | Flotte et exploitation (pas de finance) |
+| `COMPTABLE` | Finance, rapports, lecture des locations, missions, conducteurs et carburant |
 
-```
-/                     → redirect → /authentication/login
-/dashboards/**        → DashboardsRoutes  (AuthGuard)
-/apps/**              → AppsRoutes        (AuthGuard)
-/authentication/**    → AuthenticationRoutes (layout blank)
-/**                   → /authentication/error
-```
+Groupes utilisés dans `apps.routes.ts` :
 
-### Authentication (`authentication.routes.ts`)
+| Constante | Rôles |
+|---|---|
+| `FLOTTE` | ADMIN, MANAGER, OPERATEUR |
+| `FLOTTE_LECTURE` / `EXPLOITATION` | ADMIN, MANAGER, OPERATEUR, COMPTABLE |
+| `FINANCE` | ADMIN, MANAGER, COMPTABLE |
+| `ADMIN_MANAGER` | ADMIN, MANAGER |
+| `ADMIN_ONLY` | ADMIN |
 
-| Route | Composant | Description |
+Le menu (`sidebar-data.ts`) masque chaque entrée selon le champ `roles`. Côté back, `SecurityConfig` et
+`@PreAuthorize` restent les garants des droits.
+
+---
+
+## 7. Routes
+
+Routage racine : `/` → login ; `/dashboards/**` et `/apps/**` (avec `AuthGuard`) ; `/authentication/**` (layout vide) ; `**` → page d'erreur.
+
+Toutes les routes `/apps/**` passent par `AuthorizationGuard`.
+
+| Route | Composant | Rôles |
 |---|---|---|
-| `login` | `AppSideLoginComponent` | Page de connexion principale |
-| `boxed-login` | `AppBoxedLoginComponent` | Variante connexion encadrée |
-| `side-forgot-pwd` | `AppSideForgotPasswordComponent` | Étape 1 : saisie email |
-| `side-two-steps` | `AppSideTwoStepsComponent` | Étape 2 : code + nouveau mot de passe |
-| `side-register` | `AppSideRegisterComponent` | Inscription (désactivée en prod) |
-| `error` | `AppErrorComponent` | Page 404 |
-| `maintenance` | `AppMaintenanceComponent` | Page maintenance |
-
-**Flux mot de passe oublié :**
-```
-side-forgot-pwd → saisie email → POST /forgot-password
-  → navigate('side-two-steps', { state: { email } })
-  → saisie code 6 chiffres (auto-avance) + nouveau mot de passe
-  → POST /emails/ (reset)
-  → navigate('login')
-```
-
-### Dashboards (`dashboards.routes.ts`)
-
-| Route | Composant | Description |
-|---|---|---|
-| `dashboard1` | `AppDashboard1Component` | Tableau de bord principal (KPIs, statistiques) |
-| `dashboard2` | `AppDashboard2Component` | Dashboard secondaire |
-
-### Applications métier (`apps.routes.ts`)
-
-#### Conducteurs (Employés)
-
-| Route | Description |
-|---|---|
-| `apps/employee` | Liste des conducteurs |
-| `apps/employee/add-employee` | Ajout conducteur |
-| `apps/employee/details-employee/:id` | Détail / édition conducteur |
-
-#### Engins (Parc matériel)
-
-| Route | Description |
-|---|---|
-| `apps/engins` | Liste des engins |
-| `apps/engins/add-engin` | Ajout engin |
-| `apps/engins/details-engins/:id` | Détail / édition engin |
-| `apps/engins/assurances-engins` | Suivi des assurances |
-| `apps/engins/controles-des-engins` | Suivi des contrôles VGP |
-
-#### Clients
-
-| Route | Description |
-|---|---|
-| `apps/clients` | Liste des clients |
-| `apps/clients/add-client` | Ajout client |
-| `apps/clients/details-client/:id` | Détail / édition client |
-
-#### Locations
-
-| Route | Description |
-|---|---|
-| `apps/locations` | Liste des locations |
-| `apps/locations/add-location` | Nouvelle location |
-| `apps/locations/details-location/:id` | Détail location + validation |
-
-#### Missions
-
-| Route | Description |
-|---|---|
-| `apps/missions` | Liste des missions |
-| `apps/missions/add` | Nouvelle mission |
-| `apps/missions/detail/:id` | Détail mission |
-
-#### Factures
-
-| Route | Description |
-|---|---|
-| `apps/factures` | Liste des factures |
-| `apps/factures/add` | Nouvelle facture |
-| `apps/factures/detail/:id` | Détail facture + impression |
-
-#### Rapports
-
-| Route | Description |
-|---|---|
-| `apps/rapports` | Rapports et analyses |
-
-#### Utilisateurs (Administration)
-
-| Route | Description |
-|---|---|
-| `apps/users` | Liste des utilisateurs |
-| `apps/users/add-user` | Création utilisateur (avec choix de rôle) |
-| `apps/users/details-user/:id` | Détail / édition utilisateur |
+| `apps/engins` | Liste des engins (KPI, filtres, voir / **modifier** / supprimer) | FLOTTE |
+| `apps/engins/add-engin` | Formulaire engin (création) | FLOTTE |
+| `apps/engins/edit-engin/:id` | Même formulaire en mode modification | FLOTTE |
+| `apps/engins/details-engins/:id` | Détail engin | FLOTTE |
+| `apps/engins/assurances-engins` | Assurances | FLOTTE |
+| `apps/engins/controles-des-engins` | Contrôles VGP | FLOTTE |
+| `apps/engins/maintenance` (`/add`, `/edit/:id`, `/:id`) | Fiches de maintenance | FLOTTE |
+| `apps/engins/pieces-de-rechange` | Stock, alertes, ajustement | FLOTTE |
+| `apps/engins/consommation-carburant` | Rapport carburant | FLOTTE + COMPTABLE |
+| `apps/locations` (`/add-location`, `/details-location/:id`) | Locations | EXPLOITATION (création : ADMIN_MANAGER) |
+| `apps/missions` (`/add`, `/detail/:id`) | Missions | EXPLOITATION (création : FLOTTE) |
+| `apps/employee` (`/add-employee`, `/details-employee/:id`) | Conducteurs | FLOTTE_LECTURE (création : FLOTTE) |
+| `apps/clients` (`/add-client`, `/details-client/:id`) | Clients | ADMIN_MANAGER + COMPTABLE, OPERATEUR |
+| `apps/clients/activites` | **Activités clients** (liste, création, modification) | ADMIN_MANAGER |
+| `apps/factures` (`/add`, `/detail/:id`) | Factures | FINANCE |
+| `apps/rapports` | Rapports (onglets) | FINANCE |
+| `apps/users` (`/add-user`, `/details-user/:id`) | Utilisateurs | ADMIN_ONLY |
 
 ---
 
-## 8. Services
+## 8. Services et API
 
-### `CoreService`
+Tous les services métier envoient le header Bearer et utilisent `environment.apiUrl`.
 
-Fichier : `src/app/services/core.service.ts`
+| Service (front) | Base API | Opérations |
+|---|---|---|
+| `EnginService` | `/api/gts/engins` | CRUD (`PUT /{id}` pour la modification) |
+| `TypesEnginsService` | `/api/gts/types-engins` | `GET /actifs` (types et familles) |
+| `AssurancesService` | `/api/gts/assurances` | CRUD par engin |
+| `ControlesVGPService` | `/api/gts/controles-vgp` | CRUD par engin |
+| `MaintenanceService` | `/api/gts/maintenance` | Liste paginée, `GET /engin/{id}`, CRUD |
+| `PiecesRechangeService` | `/api/gts/pieces-rechange` | CRUD, `GET /en-alerte`, `PATCH /{id}/stock?delta=` |
+| `CarburantReportingService` | `/api/gts/reporting/carburant` | Rapport global, `GET /engin/{id}`, `GET /missions` |
+| `LocationService` | `/api/gts/locations` | Liste, création, `PUT /{id}/valider`, `PUT /{id}/terminer` |
+| `MissionsService` | `/api/gts/missions` | CRUD, `PUT /{id}/terminer`, `PATCH /{id}/cloturer` |
+| `EmployeeService` | `/api/gts/conducteurs` | CRUD + images |
+| `ClientsService` | `/api/gts/clients` | CRUD + logo |
+| `ActiviteClientService` | `/api/gts/activite-client` | `GET /list` ; `POST ?codeActivite=&libelleActivite=` ; `PUT /updateActiviteClients/{code}?libelleActivite=` |
+| `FacturesService` | `/api/gts/factures` | CRUD, état de paiement |
+| `ReglementsService` | `/api/gts/reglements` | Création, liste par facture |
+| `ReportingService` | `/api/gts/reporting` | Locations par période / par client, missions par conducteur, impayés |
+| `DashboardService` | `/api/gts/dashboard` | `GET /kpi-depenses?annee=` |
+| `UsersService` | `/api/gts/users` | CRUD, activation, code de vérification |
 
-- Gestion des options de thème (`AppSettings`) via Signals
-- Fournit `getHeaders()` → `{ Authorization: 'Bearer <token>' }` depuis localStorage
-- Validateurs de dates : `futureDate`, `pastDate`, `todayOrFutureDate`
-- Formatage de dates
-
-### `NavService`
-
-Fichier : `src/app/services/nav.service.ts`
-
-- Suivi de l'URL active via Signal
-- Utilisé par la sidebar pour marquer l'item courant
-
-### `NotificationService`
-
-Voir section [9. Notifications](#9-notifications).
-
-### `PrintService`
-
-Fichier : `src/app/services/print.service.ts`
-
-- Génération et impression de documents PDF/HTML
-- Types supportés : facture proforma, facture définitive, reçu de paiement
-- Formatage en français (montants, dates)
-
-### Services métier
-
-| Service | Endpoints principaux |
-|---|---|
-| `ClientsService` | CRUD clients + images |
-| `EmployeeService` | CRUD conducteurs + images |
-| `EnginService` | CRUD engins |
-| `AssurancesService` | CRUD assurances par engin |
-| `ControlesVGPService` | CRUD contrôles VGP par engin |
-| `LocationService` | CRUD locations + validation statut |
-| `MissionsService` | CRUD missions + mise à jour complétion |
-| `FacturesService` | CRUD factures + changement état paiement |
-| `ReglementsService` | Création règlement, liste par facture |
-| `UsersService` | CRUD utilisateurs + toggle actif + envoi code vérification |
-| `ReportingService` | Locations par période/client, missions par conducteur, impayés |
-| `ActiviteClientService` | Historique activités client |
-
-Tous les services métier :
-- Injectent `CoreService` pour obtenir les headers Bearer
-- Communiquent avec `environment.apiUrl`
-- Retournent des `Observable<T>` typés
+**Activités clients.** Le code est mis en majuscules, unique (409 si doublon) et non modifiable après création.
+Le back renseigne `dateCreation` à la création et `dateModification` à la mise à jour.
 
 ---
 
 ## 9. Notifications
 
-Fichier : `src/app/services/notification.service.ts`
-Modèle : `src/app/models/app-notification.model.ts`
+`NotificationService` (Signals) est chargé depuis le header. Il agrège plusieurs sources avec `forkJoin` ;
+chaque source a un `catchError(() => of([]))`, donc une source en panne ne bloque pas les autres.
 
-### Architecture
-
-Basé sur les **Angular Signals** :
-
-```typescript
-private readonly _notifications = signal<AppNotification[]>([]);
-readonly notifications = this._notifications.asReadonly();
-readonly count = computed(() => this._notifications().length);
-```
-
-Appelé depuis `HeaderComponent.ngOnInit()` → `notificationService.load()`.
-
-### Règles de chargement (role-based)
-
-| Condition | Rôle requis | Sévérité | Icône |
-|---|---|---|---|
-| Location `EN ATTENTE` | Tous | `info` | `construction` |
-| Mission `EN ATTENTE` | Tous | `info` | `assignment` |
-| Assurance expirée | ADMIN | `danger` | `shield` |
-| Assurance expire ≤ 30 j | ADMIN | `warning` | `shield` |
-| Contrôle VGP dépassé | ADMIN | `danger` | `event_busy` |
-| Contrôle VGP ≤ 30 j | ADMIN | `warning` | `event_busy` |
-| Facture `BROUILLON` | ADMIN | `info` | `receipt` |
-
-### Détection du rôle ADMIN
-
-```typescript
-private get isAdmin(): boolean {
-  if (this.authService.isAdmin) return true;        // En mémoire
-  try {
-    const roles = JSON.parse(localStorage.getItem('roles') || '[]');
-    return roles.includes('ADMIN');                  // Après refresh
-  } catch { return false; }
-}
-```
-
-### Résilience
-
-Chaque source utilise `catchError(() => of([]))` dans un `forkJoin` — la défaillance d'un endpoint n'empêche pas le chargement des autres notifications.
-
-### Affichage dans le header
-
-- Badge rouge sur l'icône cloche (caché si count = 0)
-- Menu déroulant avec couleur selon sévérité (`severityConfig`)
-- Lien direct vers le module concerné
+| Condition | Rôle | Sévérité |
+|---|---|---|
+| Location ou mission `EN ATTENTE` | Tous | info |
+| Assurance expirée / expire sous 30 j | ADMIN | danger / warning |
+| Contrôle VGP dépassé / sous 30 j | ADMIN | danger / warning |
+| Facture `BROUILLON` | ADMIN | info |
 
 ---
 
-## 10. Impression
+## 10. Impression et exports
 
-Fichier : `src/app/services/print.service.ts`
+- `PrintService` : facture proforma, facture définitive, reçu de paiement (montants en FCFA, HTVA / TVA 18 % / TTC).
+- `ExportService` : `exportPdf(title, filename, headers, rows, foot?)` (jsPDF + autotable) et
+  `exportExcel(filename, headers, rows)` (xlsx). Utilisé par les rapports et les listes.
 
-Types de documents imprimables :
+---
 
-| Type | Description |
+## 11. Navigation et layout
+
+`layouts/full/vertical/sidebar/sidebar-data.ts` :
+
+```
+Home            → Tableau de bord
+Gestion du parc → Engins (liste, ajout)
+                  Suivi administratif (assurances, contrôles)
+                  Suivi technique (maintenance, pièces, carburant)
+Exploitation    → Locations, Missions
+Clients         → Liste des clients, Activités clients
+Employés        → Conducteurs
+Finance         → Factures
+Rapports        → Rapports
+Administration  → Utilisateurs
+```
+
+Le header contient les notifications, le profil (username, rôle, déconnexion), le thème clair/sombre et la langue.
+Le breadcrumb lit `route.data.title` et `route.data.urls`.
+
+---
+
+## 12. Backend : points notables
+
+- **Organisation :** `com.gts.backgts` → `configuration`, `dto` (records Java), `entites`, `enums`, `exceptions`,
+  `repository`, `services`, `web`.
+- **Profils :** `dev` (MySQL local, port 8081), `homol`, `prod`, `docker`.
+- **Missions :** statut piloté par le back (`StatutMission`, `ModeCloture`) ; le `MissionScheduler`
+  (`@Scheduled(cron = "0 30 23 * * *")`) clôture automatiquement chaque soir ; contrôle des conflits de conducteur.
+- **Engins :** héritage (Camion, Pelle, Foreuse, Grue, Tombereau minier) ; `TypeEngin` + `FamilleEngin` ;
+  statuts `TypeEtatEngins` = `DISPONIBLE`, `EN_MISSION`, `EN_COURS_DE_REPARATION`, `HORS_SERVICE`.
+- **Audit :** `AuditAspect` (`@Around` sur `com.gts.backgts.web.*`) → `AuditLog`, consultable via
+  `GET /api/gts/audit` (ADMIN).
+- **Erreurs :** `GlobalExceptionHandler` → JSON `{ "error": "..." }`.
+  `IllegalArgumentException` → 404, `ResponseStatusException` → son propre statut,
+  `AccessDeniedException` → 403, validation → 400, autres → 500.
+- **E-mails :** Gmail SMTP + modèles Thymeleaf (`templates/emails`).
+- **API docs :** Swagger UI sur `/swagger-ui.html`.
+
+---
+
+## 13. Configuration globale (`app.config.ts`)
+
+| Provider | Rôle |
 |---|---|
-| Facture proforma | Devis avant validation |
-| Facture définitive | Facture émise et validée |
-| Reçu de paiement | Confirmation de règlement |
-
-Formatage français : montants en FCFA, dates localisées.
-
----
-
-## 11. Navigation & Layout
-
-### Layout principal (`FullComponent`)
-
-Fichier : `src/app/layouts/full/full.component.*`
-
-- **Sidebar desktop** : fixe, collapsable, affiche username + rôle en bas
-- **Sidebar mobile** : mode `over`, s'ouvre au clic hamburger
-- **Responsive** : breakpoints MOBILE (≤768px), TABLET (769-1024px), MONITOR (>1024px)
-- **Thème** : toggle dark/light, couleurs d'accentuation via `CoreService`
-
-### Sidebar — données de navigation
-
-Fichier : `src/app/layouts/full/vertical/sidebar/sidebar-data.ts`
-
-```
-Home
-  └─ Tableau de bord
-
-Gestion du parc
-  └─ Engins
-      ├─ Suivi administratif
-      │   ├─ Assurances engins
-      │   └─ Controles des engins
-      └─ Suivi technique
-          ├─ Maintenance
-          ├─ Pièces de rechange
-          └─ Consommation carburant
-
-Exploitation
-  ├─ Locations
-  ├─ Missions
-  └─ Planning & Disponibilités
-
-Clients
-  ├─ Liste des clients
-  └─ Activités clients
-
-Employés
-  └─ Conducteurs
-
-Finance
-  └─ Factures
-
-Rapports
-
-Administration
-  └─ Utilisateurs
-```
-
-### Header (`HeaderComponent`)
-
-- **Toolbar desktop** : menu Apps (8 modules), Quicklinks, boutons Tableau de bord / Locations / Missions
-- **Toolbar mobile** : icône menu contextuel
-- **Profil** : visible si `authService.isLoggedIn`, affiche username + rôle + bouton logout
-- **Notifications** : badge + menu déroulant (voir section 9)
-- **Thème** : toggle lune/soleil
-- **Langue** : sélecteur de langue (EN/ES/FR/DE)
-
-### Breadcrumb
-
-Fichier : `src/app/layouts/full/shared/breadcrumb/breadcrumb.component.ts`
-
-- Lit `route.data.title` à chaque navigation
-- Met à jour le `Title` du navigateur via `TitleService`
+| `provideRouter(...)` | Routeur (scroll en mémoire, binding des inputs de composant) |
+| `provideHttpClient(withInterceptorsFromDi())` + `AuthInterceptor` | HTTP + auth |
+| `APP_INITIALIZER` | Restauration de session |
+| `provideAnimationsAsync()`, `provideToastr()`, `provideNativeDateAdapter()` | UI |
+| `NgxPermissionsModule`, `TranslateModule`, `TablerIconsModule`, `NgScrollbarModule`, `CalendarModule` | Modules tiers |
+| `provideClientHydration()` | Inutile sans SSR (warning `NG0505` en console) — à retirer |
 
 ---
 
-## 12. Modèles de données
+## 14. Fonctionnalités en attente
 
-### `AppNotification`
-
-```typescript
-export type NotificationType = 'assurance' | 'visite' | 'location' | 'mission' | 'facture';
-export type NotificationSeverity = 'warning' | 'danger' | 'info';
-
-export interface AppNotification {
-  id: string;
-  type: NotificationType;
-  severity: NotificationSeverity;
-  icon: string;
-  title: string;
-  subtitle: string;
-  link: string;
-}
-```
-
-### `UserRequest` / `RegisterRequest`
-
-```typescript
-export interface UserRequest {
-  username: string; nomUsers: string; prenomsUsers: string;
-  emailUsers: string; tel1Users: string;
-  active: boolean; cguUsers: boolean; roleCode: string;
-}
-export interface RegisterRequest extends UserRequest {
-  password: string;
-}
-```
-
-### `UserResponse`
-
-```typescript
-export interface UserResponse {
-  id: number; username: string; active: boolean;
-  nomUsers: string; prenomsUsers: string;
-  emailUsers: string; tel1Users: string;
-  cguUsers: boolean; dateCreation: string;
-  dateModification: string; roles: string[];
-}
-```
-
----
-
-## 13. Configuration globale
-
-Fichier : `src/app/app.config.ts`
-
-**Providers enregistrés :**
-
-| Provider | Description |
+| Élément | État |
 |---|---|
-| `provideRouter(routes, withInMemoryScrolling(), withComponentInputBinding())` | Routeur Angular |
-| `provideHttpClient(withInterceptorsFromDi())` | Client HTTP avec support intercepteurs DI |
-| `{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }` | Intercepteur auth |
-| `provideAnimationsAsync()` | Animations Material asynchrones |
-| `provideToastr()` + `ToastrModule.forRoot()` | Notifications toast |
-| `provideNativeDateAdapter()` | Adaptateur date Material |
-| `NgxPermissionsModule.forRoot()` | Gestion permissions granulaires |
-| `TablerIconsModule.pick(TablerIcons)` | Icônes Tabler (subset) |
-| `TranslateModule.forRoot(CustomLoader)` | i18n |
-| `NgScrollbarModule` | Scrollbars personnalisées |
-| `CalendarModule.forRoot(adapterFactory)` | Composant calendrier |
-| `provideClientHydration()` | SSR hydratation |
+| **État des lieux** | API back complète (`/api/gts/etats-des-lieux`, multipart avec photo) ; pas encore d'écran ; entrée de menu masquée (TODO dans `sidebar-data.ts`) |
+| **Planning & Disponibilités** | Ni API ni écran ; entrée de menu masquée |
+| Pastilles de statut (liste des engins) | `getStatusClass` utilise d'anciens libellés : tout s'affiche en gris sauf « Disponible » |
+| Écrans squelettes | `reglements`, `dashboard2`, `missions.component`, `factures.component` (conteneurs vides) |
+| Restes du template « Modernize » | Images de démo à purger (`find-unused-images.ps1`), nom du package et `outputPath` |
 
 ---
 
-*Document généré le 2026-05-07 — TerraOps*
+*Document mis à jour le 2026-11-14 — TerraOps*

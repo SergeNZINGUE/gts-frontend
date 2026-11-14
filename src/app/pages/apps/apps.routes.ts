@@ -13,6 +13,7 @@ import { DetailsEnginsComponent } from './engins/details-engins/details-engins.c
 import { AddEnginComponent } from './engins/add-engin/add-engin.component';
 import { AddClientComponent } from './clients/add-client/add-client.component';
 import { DetailsClientComponent } from './clients/details-client/details-client.component';
+import { ActiviteClientComponent } from './clients/activite-client/activite-client.component';
 import { DetailsLocationComponent } from './locations/details-location/details-location.component';
 import { AddLocationComponent } from './locations/add-location/add-location.component';
 import { AddMissionComponent } from './missions/add-mission/add-mission.component';
@@ -116,6 +117,20 @@ export const AppsRoutes: Routes = [
         },
       },
       {
+        path: 'engins/edit-engin/:id',
+        component: AddEnginComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: FLOTTE,
+          title: 'Modifier un engin',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Engins', url: '/apps/engins' },
+            { title: 'Modifier un engin' },
+          ],
+        },
+      },
+      {
         path: 'engins/details-engins/:id',
         component: DetailsEnginsComponent,
         canActivate: [AuthorizationGuard],
@@ -169,6 +184,20 @@ export const AppsRoutes: Routes = [
             { title: 'Accueil', url: '/dashboards/dashboard1' },
             { title: 'Clients', url: '/apps/clients' },
             { title: 'Détails client' },
+          ],
+        },
+      },
+      {
+        path: 'clients/activites',
+        component: ActiviteClientComponent,
+        canActivate: [AuthorizationGuard],
+        data: {
+          roles: ADMIN_MANAGER,
+          title: 'Activités clients',
+          urls: [
+            { title: 'Accueil', url: '/dashboards/dashboard1' },
+            { title: 'Clients', url: '/apps/clients' },
+            { title: 'Activités clients' },
           ],
         },
       },

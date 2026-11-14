@@ -53,15 +53,7 @@ export class AddEnginComponent implements OnInit {
     this.typesEnginsService.getActifs().subscribe({
       next: (types) => {
         this.typesEngins = types;
-        if (this.local_data.typeEnginId) {
-          const matched = types.find(t => t.id === this.local_data.typeEnginId);
-          if (matched) {
-            this.selectedFamille = matched.famille;
-            this.filteredTypesEngins = types.filter(t => t.famille === matched.famille);
-          }
-        } else {
-          this.filteredTypesEngins = types;
-        }
+        this.syncFamilleFromType();
       },
       error: (err) => console.error('Erreur chargement types engins:', err),
     });
@@ -72,7 +64,9 @@ export class AddEnginComponent implements OnInit {
       this.action = 'Update';
       this.enginService.getEnginById(+id).subscribe({
         next: (engin) => {
-          this.local_data = engin;
+          // L'API renvoie l'objet typeEngin, mais le formulaire et le PUT attendent typeEnginId
+          this.local_data = { ...engin, typeEnginId: engin.typeEnginId ?? engin.typeEngin?.id };
+          this.syncFamilleFromType();
           this.dateAcqEngin.setValue(
             engin.dateAcqEngin || new Date().toISOString().split('T')[0]
           );
@@ -114,6 +108,17 @@ export class AddEnginComponent implements OnInit {
         this.local_data.codeEngin = `${prefix}001`;
       },
     });
+  }
+
+  /** Présélectionne la famille du type courant (appelé quand les types ou l'engin arrivent). */
+  private syncFamilleFromType(): void {
+    const matched = this.typesEngins.find(t => t.id === this.local_data.typeEnginId);
+    if (matched) {
+      this.selectedFamille = matched.famille;
+      this.filteredTypesEngins = this.typesEngins.filter(t => t.famille === matched.famille);
+    } else {
+      this.filteredTypesEngins = this.typesEngins;
+    }
   }
 
   onFamilleChange(famille: FamilleEngin | null): void {

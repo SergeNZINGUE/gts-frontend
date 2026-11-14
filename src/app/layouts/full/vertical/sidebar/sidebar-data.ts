@@ -53,12 +53,7 @@ export const navItems: NavItem[] = [
         route: 'apps/engins/controles-des-engins',
         roles: ['ADMIN', 'MANAGER', 'OPERATEUR'],
       },
-      {
-        displayName: 'Etat des lieux',
-        iconName: 'tabler:point',
-        route: 'apps/engins/etat-des-lieux',
-        roles: ['ADMIN', 'MANAGER', 'OPERATEUR'],
-      },
+      // TODO: réactiver quand l'écran État des lieux existera (API prête : /api/gts/etats-des-lieux)
     ],
   },
   {
@@ -119,12 +114,7 @@ export const navItems: NavItem[] = [
     route: 'apps/missions',
     roles: ['ADMIN', 'MANAGER', 'OPERATEUR', 'COMPTABLE'],
   },
-  {
-    displayName: 'Planning et Disponibilites',
-    iconName: 'solar:calendar-mark-line-duotone',
-    route: 'apps/location',
-    roles: ['ADMIN', 'MANAGER', 'OPERATEUR'],
-  },
+  // TODO: réactiver « Planning et Disponibilités » quand l'écran et l'API existeront
 
   // ── Clients ────────────────────────────────────────────────────
   {
@@ -153,23 +143,9 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Activités clients',
-    iconName: 'solar:calendar-mark-line-duotone',
-    route: 'apps/clients/activites-clients',
+    iconName: 'solar:case-minimalistic-line-duotone',
+    route: 'apps/clients/activites',
     roles: ['ADMIN', 'MANAGER'],
-    children: [
-      {
-        displayName: 'Liste des activités',
-        iconName: 'tabler:point',
-        route: 'apps/clients/list-activites',
-        roles: ['ADMIN', 'MANAGER'],
-      },
-      {
-        displayName: 'Ajouter une activité',
-        iconName: 'tabler:point',
-        route: 'apps/clients/add-activite',
-        roles: ['ADMIN', 'MANAGER'],
-      },
-    ],
   },
 
   // ── Employés ───────────────────────────────────────────────────

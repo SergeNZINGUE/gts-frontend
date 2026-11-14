@@ -1,0 +1,11 @@
+# Ne jamais envoyer au build Docker les dépendances/caches de la machine locale
+# (sinon le node_modules Windows écrase celui installé par npm ci dans le conteneur)
+node_modules
+dist
+.angular
+.git
+.idea
+.claude
+brag-output
+FrontGTS
+*.log

@@ -1,0 +1,5 @@
+Built TerraOps GTS -- a full-stack fleet management platform for Mining, BTP, and heavy-equipment operations. One dashboard covers every vehicle, every contract, every invoice: insurance tracking, VGP safety inspections, rentals, missions, and FCFA invoices all in one place, with smart notifications before anything lapses.
+
+Stack: Angular 19 (standalone + Signals), Angular Material + Tailwind, Spring Boot backend on Railway.
+
+From the job site to the invoice. Every centime counted.

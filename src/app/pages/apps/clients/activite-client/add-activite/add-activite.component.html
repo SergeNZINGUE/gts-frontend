@@ -1,1 +1,46 @@
-<p>add-activite works!</p>
+<h2 mat-dialog-title class="flex items-center gap-2">
+  <mat-icon class="text-primary">{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+  {{ isEdit ? "Modifier l'activité" : 'Nouvelle activité client' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="grid grid-cols-12 gap-4 pt-2" (ngSubmit)="submit()">
+
+    <!-- Code -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Code *</mat-label>
+      <input matInput formControlName="codeActivite" placeholder="ex : MINES"
+             class="uppercase" maxlength="20" />
+      @if (isEdit) {
+        <mat-hint>Le code ne peut pas être modifié.</mat-hint>
+      }
+      @if (form.get('codeActivite')?.hasError('required') && form.get('codeActivite')?.touched) {
+        <mat-error>Le code est obligatoire</mat-error>
+      }
+      @if (form.get('codeActivite')?.hasError('pattern')) {
+        <mat-error>Lettres, chiffres, « - » et « _ » uniquement</mat-error>
+      }
+      @if (form.get('codeActivite')?.hasError('duplicate')) {
+        <mat-error>Ce code existe déjà</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Libellé -->
+    <mat-form-field appearance="outline" class="col-span-12">
+      <mat-label>Libellé *</mat-label>
+      <input matInput formControlName="libelleActivite"
+             placeholder="ex : Exploitation minière" maxlength="255" />
+      @if (form.get('libelleActivite')?.hasError('required') && form.get('libelleActivite')?.touched) {
+        <mat-error>Le libellé est obligatoire</mat-error>
+      }
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" type="button" (click)="submit()" class="ml-2">
+    {{ isEdit ? 'Enregistrer' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

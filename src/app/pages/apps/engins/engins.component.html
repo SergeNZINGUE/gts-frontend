@@ -160,6 +160,11 @@
                     (click)="$event.stopPropagation()">
               <mat-icon class="text-gray-500">visibility</mat-icon>
             </button>
+            <button mat-icon-button matTooltip="Modifier" color="primary"
+                    [routerLink]="['/apps/engins/edit-engin', e.id]"
+                    (click)="$event.stopPropagation()">
+              <mat-icon>edit</mat-icon>
+            </button>
             <button mat-icon-button matTooltip="Supprimer" color="warn"
                     (click)="confirmDelete(e, $event)">
               <mat-icon>delete_outline</mat-icon>
