@@ -14,9 +14,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
+      - name: Install Railway CLI
+        run: |
+          npm install -g @railway/cli
+          railway --version
+          
       - name: Deploy to Production
         if: github.ref_name == 'main'
         run: railway up --service gts-frontend
